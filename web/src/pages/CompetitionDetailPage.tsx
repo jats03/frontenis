@@ -8,6 +8,7 @@ import Bracket from '../components/Bracket'
 import MatchCard from '../components/MatchCard'
 import RegistrationPanel from '../components/RegistrationPanel'
 import RotatingDrawPanel from '../components/RotatingDrawPanel'
+import SubTabs from '../components/SubTabs'
 import StandingsTable from '../components/StandingsTable'
 import { statusLabel, typeLabel } from '../labels'
 import { exportStandingsPdf } from '../pdf'
@@ -22,6 +23,9 @@ export default function CompetitionDetailPage() {
   const [standings, setStandings] = useState<GroupStandings[]>([])
   const [players, setPlayers] = useState<Player[]>([])
   const [tab, setTab] = useState<Tab>('standings')
+  const [standingsSel, setStandingsSel] = useState('all')            // 'all' o id de grupo
+  const [matchMode, setMatchMode] = useState<'groups' | 'rounds'>('groups')
+  const [matchSel, setMatchSel] = useState('all')                    // 'all', id de grupo o nº de jornada
   const [error, setError] = useState<string | null>(null)
 
   const load = useCallback(async () => {
@@ -141,29 +145,82 @@ export default function CompetitionDetailPage() {
                   Exportar clasificación a PDF
                 </button>
               </div>
-              {standings.map(g => (
+              {standings.length > 1 && (
+                <SubTabs label="Grupos" value={standingsSel} onChange={setStandingsSel}
+                  options={[{ key: 'all', label: 'Todos los grupos' }, ...standings.map(g => ({ key: String(g.groupId), label: g.groupName }))]} />
+              )}
+              {standings.filter(g => standingsSel === 'all' || String(g.groupId) === standingsSel).map(g => (
                 <StandingsTable key={g.groupId} group={g} showQualifiers={isTournament} individual={isRotating} />
               ))}
             </>
           )}
 
-          {tab === 'matches' && detail.groups.map(g => {
-            const list = groupMatches.filter(m => m.groupId === g.id)
-            const rounds = [...new Set(list.map(m => m.round))].sort((a, b) => a - b)
-            return (
-              <section className="card" key={g.id}>
-                <h3>{g.name}</h3>
-                {rounds.map(r => (
-                  <div key={r}>
-                    <h4>Jornada {r}</h4>
-                    {list.filter(m => m.round === r).map(m => (
-                      <MatchCard key={m.id} match={m} canEdit={isAdmin} onChanged={() => void load()} />
+          {tab === 'matches' && (
+            <>
+              <div className="view-switch">
+                <span className="muted">Ver por:</span>
+                <SubTabs label="Agrupar partidos" value={matchMode}
+                  onChange={k => { setMatchMode(k as 'groups' | 'rounds'); setMatchSel('all') }}
+                  options={[{ key: 'groups', label: 'Grupos' }, { key: 'rounds', label: 'Jornadas' }]} />
+              </div>
+
+              {matchMode === 'groups' && (
+                <>
+                  {detail.groups.length > 1 && (
+                    <SubTabs label="Grupos" value={matchSel} onChange={setMatchSel}
+                      options={[{ key: 'all', label: 'Todos' }, ...detail.groups.map(g => ({ key: String(g.id), label: g.name }))]} />
+                  )}
+                  {detail.groups.filter(g => matchSel === 'all' || String(g.id) === matchSel).map(g => {
+                    const list = groupMatches.filter(m => m.groupId === g.id)
+                    const rounds = [...new Set(list.map(m => m.round))].sort((a, b) => a - b)
+                    return (
+                      <section className="card" key={g.id}>
+                        <h3>{g.name}</h3>
+                        {rounds.map(r => (
+                          <div key={r}>
+                            <h4>Jornada {r}</h4>
+                            {list.filter(m => m.round === r).map(m => (
+                              <MatchCard key={m.id} match={m} canEdit={isAdmin} onChanged={() => void load()} />
+                            ))}
+                          </div>
+                        ))}
+                      </section>
+                    )
+                  })}
+                </>
+              )}
+
+              {matchMode === 'rounds' && (() => {
+                const allRounds = [...new Set(groupMatches.map(m => m.round))].sort((a, b) => a - b)
+                const shown = allRounds.filter(r => matchSel === 'all' || String(r) === matchSel)
+                return (
+                  <>
+                    {allRounds.length > 1 && (
+                      <SubTabs label="Jornadas" value={matchSel} onChange={setMatchSel}
+                        options={[{ key: 'all', label: 'Todas' }, ...allRounds.map(r => ({ key: String(r), label: `Jornada ${r}` }))]} />
+                    )}
+                    {shown.map(r => (
+                      <section className="card" key={r}>
+                        <h3>Jornada {r}</h3>
+                        {detail.groups.map(g => {
+                          const list = groupMatches.filter(m => m.round === r && m.groupId === g.id)
+                          if (list.length === 0) return null
+                          return (
+                            <div key={g.id}>
+                              {detail.groups.length > 1 && <h4>{g.name}</h4>}
+                              {list.map(m => (
+                                <MatchCard key={m.id} match={m} canEdit={isAdmin} onChanged={() => void load()} />
+                              ))}
+                            </div>
+                          )
+                        })}
+                      </section>
                     ))}
-                  </div>
-                ))}
-              </section>
-            )
-          })}
+                  </>
+                )
+              })()}
+            </>
+          )}
 
           {tab === 'playoffs' && <Bracket matches={detail.matches} canEdit={isAdmin} onChanged={() => void load()} />}
         </>

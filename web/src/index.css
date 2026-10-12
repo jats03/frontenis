@@ -157,3 +157,7 @@ button.swap { min-height: 36px; padding: .15rem .6rem; font-size: .85rem; white-
 .loader { width: 48px; height: 48px; border: 5px solid rgba(15, 118, 110, .25); border-top-color: var(--primary); border-radius: 50%; animation: spin .8s linear infinite; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 @media (prefers-reduced-motion: reduce) { .loader { animation-duration: 2s; } }
+
+.sub-tabs { margin: .4rem 0 .8rem; }
+.sub-tabs button { padding: .3rem .7rem; font-size: .88rem; border-radius: 99px; }
+.view-switch { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
