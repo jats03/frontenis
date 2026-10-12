@@ -41,6 +41,39 @@ public class RotatingLeagueTests
     }
 
     [Fact]
+    public void Everyone_partners_with_everyone_exactly_once_even_same_position()
+    {
+        var players = new List<Player>();
+        for (var i = 1; i <= 8; i++) players.Add(TestHelpers.Player(i, $"D{i}", PlayerPosition.Delantero)); // todos delanteros
+        var rounds = new RotationPlanner(Rnd(11)).Plan(players, RotationMath.FullRounds(8));
+
+        Assert.Equal(7, rounds.Count);
+        var seen = new Dictionary<(int, int), int>();
+        foreach (var round in rounds)
+            foreach (var m in round.Matches)
+                foreach (var (a, b) in new[] { m.Home, m.Away })
+                {
+                    var k = (Math.Min(a.Id, b.Id), Math.Max(a.Id, b.Id));
+                    seen[k] = seen.GetValueOrDefault(k) + 1;
+                }
+        Assert.Equal(28, seen.Count);                 // C(8,2) parejas distintas
+        Assert.All(seen.Values, v => Assert.Equal(1, v));
+    }
+
+    [Fact]
+    public void Group_of_six_covers_most_partner_combinations()
+    {
+        var rounds = new RotationPlanner(Rnd(5)).Plan(Players(6), RotationMath.FullRounds(6));
+        Assert.Equal(8, rounds.Count);
+        var seen = new HashSet<(int, int)>();
+        foreach (var round in rounds)
+            foreach (var m in round.Matches)
+                foreach (var (a, b) in new[] { m.Home, m.Away })
+                    seen.Add((Math.Min(a.Id, b.Id), Math.Max(a.Id, b.Id)));
+        Assert.True(seen.Count >= 14, $"solo {seen.Count} de 15 combinaciones");
+    }
+
+    [Fact]
     public void Planner_uses_every_player_exactly_once_per_round()
     {
         var players = Players(12);
@@ -69,7 +102,7 @@ public class RotatingLeagueTests
         Assert.Equal(CompetitionStatus.GroupStage, c.Status);
         Assert.Equal(2, c.Groups.Count);
         Assert.All(c.Groups, g => Assert.Equal(8, c.GroupPlayers(g).Count));
-        Assert.Equal(2 * 4 * 2, c.Matches.Count); // 2 grupos x 4 jornadas x 2 partidos
+        Assert.Equal(2 * 7 * 2, c.Matches.Count); // 2 grupos x 7 jornadas (todos con todos) x 2 partidos
     }
 
     [Fact]

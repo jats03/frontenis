@@ -45,8 +45,8 @@ export default function RotatingDrawPanel({ detail, players, onChanged, onPlayer
       <p className="muted">
         Elige al menos {needed} jugadores ({summary.groupCount} grupo(s) de {summary.pairsPerGroup}); si hay más,
         los sobrantes van al último grupo.
-        Se reparten al azar entre los grupos y en cada una de las {summary.rounds} jornadas se forman parejas
-        nuevas (delantero + zaguero), evitando repetir compañero.
+        Se reparten al azar entre los grupos y en cada jornada se forman parejas nuevas
+        (da igual el puesto) hasta que todos hayan jugado con todos{summary.rounds > 0 ? `, con ${summary.rounds} jornadas` : ''}.
       </p>
       <PlayerPicker players={players} selected={selected} onChange={setSelected}
         onSwap={p => void swap(p)} swappingIds={swapping} />

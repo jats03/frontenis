@@ -73,14 +73,14 @@ export default function CompetitionNewPage() {
               <input type="number" min={4} value={Number.isNaN(pairsPerGroup) ? '' : pairsPerGroup}
                 onChange={e => setPairsPerGroup(e.target.valueAsNumber)} />
             </label>
-            <label>Jornadas (0 = automático)
+            <label>Jornadas (0 = todos con todos)
               <input type="number" min={0} value={Number.isNaN(rounds) ? '' : rounds}
                 onChange={e => setRounds(e.target.valueAsNumber)} />
             </label>
           </div>
           <p className="muted">
             {groupCount} grupo(s) × {pairsPerGroup} jugadores = {groupCount * pairsPerGroup} jugadores como mínimo; si hay más, los sobrantes van al último grupo (si un grupo no es múltiplo de 4, en cada jornada descansan por turnos los que sobran).
-            En cada jornada las parejas se sortean de nuevo (un delantero y un zaguero) y la clasificación es individual.
+            En cada jornada las parejas se sortean de nuevo y todos juegan con todos como compañeros (aunque coincidan dos delanteros o dos zagueros). La clasificación es individual.
             Al terminar, el último de cada grupo baja y el primero sube.
           </p>
         </>

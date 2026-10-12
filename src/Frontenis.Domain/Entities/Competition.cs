@@ -97,9 +97,7 @@ public sealed class Competition
         if (s.PointsPerWin < 1) throw new DomainException("Una victoria debe valer al menos 1 punto.");
         if (s.PointsPerLoss < 0 || s.PointsPerLoss >= s.PointsPerWin)
             throw new DomainException("Los puntos por derrota deben ser >= 0 y menores que los de victoria.");
-        var rounds = s.Rounds > 0 ? s.Rounds : perGroup / 2;
-        if (rounds > perGroup - 1)
-            throw new DomainException($"Con {perGroup} jugadores por grupo el máximo es {perGroup - 1} jornadas.");
+        if (s.Rounds < 0) throw new DomainException("Las jornadas no pueden ser negativas.");
 
         return new Competition
         {
@@ -113,7 +111,7 @@ public sealed class Competition
             PointsPerLoss = s.PointsPerLoss,
             DoubleRound = false,
             QualifiersPerGroup = 0,
-            Rounds = rounds,
+            Rounds = s.Rounds, // 0 = todos con todos (automático, según el tamaño de cada grupo)
             CreatedAtUtc = DateTime.UtcNow
         };
     }
@@ -208,7 +206,7 @@ public sealed class Competition
             var group = new Group(GroupName(g));
             _groups.Add(group);
             var order = 0;
-            foreach (var round in planner.Plan(groups[g], Rounds))
+            foreach (var round in planner.Plan(groups[g], Rounds > 0 ? Rounds : RotationMath.FullRounds(groups[g].Count)))
             {
                 foreach (var m in round.Matches)
                 {
