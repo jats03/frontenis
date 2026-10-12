@@ -4,7 +4,6 @@ import type { PairingPreview, Player, Position } from '../api/types'
 import PlayerPicker from '../components/PlayerPicker'
 import { useAuth } from '../auth/AuthContext'
 import { useAsync } from '../hooks'
-import { positionLabel } from '../labels'
 
 export default function PlayersPage() {
   const { isAdmin } = useAuth()
@@ -15,21 +14,15 @@ export default function PlayersPage() {
   const [selected, setSelected] = useState<Set<number>>(new Set())
   const [preview, setPreview] = useState<PairingPreview | null>(null)
   const [randomPair, setRandomPair] = useState<[Player, Player] | null>(null)
-  const [randomMsg, setRandomMsg] = useState<string | null>(null)
 
   const pick = <T,>(list: T[]) => list[Math.floor(Math.random() * list.length)]
+  const chosen = (players ?? []).filter(p => selected.has(p.id))
+  const chosenForwards = chosen.filter(p => p.position === 'Delantero')
+  const chosenBacks = chosen.filter(p => p.position === 'Zaguero')
+  const canDraw = chosenForwards.length > 0 && chosenBacks.length > 0
   function drawRandomPair() {
-    const all = players ?? []
-    const pool = selected.size > 0 ? all.filter(p => selected.has(p.id)) : all
-    const forwards = pool.filter(p => p.position === 'Delantero')
-    const backs = pool.filter(p => p.position === 'Zaguero')
-    if (forwards.length === 0 || backs.length === 0) {
-      setRandomPair(null)
-      setRandomMsg('Hace falta al menos un delantero y un zaguero' + (selected.size > 0 ? ' entre los seleccionados.' : '.'))
-      return
-    }
-    setRandomMsg(null)
-    setRandomPair([pick(forwards), pick(backs)])
+    if (!canDraw) return
+    setRandomPair([pick(chosenForwards), pick(chosenBacks)])
   }
 
   async function guard(action: () => Promise<unknown>) {
@@ -68,29 +61,24 @@ export default function PlayersPage() {
       )}
 
       <section className="card">
-        {isAdmin ? (
-          <>
-            <p className="muted">Marca jugadores para probar un emparejamiento aleatorio (zaguero + delantero).</p>
-            <PlayerPicker players={players ?? []} selected={selected} onChange={setSelected} />
-          </>
-        ) : (
-          <ul className="plain">
-            {players?.map(p => <li key={p.id}>{p.name} <span className="muted">· {positionLabel[p.position]}</span></li>)}
-          </ul>
-        )}
+        <p className="muted">
+          Marca los jugadores que participan en el sorteo (o usa «Seleccionar todos»).
+        </p>
+        <PlayerPicker players={players ?? []} selected={selected} onChange={setSelected} />
       </section>
 
       <section className="card">
         <h3>Pareja al azar</h3>
         <p className="muted">
-          Sortea un delantero y un zaguero{isAdmin ? ' (de los marcados, o de todos si no hay ninguno marcado)' : ''}.
+          Sortea un delantero y un zaguero entre los jugadores marcados
+          ({chosenForwards.length} delanteros, {chosenBacks.length} zagueros).
         </p>
         <div className="row">
-          <button onClick={drawRandomPair} disabled={(players?.length ?? 0) < 2}>
+          <button onClick={drawRandomPair} disabled={!canDraw}>
             {randomPair ? 'Sortear otra pareja' : 'Obtener pareja al azar'}
           </button>
         </div>
-        {randomMsg && <p className="error">{randomMsg}</p>}
+        {!canDraw && <p className="muted">Marca al menos un delantero y un zaguero.</p>}
         {randomPair && (
           <p className="random-pair">
             <strong>{randomPair[0].name}</strong> <span className="muted">(Delantero)</span> +{' '}
@@ -106,7 +94,7 @@ export default function PlayersPage() {
               Emparejar al azar ({selected.size})
             </button>
             <button className="secondary" disabled={selected.size === 0}
-              onClick={() => { if (confirm('¿Borrar los jugadores seleccionados?')) void Promise.all([...selected].map(remove)) }}>
+              onClick={() => { if (confirm(`¿Borrar ${selected.size} jugador(es) seleccionado(s)? No se puede deshacer.`)) void Promise.all([...selected].map(remove)) }}>
               Borrar seleccionados
             </button>
           </div>

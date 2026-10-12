@@ -121,3 +121,7 @@ img { max-width: 100%; }
 }
 @media (min-width: 1025px) { .content { padding: 1.5rem; } }
 @media (hover: none) { button:active, .button:active { filter: brightness(.9); } }
+
+.picker-all { margin-bottom: .6rem; padding-bottom: .4rem; border-bottom: 1px solid var(--border); }
+.select-all { font-weight: 600; }
+label.check { min-height: 36px; }
