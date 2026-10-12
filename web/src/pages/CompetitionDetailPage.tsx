@@ -8,6 +8,7 @@ import MatchCard from '../components/MatchCard'
 import RegistrationPanel from '../components/RegistrationPanel'
 import StandingsTable from '../components/StandingsTable'
 import { statusLabel, typeLabel } from '../labels'
+import { exportStandingsPdf } from '../pdf'
 
 type Tab = 'standings' | 'matches' | 'playoffs' | 'pairs'
 
@@ -93,9 +94,19 @@ export default function CompetitionDetailPage() {
             </div>
           )}
 
-          {tab === 'standings' && standings.map(g => (
-            <StandingsTable key={g.groupId} group={g} showQualifiers={isTournament} />
-          ))}
+          {tab === 'standings' && (
+            <>
+              <div className="row">
+                <button className="secondary" disabled={standings.length === 0}
+                  onClick={() => void exportStandingsPdf(summary.name, standings)}>
+                  Exportar clasificación a PDF
+                </button>
+              </div>
+              {standings.map(g => (
+                <StandingsTable key={g.groupId} group={g} showQualifiers={isTournament} />
+              ))}
+            </>
+          )}
 
           {tab === 'matches' && detail.groups.map(g => {
             const list = groupMatches.filter(m => m.groupId === g.id)

@@ -62,3 +62,13 @@ table.standings { width: 100%; border-collapse: collapse; font-variant-numeric: 
 .bracket-round { min-width: 260px; display: flex; flex-direction: column; justify-content: space-around; background: var(--card);
   border: 1px solid var(--border); border-radius: 12px; padding: .6rem 1rem; }
 @media (max-width: 520px) { .picker { grid-template-columns: 1fr; } .content { padding: .7rem; } }
+
+.logo { height: 34px; width: 34px; border-radius: 6px; vertical-align: middle; object-fit: cover; }
+.brand { display: inline-flex; align-items: center; gap: .5rem; }
+.center { text-align: center; justify-content: center; }
+.timer { text-align: center; }
+.timer-display { font-size: clamp(4rem, 20vw, 8rem); font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.1; margin: .5rem 0; }
+.timer-display.low { color: var(--danger); }
+.timer-display.done { animation: blink 1s steps(2, start) infinite; }
+@keyframes blink { to { visibility: hidden; } }
+.random-pair { font-size: 1.15rem; margin: .5rem 0 0; }

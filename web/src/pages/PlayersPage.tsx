@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { api } from '../api/client'
-import type { PairingPreview, Position } from '../api/types'
+import type { PairingPreview, Player, Position } from '../api/types'
 import PlayerPicker from '../components/PlayerPicker'
 import { useAuth } from '../auth/AuthContext'
 import { useAsync } from '../hooks'
@@ -14,6 +14,23 @@ export default function PlayersPage() {
   const [message, setMessage] = useState<string | null>(null)
   const [selected, setSelected] = useState<Set<number>>(new Set())
   const [preview, setPreview] = useState<PairingPreview | null>(null)
+  const [randomPair, setRandomPair] = useState<[Player, Player] | null>(null)
+  const [randomMsg, setRandomMsg] = useState<string | null>(null)
+
+  const pick = <T,>(list: T[]) => list[Math.floor(Math.random() * list.length)]
+  function drawRandomPair() {
+    const all = players ?? []
+    const pool = selected.size > 0 ? all.filter(p => selected.has(p.id)) : all
+    const forwards = pool.filter(p => p.position === 'Delantero')
+    const backs = pool.filter(p => p.position === 'Zaguero')
+    if (forwards.length === 0 || backs.length === 0) {
+      setRandomPair(null)
+      setRandomMsg('Hace falta al menos un delantero y un zaguero' + (selected.size > 0 ? ' entre los seleccionados.' : '.'))
+      return
+    }
+    setRandomMsg(null)
+    setRandomPair([pick(forwards), pick(backs)])
+  }
 
   async function guard(action: () => Promise<unknown>) {
     setMessage(null)
@@ -60,6 +77,25 @@ export default function PlayersPage() {
           <ul className="plain">
             {players?.map(p => <li key={p.id}>{p.name} <span className="muted">· {positionLabel[p.position]}</span></li>)}
           </ul>
+        )}
+      </section>
+
+      <section className="card">
+        <h3>Pareja al azar</h3>
+        <p className="muted">
+          Sortea un delantero y un zaguero{isAdmin ? ' (de los marcados, o de todos si no hay ninguno marcado)' : ''}.
+        </p>
+        <div className="row">
+          <button onClick={drawRandomPair} disabled={(players?.length ?? 0) < 2}>
+            {randomPair ? 'Sortear otra pareja' : 'Obtener pareja al azar'}
+          </button>
+        </div>
+        {randomMsg && <p className="error">{randomMsg}</p>}
+        {randomPair && (
+          <p className="random-pair">
+            <strong>{randomPair[0].name}</strong> <span className="muted">(Delantero)</span> +{' '}
+            <strong>{randomPair[1].name}</strong> <span className="muted">(Zaguero)</span>
+          </p>
         )}
       </section>
 
