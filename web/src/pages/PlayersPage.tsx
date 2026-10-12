@@ -14,6 +14,7 @@ export default function PlayersPage() {
   const [selected, setSelected] = useState<Set<number>>(new Set())
   const [preview, setPreview] = useState<PairingPreview | null>(null)
   const [randomPair, setRandomPair] = useState<[Player, Player] | null>(null)
+  const [randomMatch, setRandomMatch] = useState<[[Player, Player], [Player, Player]] | null>(null)
   const [swapping, setSwapping] = useState<Set<number>>(new Set())
   // Cambios de posición locales (visitantes): solo valen para el sorteo en pantalla, no se guardan.
   const [localPos, setLocalPos] = useState<Map<number, Position>>(new Map())
@@ -24,6 +25,20 @@ export default function PlayersPage() {
   const chosenForwards = chosen.filter(p => p.position === 'Delantero')
   const chosenBacks = chosen.filter(p => p.position === 'Zaguero')
   const canDraw = chosenForwards.length > 0 && chosenBacks.length > 0
+  const canDrawMatch = chosenForwards.length >= 2 && chosenBacks.length >= 2
+  /** Baraja una copia de la lista (Fisher-Yates). */
+  const shuffle = <T,>(list: T[]) => {
+    const a = [...list]
+    for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]] }
+    return a
+  }
+  /** Dos parejas distintas (delantero + zaguero cada una), sin repetir jugadores. */
+  function drawRandomMatch() {
+    if (!canDrawMatch) return
+    const [f1, f2] = shuffle(chosenForwards)
+    const [b1, b2] = shuffle(chosenBacks)
+    setRandomMatch([[f1, b1], [f2, b2]])
+  }
   function drawRandomPair() {
     if (!canDraw) return
     setRandomPair([pick(chosenForwards), pick(chosenBacks)])
@@ -48,6 +63,7 @@ export default function PlayersPage() {
   function swapPosition(p: Player) {
     const next: Position = p.position === 'Delantero' ? 'Zaguero' : 'Delantero'
     setRandomPair(null)
+    setRandomMatch(null)
     if (!isAdmin) {
       setLocalPos(prev => new Map(prev).set(p.id, next))
       return
@@ -104,6 +120,30 @@ export default function PlayersPage() {
             <strong>{randomPair[0].name}</strong> <span className="muted">(Delantero)</span> +{' '}
             <strong>{randomPair[1].name}</strong> <span className="muted">(Zaguero)</span>
           </p>
+        )}
+      </section>
+
+      <section className="card">
+        <h3>Partido al azar</h3>
+        <p className="muted">
+          Sortea dos parejas (cada una con un delantero y un zaguero) entre los jugadores marcados
+          ({chosenForwards.length} delanteros, {chosenBacks.length} zagueros).
+        </p>
+        <div className="row">
+          <button onClick={drawRandomMatch} disabled={!canDrawMatch}>
+            {randomMatch ? 'Sortear otro partido' : 'Obtener partido al azar'}
+          </button>
+        </div>
+        {!canDrawMatch && <p className="muted">Marca al menos dos delanteros y dos zagueros.</p>}
+        {randomMatch && (
+          <div className="random-match">
+            {randomMatch.map((pair, i) => (
+              <p key={i} className="random-pair">
+                <strong>{pair[0].name}</strong> <span className="muted">(Delantero)</span> +{' '}
+                <strong>{pair[1].name}</strong> <span className="muted">(Zaguero)</span>
+              </p>
+            ))}
+          </div>
         )}
       </section>
 
