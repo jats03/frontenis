@@ -3,7 +3,7 @@ import type {
   PairDto, PairingPreview, Player, Position,
 } from './types'
 
-const BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:5080'
+export const BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:5080'
 const TOKEN_KEY = 'frontenis.token'
 
 export const tokenStore = {
@@ -23,20 +23,38 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
   const token = tokenStore.get()
   if (token) headers.Authorization = `Bearer ${token}`
 
-  let res: Response
+  // Si el servidor está dormido (Render) o la BD se está reanudando, las lecturas se reintentan
+  // y, si tardan, se avisa al usuario (ver ApiStatus).
+  const SLOW_MS = 4000
+  const attempts = method === 'GET' ? 4 : 1
+  let slowFired = false
+  const slowTimer = setTimeout(() => { slowFired = true; window.dispatchEvent(new Event('frontenis:slow-start')) }, SLOW_MS)
   try {
-    res = await fetch(`${BASE}${path}`, { method, headers, body: body === undefined ? undefined : JSON.stringify(body) })
-  } catch {
-    throw new ApiError(0, 'No se pudo conectar con el servidor.')
+    let res: Response | undefined
+    for (let i = 0; i < attempts; i++) {
+      const last = i === attempts - 1
+      try {
+        res = await fetch(`${BASE}${path}`, { method, headers, body: body === undefined ? undefined : JSON.stringify(body) })
+        if (last || ![502, 503, 504].includes(res.status)) break
+      } catch {
+        if (last) throw new ApiError(0, 'No se pudo conectar con el servidor.')
+      }
+      await new Promise(r => setTimeout(r, 3000))
+    }
+    if (!res) throw new ApiError(0, 'No se pudo conectar con el servidor.')
+    if (res.status === 204) return undefined as T
+    const text = await res.text()
+    let data: { detail?: string; title?: string } | undefined
+    try { data = text ? JSON.parse(text) : undefined } catch { data = undefined }
+    if (!res.ok) {
+      if (res.status === 401 && token) window.dispatchEvent(new Event('frontenis:unauthorized'))
+      throw new ApiError(res.status, data?.detail ?? data?.title ?? `Error ${res.status}`)
+    }
+    return data as T
+  } finally {
+    clearTimeout(slowTimer)
+    if (slowFired) window.dispatchEvent(new Event('frontenis:slow-end'))
   }
-  if (res.status === 204) return undefined as T
-  const text = await res.text()
-  const data = text ? JSON.parse(text) : undefined
-  if (!res.ok) {
-    if (res.status === 401 && token) window.dispatchEvent(new Event('frontenis:unauthorized'))
-    throw new ApiError(res.status, data?.detail ?? data?.title ?? `Error ${res.status}`)
-  }
-  return data as T
 }
 
 export const api = {

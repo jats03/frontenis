@@ -5,6 +5,10 @@ interface Props {
   selected: Set<number>
   onChange: (next: Set<number>) => void
   disabledIds?: Set<number>
+  /** Si se indica, cada jugador muestra un botón para pasarlo de delantero a zaguero (y al revés). */
+  onSwap?: (player: Player) => void
+  /** Jugadores cuyo cambio de posición está en curso (se bloquea su botón). */
+  swappingIds?: Set<number>
 }
 
 /** Casilla "seleccionar todos" con estado intermedio cuando solo hay una parte marcada. */
@@ -20,7 +24,7 @@ function SelectAll({ label, total, checked, onToggle }: { label: string; total: 
 }
 
 /** Lista seleccionable de jugadores agrupada por posición, con selección total y por grupo. */
-export default function PlayerPicker({ players, selected, onChange, disabledIds }: Props) {
+export default function PlayerPicker({ players, selected, onChange, disabledIds, onSwap, swappingIds }: Props) {
   const enabled = (list: Player[]) => list.filter(p => !disabledIds?.has(p.id))
 
   function toggle(id: number) {
@@ -43,13 +47,25 @@ export default function PlayerPicker({ players, selected, onChange, disabledIds 
   const group = (title: string, list: Player[]) => (
     <div className="picker-col">
       <SelectAll label={title} total={enabled(list).length} checked={count(list)} onToggle={() => toggleMany(list)} />
-      {list.map(p => (
-        <label key={p.id} className="check">
-          <input type="checkbox" checked={selected.has(p.id)} disabled={disabledIds?.has(p.id)}
-            onChange={() => toggle(p.id)} />
-          {p.name}
-        </label>
-      ))}
+      {list.map(p => {
+        const other = p.position === 'Delantero' ? 'Zaguero' : 'Delantero'
+        return (
+          <div key={p.id} className="picker-row">
+            <label className="check">
+              <input type="checkbox" checked={selected.has(p.id)} disabled={disabledIds?.has(p.id)}
+                onChange={() => toggle(p.id)} />
+              {p.name}
+            </label>
+            {onSwap && (
+              <button type="button" className="secondary swap" disabled={swappingIds?.has(p.id)}
+                title={`Pasar a ${other.toLowerCase()}`} aria-label={`Pasar a ${p.name} a ${other.toLowerCase()}`}
+                onClick={() => onSwap(p)}>
+                ⇄ {other}
+              </button>
+            )}
+          </div>
+        )
+      })}
       {list.length === 0 && <p className="muted">Sin jugadores</p>}
     </div>
   )

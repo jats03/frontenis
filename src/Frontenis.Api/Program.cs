@@ -37,7 +37,27 @@ builder.Services.AddCors(o => o.AddDefaultPolicy(p => p.WithOrigins(origins).All
 
 var app = builder.Build();
 
-await app.Services.InitializeDatabaseAsync(builder.Configuration);
+// La inicialización de la BD se hace en segundo plano y con reintentos: así la API empieza a
+// responder (/health) enseguida aunque Azure SQL esté pausado y tarde en reanudarse.
+app.Lifetime.ApplicationStarted.Register(() => _ = Task.Run(async () =>
+{
+    const int maxAttempts = 8;
+    for (var attempt = 1; attempt <= maxAttempts; attempt++)
+    {
+        try
+        {
+            await app.Services.InitializeDatabaseAsync(builder.Configuration);
+            app.Logger.LogInformation("Base de datos lista.");
+            return;
+        }
+        catch (Exception ex)
+        {
+            app.Logger.LogWarning(ex, "Base de datos no disponible todavía (intento {Attempt}/{Max}).", attempt, maxAttempts);
+            await Task.Delay(TimeSpan.FromSeconds(10));
+        }
+    }
+    app.Logger.LogError("No se pudo inicializar la base de datos tras {Max} intentos.", maxAttempts);
+}));
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 if (app.Environment.IsDevelopment())
@@ -48,6 +68,8 @@ if (app.Environment.IsDevelopment())
 app.UseCors();
 app.UseAuthentication();
 app.UseAuthorization();
+// Ligero y sin base de datos: para monitores de disponibilidad y para despertar la API en Render.
+app.MapMethods("/health", new[] { "GET", "HEAD" }, () => Results.Ok(new { status = "ok" })).AllowAnonymous();
 app.MapControllers();
 app.Run();
 

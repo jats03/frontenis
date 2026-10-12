@@ -1,5 +1,6 @@
 import { NavLink, Route, Routes } from 'react-router-dom'
 import { useAuth } from './auth/AuthContext'
+import ApiStatus from './components/ApiStatus'
 import CompetitionDetailPage from './pages/CompetitionDetailPage'
 import CompetitionNewPage from './pages/CompetitionNewPage'
 import CompetitionsPage from './pages/CompetitionsPage'
@@ -24,6 +25,7 @@ export default function App() {
           <NavLink to="/login">Admin</NavLink>
         )}
       </header>
+      <ApiStatus />
       <main className="content">
         <Routes>
           <Route path="/" element={<CompetitionsPage />} />

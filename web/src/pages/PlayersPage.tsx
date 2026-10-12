@@ -14,9 +14,13 @@ export default function PlayersPage() {
   const [selected, setSelected] = useState<Set<number>>(new Set())
   const [preview, setPreview] = useState<PairingPreview | null>(null)
   const [randomPair, setRandomPair] = useState<[Player, Player] | null>(null)
+  const [swapping, setSwapping] = useState<Set<number>>(new Set())
+  // Cambios de posición locales (visitantes): solo valen para el sorteo en pantalla, no se guardan.
+  const [localPos, setLocalPos] = useState<Map<number, Position>>(new Map())
+  const view: Player[] = (players ?? []).map(p => (localPos.has(p.id) ? { ...p, position: localPos.get(p.id)! } : p))
 
   const pick = <T,>(list: T[]) => list[Math.floor(Math.random() * list.length)]
-  const chosen = (players ?? []).filter(p => selected.has(p.id))
+  const chosen = view.filter(p => selected.has(p.id))
   const chosenForwards = chosen.filter(p => p.position === 'Delantero')
   const chosenBacks = chosen.filter(p => p.position === 'Zaguero')
   const canDraw = chosenForwards.length > 0 && chosenBacks.length > 0
@@ -41,6 +45,19 @@ export default function PlayersPage() {
     await reload()
   })
 
+  function swapPosition(p: Player) {
+    const next: Position = p.position === 'Delantero' ? 'Zaguero' : 'Delantero'
+    setRandomPair(null)
+    if (!isAdmin) {
+      setLocalPos(prev => new Map(prev).set(p.id, next))
+      return
+    }
+    // Administrador: se guarda en la base de datos y afecta a todas las pantallas.
+    setSwapping(prev => new Set(prev).add(p.id))
+    void guard(async () => { await api.players.update(p.id, p.name, next); await reload() })
+      .finally(() => setSwapping(prev => { const n = new Set(prev); n.delete(p.id); return n }))
+  }
+
   const makePreview = () => guard(async () => setPreview(await api.players.pairingPreview([...selected])))
 
   return (
@@ -63,8 +80,11 @@ export default function PlayersPage() {
       <section className="card">
         <p className="muted">
           Marca los jugadores que participan en el sorteo (o usa «Seleccionar todos»).
+          Con «⇄» puedes pasar un jugador de delantero a zaguero y al revés
+          {isAdmin ? ' (se guarda para todos).' : ' (solo para este sorteo, no se guarda).'}
         </p>
-        <PlayerPicker players={players ?? []} selected={selected} onChange={setSelected} />
+        <PlayerPicker players={view} selected={selected} onChange={setSelected}
+          onSwap={swapPosition} swappingIds={swapping} />
       </section>
 
       <section className="card">

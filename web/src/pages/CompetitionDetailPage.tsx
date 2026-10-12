@@ -75,7 +75,8 @@ export default function CompetitionDetailPage() {
       </div>
       {error && <p className="error">{error}</p>}
 
-      {summary.status === 'Draft' && isAdmin && <RegistrationPanel detail={detail} players={players} onChanged={load} />}
+      {summary.status === 'Draft' && isAdmin && <RegistrationPanel detail={detail} players={players} onChanged={load}
+        onPlayersChanged={async () => { setPlayers(await api.players.list()); await load() }} />}
       {summary.status === 'Draft' && !isAdmin && <p className="muted">Inscripción abierta: {summary.registeredPairs}/{summary.pairCount} parejas.</p>}
 
       {summary.status !== 'Draft' && (

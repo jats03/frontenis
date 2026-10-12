@@ -5,6 +5,7 @@ using Frontenis.Domain.Services;
 using Frontenis.Infrastructure.Persistence;
 using Frontenis.Infrastructure.Repositories;
 using Frontenis.Infrastructure.Security;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,8 +16,13 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddFrontenis(this IServiceCollection services, IConfiguration config)
     {
+        // Azure SQL gratuito se pausa por inactividad y tarda en reanudarse: damos más margen de conexión
+        // (mínimo 60 s) y más reintentos antes de fallar.
+        var connection = new SqlConnectionStringBuilder(config.GetConnectionString("Default") ?? string.Empty);
+        if (connection.ConnectTimeout < 60) connection.ConnectTimeout = 60;
         services.AddDbContext<FrontenisDbContext>(o =>
-            o.UseSqlServer(config.GetConnectionString("Default"), sql => sql.EnableRetryOnFailure()));
+            o.UseSqlServer(connection.ConnectionString,
+                sql => sql.EnableRetryOnFailure(maxRetryCount: 6, maxRetryDelay: TimeSpan.FromSeconds(10), errorNumbersToAdd: null)));
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<FrontenisDbContext>());
 
         services.AddScoped<IPlayerRepository, PlayerRepository>();
