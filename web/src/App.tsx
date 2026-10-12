@@ -1,6 +1,7 @@
 import { NavLink, Route, Routes } from 'react-router-dom'
 import { useAuth } from './auth/AuthContext'
 import ApiStatus from './components/ApiStatus'
+import LoadingSpinner from './components/LoadingSpinner'
 import CompetitionDetailPage from './pages/CompetitionDetailPage'
 import CompetitionNewPage from './pages/CompetitionNewPage'
 import CompetitionsPage from './pages/CompetitionsPage'
@@ -26,6 +27,7 @@ export default function App() {
         )}
       </header>
       <ApiStatus />
+      <LoadingSpinner />
       <main className="content">
         <Routes>
           <Route path="/" element={<CompetitionsPage />} />

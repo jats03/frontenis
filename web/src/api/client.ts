@@ -25,6 +25,7 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
 
   // Si el servidor está dormido (Render) o la BD se está reanudando, las lecturas se reintentan
   // y, si tardan, se avisa al usuario (ver ApiStatus).
+  window.dispatchEvent(new Event('frontenis:request-start'))
   const SLOW_MS = 4000
   const attempts = method === 'GET' ? 4 : 1
   let slowFired = false
@@ -53,6 +54,7 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
     return data as T
   } finally {
     clearTimeout(slowTimer)
+    window.dispatchEvent(new Event('frontenis:request-end'))
     if (slowFired) window.dispatchEvent(new Event('frontenis:slow-end'))
   }
 }
