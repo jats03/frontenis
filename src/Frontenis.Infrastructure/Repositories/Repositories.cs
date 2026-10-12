@@ -64,15 +64,21 @@ public sealed class CompetitionRepository : ICompetitionRepository
 
     public async Task DeleteAsync(int id, CancellationToken ct = default)
     {
-        await using var tx = await _db.Database.BeginTransactionAsync(ct);
-        await _db.Matches.Where(m => m.CompetitionId == id)
-            .ExecuteUpdateAsync(s => s.SetProperty(m => m.NextMatchId, (int?)null), ct);
-        await _db.Matches.Where(m => m.CompetitionId == id).ExecuteDeleteAsync(ct);
-        await _db.Entries.Where(e => e.CompetitionId == id).ExecuteDeleteAsync(ct);
-        await _db.Groups.Where(g => g.CompetitionId == id).ExecuteDeleteAsync(ct);
-        var deleted = await _db.Competitions.Where(c => c.Id == id).ExecuteDeleteAsync(ct);
-        if (deleted == 0) throw new NotFoundException("Competición no encontrada.");
-        await tx.CommitAsync(ct);
+        // Con EnableRetryOnFailure, EF Core no permite abrir una transacción manual fuera de la
+        // estrategia de ejecución: toda la operación (transacción incluida) debe ir dentro de ella.
+        var strategy = _db.Database.CreateExecutionStrategy();
+        await strategy.ExecuteAsync(async token =>
+        {
+            await using var tx = await _db.Database.BeginTransactionAsync(token);
+            await _db.Matches.Where(m => m.CompetitionId == id)
+                .ExecuteUpdateAsync(s => s.SetProperty(m => m.NextMatchId, (int?)null), token);
+            await _db.Matches.Where(m => m.CompetitionId == id).ExecuteDeleteAsync(token);
+            await _db.Entries.Where(e => e.CompetitionId == id).ExecuteDeleteAsync(token);
+            await _db.Groups.Where(g => g.CompetitionId == id).ExecuteDeleteAsync(token);
+            var deleted = await _db.Competitions.Where(c => c.Id == id).ExecuteDeleteAsync(token);
+            if (deleted == 0) throw new NotFoundException("Competición no encontrada.");
+            await tx.CommitAsync(token);
+        }, ct);
     }
 
     private IQueryable<Competition> Detailed() => _db.Competitions
