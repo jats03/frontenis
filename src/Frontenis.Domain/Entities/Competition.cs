@@ -91,9 +91,9 @@ public sealed class Competition
     private static Competition CreateRotating(CompetitionSettings s)
     {
         if (s.GroupCount < 1) throw new DomainException("Debe haber al menos 1 grupo.");
-        var perGroup = s.PairsPerGroup; // jugadores por grupo
-        if (perGroup < 4 || perGroup % 4 != 0)
-            throw new DomainException("Cada grupo necesita un número de jugadores múltiplo de 4 (4, 8, 12…).");
+        var perGroup = s.PairsPerGroup; // mínimo de jugadores por grupo
+        if (perGroup < 4)
+            throw new DomainException("Cada grupo necesita al menos 4 jugadores.");
         if (s.PointsPerWin < 1) throw new DomainException("Una victoria debe valer al menos 1 punto.");
         if (s.PointsPerLoss < 0 || s.PointsPerLoss >= s.PointsPerWin)
             throw new DomainException("Los puntos por derrota deben ser >= 0 y menores que los de victoria.");
@@ -167,8 +167,9 @@ public sealed class Competition
     {
         if (!IsRotating) throw new DomainException("Solo las ligas rotatorias se sortean con jugadores.");
         if (Status != CompetitionStatus.Draft) throw new DomainException("El sorteo ya se realizó.");
-        if (players.Count != PairCount)
-            throw new DomainException($"Se necesitan exactamente {PairCount} jugadores ({players.Count} seleccionados).");
+        var minimum = GroupCount * PairsPerGroup;
+        if (players.Count < minimum)
+            throw new DomainException($"Se necesitan al menos {minimum} jugadores ({players.Count} seleccionados).");
         if (players.Select(p => p.Id).Distinct().Count() != players.Count)
             throw new DomainException("Hay jugadores repetidos.");
 
@@ -176,9 +177,22 @@ public sealed class Competition
         randomizer.Shuffle(fw);
         var bk = players.Where(p => p.Position != PlayerPosition.Delantero).ToList();
         randomizer.Shuffle(bk);
+        // Cada grupo recibe PairsPerGroup jugadores y los sobrantes van al último grupo (el de menos nivel).
+        // Se reparte alternando delanteros y zagueros para que cada grupo quede equilibrado.
         var buckets = Enumerable.Range(0, GroupCount).Select(_ => new List<Player>()).ToList();
-        var i = 0;
-        foreach (var p in fw.Concat(bk)) buckets[i++ % GroupCount].Add(p);
+        var ordered = new List<Player>();
+        for (var k = 0; k < Math.Max(fw.Count, bk.Count); k++)
+        {
+            if (k < fw.Count) ordered.Add(fw[k]);
+            if (k < bk.Count) ordered.Add(bk[k]);
+        }
+        for (var g = 0; g < GroupCount; g++)
+        {
+            var take = g == GroupCount - 1 ? ordered.Count : PairsPerGroup;
+            buckets[g].AddRange(ordered.Take(take));
+            ordered.RemoveRange(0, Math.Min(take, ordered.Count));
+        }
+        PairCount = players.Count;
         BuildRotating(buckets, planner);
     }
 
@@ -247,6 +261,7 @@ public sealed class Competition
         var next = Create(new CompetitionSettings(
             NextName(previous.Name), CompetitionType.RotatingLeague, previous.PairCount, previous.GroupCount,
             previous.PairsPerGroup, previous.PointsPerWin, previous.PointsPerLoss, false, 0, previous.Rounds));
+        next.PairCount = rosters.Sum(r => r.Count);
         next.BuildRotating(rosters, planner);
         return next;
     }

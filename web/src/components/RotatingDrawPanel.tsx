@@ -43,17 +43,18 @@ export default function RotatingDrawPanel({ detail, players, onChanged, onPlayer
     <section className="card">
       <h3>Jugadores de la liga</h3>
       <p className="muted">
-        Elige exactamente {needed} jugadores ({summary.groupCount} grupo(s) de {summary.pairsPerGroup}).
+        Elige al menos {needed} jugadores ({summary.groupCount} grupo(s) de {summary.pairsPerGroup}); si hay más,
+        los sobrantes van al último grupo.
         Se reparten al azar entre los grupos y en cada una de las {summary.rounds} jornadas se forman parejas
         nuevas (delantero + zaguero), evitando repetir compañero.
       </p>
       <PlayerPicker players={players} selected={selected} onChange={setSelected}
         onSwap={p => void swap(p)} swappingIds={swapping} />
-      <p className={chosen.length === needed ? 'muted' : 'error'}>
-        Seleccionados: {chosen.length}/{needed} · {forwards} delanteros · {backs} zagueros
+      <p className={chosen.length >= needed ? 'muted' : 'error'}>
+        Seleccionados: {chosen.length} (mínimo {needed}) · {forwards} delanteros · {backs} zagueros
       </p>
       {error && <p className="error">{error}</p>}
-      <button disabled={busy || chosen.length !== needed} onClick={() => void draw()}>
+      <button disabled={busy || chosen.length < needed} onClick={() => void draw()}>
         Sortear grupos y jornadas
       </button>
     </section>

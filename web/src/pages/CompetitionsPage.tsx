@@ -25,7 +25,7 @@ export default function CompetitionsPage() {
               <span className={`badge ${c.status}`}>{statusLabel[c.status]}</span>
             </div>
             <p className="muted">
-              {typeLabel[c.type]} · {c.type === 'RotatingLeague' ? `${c.pairCount} jugadores` : `${c.registeredPairs}/${c.pairCount} parejas`} · {c.groupCount} grupo(s)
+              {typeLabel[c.type]} · {c.type === 'RotatingLeague' ? c.status === 'Draft' ? `mín. ${c.pairCount} jugadores` : `${c.pairCount} jugadores` : `${c.registeredPairs}/${c.pairCount} parejas`} · {c.groupCount} grupo(s)
             </p>
           </Link>
         ))}

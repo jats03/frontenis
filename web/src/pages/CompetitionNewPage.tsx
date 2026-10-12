@@ -41,7 +41,7 @@ export default function CompetitionNewPage() {
       const created = await api.competitions.create({
         name, type, pairCount: rotating ? groupCount * pairsPerGroup : pairCount, groupCount,
         rounds: rotating ? rounds : 0,
-        pairsPerGroup: groupCount * pairsPerGroup === pairCount ? pairsPerGroup : 0,
+        pairsPerGroup: rotating || groupCount * pairsPerGroup === pairCount ? pairsPerGroup : 0,
         pointsPerWin, pointsPerLoss, doubleRound: rotating ? false : doubleRound,
         qualifiersPerGroup: type === 'Tournament' ? qualifiers : 0,
       })
@@ -69,8 +69,8 @@ export default function CompetitionNewPage() {
         <>
           <div className="cols">
             <label>Nº de grupos{num(groupCount, setGroupCount, 1)}</label>
-            <label>Jugadores por grupo (4, 8, 12…)
-              <input type="number" min={4} step={4} value={Number.isNaN(pairsPerGroup) ? '' : pairsPerGroup}
+            <label>Jugadores por grupo (mínimo 4)
+              <input type="number" min={4} value={Number.isNaN(pairsPerGroup) ? '' : pairsPerGroup}
                 onChange={e => setPairsPerGroup(e.target.valueAsNumber)} />
             </label>
             <label>Jornadas (0 = automático)
@@ -79,7 +79,7 @@ export default function CompetitionNewPage() {
             </label>
           </div>
           <p className="muted">
-            {groupCount} grupo(s) × {pairsPerGroup} jugadores = {groupCount * pairsPerGroup} jugadores.
+            {groupCount} grupo(s) × {pairsPerGroup} jugadores = {groupCount * pairsPerGroup} jugadores como mínimo; si hay más, los sobrantes van al último grupo (si un grupo no es múltiplo de 4, en cada jornada descansan por turnos los que sobran).
             En cada jornada las parejas se sortean de nuevo (un delantero y un zaguero) y la clasificación es individual.
             Al terminar, el último de cada grupo baja y el primero sube.
           </p>

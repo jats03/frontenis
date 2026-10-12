@@ -103,7 +103,7 @@ export default function CompetitionDetailPage() {
       {summary.status === 'Draft' && isAdmin && !isRotating && <RegistrationPanel detail={detail} players={players} onChanged={load}
         onPlayersChanged={async () => { setPlayers(await api.players.list()); await load() }} />}
       {summary.status === 'Draft' && !isAdmin && (isRotating
-        ? <p className="muted">Pendiente de sorteo ({summary.pairCount} jugadores).</p>
+        ? <p className="muted">Pendiente de sorteo (mínimo {summary.pairCount} jugadores).</p>
         : <p className="muted">Inscripción abierta: {summary.registeredPairs}/{summary.pairCount} parejas.</p>)}
 
       {summary.status !== 'Draft' && (

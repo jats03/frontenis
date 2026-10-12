@@ -53,9 +53,9 @@ public class RotatingLeagueTests
     }
 
     [Theory]
+    [InlineData(2)]
     [InlineData(3)]
-    [InlineData(6)]
-    public void Group_size_must_be_multiple_of_four(int size)
+    public void Group_size_must_be_at_least_four(int size)
     {
         Assert.Throws<DomainException>(() => NewLeague(1, size));
     }
@@ -73,10 +73,32 @@ public class RotatingLeagueTests
     }
 
     [Fact]
-    public void Draw_rejects_wrong_number_of_players()
+    public void Draw_rejects_too_few_players()
     {
         var c = NewLeague(2, 8);
         Assert.Throws<DomainException>(() => c.DrawRotating(Players(12), Rnd(), new RotationPlanner(Rnd())));
+    }
+
+    [Fact]
+    public void Extra_players_go_to_the_last_group_and_rest_in_turns()
+    {
+        var c = NewLeague(4, 4);
+        c.DrawRotating(Players(18), Rnd(), new RotationPlanner(Rnd()));
+
+        var sizes = c.Groups.Select(g => c.GroupPlayers(g).Count).ToList();
+        Assert.Equal(4, sizes[0]);
+        Assert.Equal(4, sizes[2]);
+        Assert.Equal(6, sizes[3]);
+        Assert.Equal(18, c.PairCount);
+
+        // En el grupo de 6, cada jornada juegan 4 y descansan 2; nadie descansa dos jornadas seguidas mientras otros no han descansado.
+        var last = c.Groups.Last();
+        var perRound = c.Matches.Where(m => m.Group == last).GroupBy(m => m.Round).ToList();
+        Assert.All(perRound, r => Assert.Equal(1, r.Count()));
+        var played = c.Matches.Where(m => m.Group == last)
+            .SelectMany(m => new[] { m.HomeEntry!.Pair.Player1Id, m.HomeEntry.Pair.Player2Id, m.AwayEntry!.Pair.Player1Id, m.AwayEntry.Pair.Player2Id })
+            .GroupBy(x => x).Select(g => g.Count()).ToList();
+        Assert.Equal(6, played.Count);   // todos juegan alguna jornada
     }
 
     [Fact]

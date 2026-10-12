@@ -22,12 +22,14 @@ public sealed class RotationPlanner : IRotationPlanner
     public IReadOnlyList<PlannedRound> Plan(IReadOnlyList<Player> players, int rounds)
     {
         var n = players.Count;
-        if (n < 4 || n % 4 != 0)
-            throw new DomainException("Cada grupo necesita un número de jugadores múltiplo de 4 (4, 8, 12…).");
+        if (n < 4)
+            throw new DomainException("Cada grupo necesita al menos 4 jugadores.");
         if (rounds < 1) throw new DomainException("Debe haber al menos 1 jornada.");
 
-        var forwards = Enumerable.Range(0, n).Where(i => players[i].Position == PlayerPosition.Delantero).ToList();
-        var backs = Enumerable.Range(0, n).Where(i => players[i].Position == PlayerPosition.Zaguero).ToList();
+        // Si el grupo no es múltiplo de 4, en cada jornada descansan (n % 4) jugadores, por turnos.
+        var restCount = n % 4;
+        var rests = new int[n];
+        var isForward = Enumerable.Range(0, n).Select(i => players[i].Position == PlayerPosition.Delantero).ToArray();
 
         var partners = new int[n, n];    // veces que i y j han sido compañeros
         var opponents = new int[n, n];   // veces que i y j se han enfrentado
@@ -36,15 +38,25 @@ public sealed class RotationPlanner : IRotationPlanner
         for (var round = 1; round <= rounds; round++)
         {
             List<(int A, int B)>? best = null;
+            List<int> bestResting = new();
             var bestCost = int.MaxValue;
 
             for (var attempt = 0; attempt < Attempts && bestCost > 0; attempt++)
             {
+                var order = Enumerable.Range(0, n).ToList();
+                _randomizer.Shuffle(order);
+                var resting = order.OrderBy(i => rests[i]).Take(restCount).ToList(); // OrderBy es estable: desempata el azar
+                var playing = order.Where(i => !resting.Contains(i)).ToList();
+                var forwards = playing.Where(i => isForward[i]).ToList();
+                var backs = playing.Where(i => !isForward[i]).ToList();
+
                 var pairs = BuildPairs(forwards, backs, partners, round);
                 _randomizer.Shuffle(pairs); // pairs[0] vs pairs[1], pairs[2] vs pairs[3]…
-                var cost = Cost(pairs, partners, opponents);
-                if (cost < bestCost) { bestCost = cost; best = pairs; }
+                // Penaliza las parejas del mismo puesto (si no hay otro remedio, se aceptan).
+                var cost = Cost(pairs, partners, opponents) + Math.Abs(forwards.Count - backs.Count) * 500;
+                if (cost < bestCost) { bestCost = cost; best = pairs; bestResting = resting; }
             }
+            foreach (var r in bestResting) rests[r]++;
 
             var matches = new List<PlannedMatch>();
             for (var m = 0; m + 1 < best!.Count; m += 2)
