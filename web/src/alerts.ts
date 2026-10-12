@@ -9,6 +9,17 @@ export function notify(title: string, icon: 'success' | 'info' = 'success') {
   void toast.fire({ icon, title })
 }
 
+/** Pide un texto (p. ej. un nuevo nombre). Devuelve null si se cancela. */
+export async function promptText(title: string, value: string, label: string): Promise<string | null> {
+  const r = await Swal.fire({
+    title, input: 'text', inputValue: value, inputLabel: label, showCancelButton: true,
+    confirmButtonText: 'Guardar', cancelButtonText: 'Cancelar', confirmButtonColor: '#0f766e',
+    inputAttributes: { maxlength: '150' },
+    inputValidator: v => (v.trim() ? null : 'El nombre es obligatorio.'),
+  })
+  return r.isConfirmed ? String(r.value).trim() : null
+}
+
 /** Confirmación previa a cualquier eliminación. Devuelve true si el usuario acepta. */
 export async function confirmDelete(title: string, text = 'Esta acción no se puede deshacer.'): Promise<boolean> {
   const r = await Swal.fire({

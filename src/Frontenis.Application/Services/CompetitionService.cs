@@ -13,6 +13,7 @@ public interface ICompetitionService
     Task<CompetitionDetailDto> GetAsync(int id, CancellationToken ct = default);
     Task<CompetitionSummaryDto> CreateAsync(CreateCompetitionRequest request, CancellationToken ct = default);
     Task DeleteAsync(int id, CancellationToken ct = default);
+    Task<CompetitionSummaryDto> RenameAsync(int id, RenameCompetitionRequest request, CancellationToken ct = default);
     Task<CompetitionDetailDto> DrawAsync(int id, CancellationToken ct = default);
     Task<CompetitionDetailDto> GeneratePlayoffsAsync(int id, CancellationToken ct = default);
     /// <summary>Liga rotatoria: reparte los jugadores en grupos y genera las jornadas con parejas cambiantes.</summary>
@@ -64,6 +65,14 @@ public sealed class CompetitionService : ICompetitionService
             r.Name, r.Type, r.PairCount, r.GroupCount, r.PairsPerGroup,
             r.PointsPerWin, r.PointsPerLoss, r.DoubleRound, r.QualifiersPerGroup, r.Rounds));
         await _repository.AddAsync(competition, ct);
+        await _uow.SaveChangesAsync(ct);
+        return competition.ToSummary();
+    }
+
+    public async Task<CompetitionSummaryDto> RenameAsync(int id, RenameCompetitionRequest request, CancellationToken ct = default)
+    {
+        var competition = await LoadAsync(id, ct);
+        competition.Rename(request.Name);
         await _uow.SaveChangesAsync(ct);
         return competition.ToSummary();
     }

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { confirmDelete, notify } from '../alerts'
+import { confirmDelete, notify, promptText } from '../alerts'
 import { api } from '../api/client'
 import type { CompetitionDetail, GroupStandings, Player } from '../api/types'
 import { useAuth } from '../auth/AuthContext'
@@ -60,6 +60,13 @@ export default function CompetitionDetailPage() {
     } catch (e) { setError(e instanceof Error ? e.message : 'Error') }
   }
 
+  async function rename() {
+    const name = await promptText('Editar nombre', summary.name, 'Nombre de la competición')
+    if (name === null || name === summary.name) return
+    try { await api.competitions.rename(id, name); notify('Nombre actualizado'); await load() }
+    catch (e) { setError(e instanceof Error ? e.message : 'Error') }
+  }
+
   async function remove() {
     if (!(await confirmDelete('¿Eliminar esta competición?', 'Se borrarán también sus grupos, partidos y resultados.'))) return
     try { await api.competitions.remove(id); notify('Competición eliminada'); navigate('/') }
@@ -82,7 +89,12 @@ export default function CompetitionDetailPage() {
             {summary.pointsPerLoss > 0 && ` · ${summary.pointsPerLoss} por derrota`}
           </p>
         </div>
-        {isAdmin && <button className="secondary" onClick={() => void remove()}>Eliminar</button>}
+        {isAdmin && (
+          <div className="row">
+            <button className="secondary" onClick={() => void rename()}>Editar nombre</button>
+            <button className="secondary" onClick={() => void remove()}>Eliminar</button>
+          </div>
+        )}
       </div>
       {error && <p className="error">{error}</p>}
 

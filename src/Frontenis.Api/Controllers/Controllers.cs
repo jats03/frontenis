@@ -85,6 +85,10 @@ public sealed class CompetitionsController : ControllerBase
     public async Task<ActionResult<CompetitionSummaryDto>> Create(CreateCompetitionRequest request, CancellationToken ct) =>
         Ok(await _competitions.CreateAsync(request, ct));
 
+    [HttpPut("{id:int}/name"), Authorize(Roles = Roles.Admin)]
+    public async Task<ActionResult<CompetitionSummaryDto>> Rename(int id, RenameCompetitionRequest request, CancellationToken ct) =>
+        Ok(await _competitions.RenameAsync(id, request, ct));
+
     [HttpDelete("{id:int}"), Authorize(Roles = Roles.Admin)]
     public async Task<IActionResult> Delete(int id, CancellationToken ct)
     {

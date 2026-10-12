@@ -76,6 +76,7 @@ export const api = {
     get: (id: number) => request<CompetitionDetail>('GET', `/api/competitions/${id}`),
     standings: (id: number) => request<GroupStandings[]>('GET', `/api/competitions/${id}/standings`),
     create: (c: CreateCompetition) => request<CompetitionSummary>('POST', '/api/competitions', c),
+    rename: (id: number, name: string) => request<CompetitionSummary>('PUT', `/api/competitions/${id}/name`, { name }),
     remove: (id: number) => request<void>('DELETE', `/api/competitions/${id}`),
     registerRandom: (id: number, playerIds: number[]) =>
       request<PairDto[]>('POST', `/api/competitions/${id}/pairs/random`, { playerIds }),

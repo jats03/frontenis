@@ -120,6 +120,14 @@ public sealed class Competition
 
     public bool IsRotating => Type == CompetitionType.RotatingLeague;
 
+    public void Rename(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) throw new DomainException("El nombre es obligatorio.");
+        var trimmed = name.Trim();
+        if (trimmed.Length > 150) throw new DomainException("El nombre no puede superar los 150 caracteres.");
+        Name = trimmed;
+    }
+
     public CompetitionEntry AddPair(Pair pair)
     {
         if (IsRotating) throw new DomainException("En una liga rotatoria se inscriben jugadores sueltos, no parejas.");
