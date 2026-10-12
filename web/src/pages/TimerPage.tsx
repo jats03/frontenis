@@ -76,7 +76,7 @@ export default function TimerPage() {
               onChange={e => changeMinutes(Number(e.target.value))} />
           </label>
         </div>
-        <div className="row center">
+        <div className="row center presets">
           {[5, 10, 15, 20].map(m => (
             <button key={m} className="secondary" disabled={status === 'running' || status === 'paused'}
               onClick={() => changeMinutes(m)}>{m} min</button>
