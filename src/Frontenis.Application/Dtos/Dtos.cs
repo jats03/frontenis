@@ -23,12 +23,14 @@ public sealed record CreateCompetitionRequest(
     int PointsPerWin,
     int PointsPerLoss,
     bool DoubleRound,
-    int QualifiersPerGroup);
+    int QualifiersPerGroup,
+    int Rounds = 0);
 
 public sealed record CompetitionSummaryDto(
     int Id, string Name, CompetitionType Type, CompetitionStatus Status,
     int PairCount, int GroupCount, int PairsPerGroup, int PointsPerWin, int PointsPerLoss,
-    bool DoubleRound, int QualifiersPerGroup, int RegisteredPairs, DateTime CreatedAtUtc);
+    bool DoubleRound, int QualifiersPerGroup, int RegisteredPairs, DateTime CreatedAtUtc,
+    int Rounds = 0, int? NextCompetitionId = null);
 
 public sealed record GroupDto(int Id, string Name);
 
@@ -47,5 +49,5 @@ public sealed record SetResultRequest(int HomeScore, int AwayScore);
 
 public sealed record StandingDto(
     int Rank, int EntryId, string PairName, int Played, int Won, int Lost,
-    int PointsFor, int PointsAgainst, int PointsDiff, int ClassificationPoints, bool Qualifies);
+    int PointsFor, int PointsAgainst, int PointsDiff, int ClassificationPoints, bool Qualifies, int Movement = 0);
 public sealed record GroupStandingsDto(int GroupId, string GroupName, IReadOnlyList<StandingDto> Rows);

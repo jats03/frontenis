@@ -73,7 +73,12 @@ public sealed class CompetitionRepository : ICompetitionRepository
             await _db.Matches.Where(m => m.CompetitionId == id)
                 .ExecuteUpdateAsync(s => s.SetProperty(m => m.NextMatchId, (int?)null), token);
             await _db.Matches.Where(m => m.CompetitionId == id).ExecuteDeleteAsync(token);
+            var pairIds = await _db.Entries.Where(e => e.CompetitionId == id).Select(e => e.PairId).Distinct().ToListAsync(token);
             await _db.Entries.Where(e => e.CompetitionId == id).ExecuteDeleteAsync(token);
+            // Las parejas de una liga rotatoria solo existen para ella: si no quedan inscripciones, se eliminan
+            // (si no, bloquearían el borrado de los jugadores).
+            await _db.Set<Pair>().Where(p => pairIds.Contains(p.Id) && !_db.Entries.Any(e => e.PairId == p.Id))
+                .ExecuteDeleteAsync(token);
             await _db.Groups.Where(g => g.CompetitionId == id).ExecuteDeleteAsync(token);
             var deleted = await _db.Competitions.Where(c => c.Id == id).ExecuteDeleteAsync(token);
             if (deleted == 0) throw new NotFoundException("Competición no encontrada.");

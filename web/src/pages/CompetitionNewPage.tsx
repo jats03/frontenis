@@ -1,5 +1,6 @@
 import { useMemo, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { notify } from '../alerts'
 import { api } from '../api/client'
 import type { CompetitionType } from '../api/types'
 import { useAuth } from '../auth/AuthContext'
@@ -16,6 +17,7 @@ export default function CompetitionNewPage() {
   const [pointsPerLoss, setPointsPerLoss] = useState(0)
   const [doubleRound, setDoubleRound] = useState(false)
   const [qualifiers, setQualifiers] = useState(2)
+  const [rounds, setRounds] = useState(0) // 0 = automático (la mitad de jugadores por grupo)
   const [error, setError] = useState<string | null>(null)
 
   // Mantiene coherentes los tres parámetros: parejas = grupos × parejas por grupo.
@@ -35,12 +37,15 @@ export default function CompetitionNewPage() {
     e.preventDefault()
     setError(null)
     try {
+      const rotating = type === 'RotatingLeague'
       const created = await api.competitions.create({
-        name, type, pairCount, groupCount,
+        name, type, pairCount: rotating ? groupCount * pairsPerGroup : pairCount, groupCount,
+        rounds: rotating ? rounds : 0,
         pairsPerGroup: groupCount * pairsPerGroup === pairCount ? pairsPerGroup : 0,
-        pointsPerWin, pointsPerLoss, doubleRound,
+        pointsPerWin, pointsPerLoss, doubleRound: rotating ? false : doubleRound,
         qualifiersPerGroup: type === 'Tournament' ? qualifiers : 0,
       })
+      notify(`«${created.name}» creada`)
       navigate(`/competiciones/${created.id}`)
     } catch (err) { setError(err instanceof Error ? err.message : 'Error') }
   }
@@ -57,23 +62,47 @@ export default function CompetitionNewPage() {
         <select value={type} onChange={e => setType(e.target.value as CompetitionType)}>
           <option value="League">Liga (solo clasificación)</option>
           <option value="Tournament">Torneo (grupos + fase final)</option>
+          <option value="RotatingLeague">Liga rotatoria (parejas distintas cada jornada)</option>
         </select>
       </label>
-      <div className="cols">
-        <label>Nº de parejas{num(pairCount, changePairCount, 2)}</label>
-        <label>Nº de grupos{num(groupCount, changeGroups, 1)}</label>
-        <label>Parejas por grupo{num(pairsPerGroup, changePerGroup, 2)}</label>
-      </div>
-      <p className="muted">{hint}</p>
+      {type === 'RotatingLeague' ? (
+        <>
+          <div className="cols">
+            <label>Nº de grupos{num(groupCount, setGroupCount, 1)}</label>
+            <label>Jugadores por grupo (4, 8, 12…)
+              <input type="number" min={4} step={4} value={Number.isNaN(pairsPerGroup) ? '' : pairsPerGroup}
+                onChange={e => setPairsPerGroup(e.target.valueAsNumber)} />
+            </label>
+            <label>Jornadas (0 = automático)
+              <input type="number" min={0} value={Number.isNaN(rounds) ? '' : rounds}
+                onChange={e => setRounds(e.target.valueAsNumber)} />
+            </label>
+          </div>
+          <p className="muted">
+            {groupCount} grupo(s) × {pairsPerGroup} jugadores = {groupCount * pairsPerGroup} jugadores.
+            En cada jornada las parejas se sortean de nuevo (un delantero y un zaguero) y la clasificación es individual.
+            Al terminar, el último de cada grupo baja y el primero sube.
+          </p>
+        </>
+      ) : (
+        <>
+          <div className="cols">
+            <label>Nº de parejas{num(pairCount, changePairCount, 2)}</label>
+            <label>Nº de grupos{num(groupCount, changeGroups, 1)}</label>
+            <label>Parejas por grupo{num(pairsPerGroup, changePerGroup, 2)}</label>
+          </div>
+          <p className="muted">{hint}</p>
+        </>
+      )}
       <div className="cols">
         <label>Puntos por victoria{num(pointsPerWin, setPointsPerWin, 1)}</label>
         <label>Puntos por derrota{num(pointsPerLoss, setPointsPerLoss, 0)}</label>
         {type === 'Tournament' && <label>Clasificados por grupo{num(qualifiers, setQualifiers, 1)}</label>}
       </div>
-      <label className="check">
+      {type !== 'RotatingLeague' && <label className="check">
         <input type="checkbox" checked={doubleRound} onChange={e => setDoubleRound(e.target.checked)} />
         Ida y vuelta
-      </label>
+      </label>}
       {error && <p className="error">{error}</p>}
       <button type="submit">Crear</button>
     </form>

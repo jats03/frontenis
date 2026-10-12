@@ -41,6 +41,8 @@ public static class DependencyInjection
         services.AddSingleton<IScheduleGenerator, RoundRobinScheduleGenerator>();
         services.AddSingleton<IStandingsCalculator, StandingsCalculator>();
         services.AddSingleton<IBracketGenerator, SingleEliminationBracketGenerator>();
+        services.AddSingleton<IRotationPlanner, RotationPlanner>();
+        services.AddSingleton<IIndividualStandingsCalculator, IndividualStandingsCalculator>();
 
         // Casos de uso
         services.AddScoped<IAuthService, AuthService>();
@@ -57,6 +59,12 @@ public static class DependencyInjection
         using var scope = provider.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<FrontenisDbContext>();
         await db.Database.EnsureCreatedAsync();
+
+        // EnsureCreated no modifica tablas existentes: añadimos de forma idempotente las columnas de la liga rotatoria.
+        await db.Database.ExecuteSqlRawAsync(
+            "IF COL_LENGTH('Competitions','Rounds') IS NULL ALTER TABLE Competitions ADD Rounds INT NOT NULL CONSTRAINT DF_Competitions_Rounds DEFAULT 0;");
+        await db.Database.ExecuteSqlRawAsync(
+            "IF COL_LENGTH('Competitions','NextCompetitionId') IS NULL ALTER TABLE Competitions ADD NextCompetitionId INT NULL;");
 
         var username = config["Admin:Username"] ?? "admin";
         if (await db.Users.AnyAsync(u => u.Username == username)) return;

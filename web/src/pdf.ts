@@ -12,7 +12,7 @@ async function loadLogo(): Promise<string | null> {
   } catch { return null }
 }
 
-export async function exportStandingsPdf(competitionName: string, standings: GroupStandings[]) {
+export async function exportStandingsPdf(competitionName: string, standings: GroupStandings[], individual = false) {
   const [{ jsPDF }, { default: autoTable }, logo] = await Promise.all([
     import('jspdf'), import('jspdf-autotable'), loadLogo(),
   ])
@@ -33,9 +33,9 @@ export async function exportStandingsPdf(competitionName: string, standings: Gro
     doc.text(g.groupName, 14, y)
     autoTable(doc, {
       startY: y + 3,
-      head: [['#', 'Pareja', 'PJ', 'G', 'P', 'TF', 'TC', 'Dif', 'Pts']],
+      head: [['#', individual ? 'Jugador' : 'Pareja', 'PJ', 'G', 'P', 'TF', 'TC', 'Dif', 'Pts']],
       body: g.rows.map(r => [
-        r.rank, r.pairName, r.played, r.won, r.lost, r.pointsFor, r.pointsAgainst,
+        r.rank, r.pairName + (r.movement > 0 ? '  (sube)' : r.movement < 0 ? '  (baja)' : ''), r.played, r.won, r.lost, r.pointsFor, r.pointsAgainst,
         r.pointsDiff > 0 ? `+${r.pointsDiff}` : r.pointsDiff, r.classificationPoints,
       ]),
       headStyles: { fillColor: [15, 118, 110] },

@@ -12,7 +12,7 @@ internal static class Mapper
     public static CompetitionSummaryDto ToSummary(this Competition c) => new(
         c.Id, c.Name, c.Type, c.Status, c.PairCount, c.GroupCount, c.PairsPerGroup,
         c.PointsPerWin, c.PointsPerLoss, c.DoubleRound, c.QualifiersPerGroup,
-        c.Entries.Count, c.CreatedAtUtc);
+        c.Entries.Count, c.CreatedAtUtc, c.Rounds, c.NextCompetitionId);
 
     public static MatchDto ToDto(this Match m) => new(
         m.Id, m.Phase, m.GroupId, m.Group?.Name, m.Round, m.Order,

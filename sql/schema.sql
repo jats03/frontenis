@@ -18,7 +18,7 @@ CREATE TABLE Pairs (
 CREATE TABLE Competitions (
     Id INT IDENTITY PRIMARY KEY,
     Name NVARCHAR(150) NOT NULL,
-    Type TINYINT NOT NULL,               -- 1 = Liga, 2 = Torneo
+    Type TINYINT NOT NULL,               -- 1 = Liga, 2 = Torneo, 3 = Liga rotatoria
     Status TINYINT NOT NULL,             -- 1 Borrador, 2 Grupos, 3 Fase final, 4 Finalizada
     PairCount INT NOT NULL,
     GroupCount INT NOT NULL,
@@ -27,6 +27,8 @@ CREATE TABLE Competitions (
     PointsPerLoss INT NOT NULL,
     DoubleRound BIT NOT NULL,
     QualifiersPerGroup INT NOT NULL,
+    Rounds INT NOT NULL DEFAULT 0,       -- solo liga rotatoria
+    NextCompetitionId INT NULL,          -- liga siguiente (ascensos/descensos)
     CreatedAtUtc DATETIME2 NOT NULL
 );
 CREATE TABLE Groups (

@@ -68,3 +68,24 @@ public interface IBracketGenerator
 {
     BracketPlan Generate(int participantCount);
 }
+
+// ---------- Liga con rotación de parejas ----------
+public sealed record PlannedMatch((Player First, Player Second) Home, (Player First, Player Second) Away);
+public sealed record PlannedRound(int Number, IReadOnlyList<PlannedMatch> Matches);
+
+/// <summary>Calcula, para un grupo de jugadores, las parejas y enfrentamientos de cada jornada.</summary>
+public interface IRotationPlanner
+{
+    IReadOnlyList<PlannedRound> Plan(IReadOnlyList<Player> groupPlayers, int rounds);
+}
+
+/// <summary>Resultado de un partido por equipos: cada lado son los ids de sus jugadores.</summary>
+public sealed record TeamOutcome(
+    IReadOnlyList<int> HomePlayerIds, IReadOnlyList<int> AwayPlayerIds, int HomeScore, int AwayScore);
+
+/// <summary>Clasificación individual: en <see cref="StandingRow.EntryId"/> viaja el id del jugador.</summary>
+public interface IIndividualStandingsCalculator
+{
+    IReadOnlyList<StandingRow> Calculate(
+        IReadOnlyList<int> playerIds, IEnumerable<TeamOutcome> outcomes, int pointsPerWin, int pointsPerLoss);
+}

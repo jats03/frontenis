@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { confirmDelete, notify } from '../alerts'
 import { api } from '../api/client'
 import type { CompetitionDetail, GroupStandings, Player } from '../api/types'
 import { useAuth } from '../auth/AuthContext'
 import Bracket from '../components/Bracket'
 import MatchCard from '../components/MatchCard'
 import RegistrationPanel from '../components/RegistrationPanel'
+import RotatingDrawPanel from '../components/RotatingDrawPanel'
 import StandingsTable from '../components/StandingsTable'
 import { statusLabel, typeLabel } from '../labels'
 import { exportStandingsPdf } from '../pdf'
@@ -39,26 +41,35 @@ export default function CompetitionDetailPage() {
 
   const { summary } = detail
   const isTournament = summary.type === 'Tournament'
+  const isRotating = summary.type === 'RotatingLeague'
   const groupMatches = detail.matches.filter(m => m.phase === 'Group')
   const hasPlayoffs = detail.matches.some(m => m.phase === 'Playoff')
   const canGeneratePlayoffs = isAdmin && isTournament && summary.status === 'GroupStage' && !hasPlayoffs &&
     groupMatches.length > 0 && groupMatches.every(m => m.isPlayed)
 
   async function generatePlayoffs() {
-    try { await api.competitions.playoffs(id); await load(); setTab('playoffs') }
+    try { await api.competitions.playoffs(id); notify('Fase final generada'); await load(); setTab('playoffs') }
     catch (e) { setError(e instanceof Error ? e.message : 'Error') }
   }
 
+  async function createNext() {
+    try {
+      const next = await api.competitions.nextLeague(id)
+      notify(`Liga «${next.name}» creada`)
+      navigate(`/competiciones/${next.id}`)
+    } catch (e) { setError(e instanceof Error ? e.message : 'Error') }
+  }
+
   async function remove() {
-    if (!confirm('¿Eliminar esta competición y todos sus datos?')) return
-    try { await api.competitions.remove(id); navigate('/') }
+    if (!(await confirmDelete('¿Eliminar esta competición?', 'Se borrarán también sus grupos, partidos y resultados.'))) return
+    try { await api.competitions.remove(id); notify('Competición eliminada'); navigate('/') }
     catch (e) { setError(e instanceof Error ? e.message : 'Error') }
   }
 
   const tabs: [Tab, string][] = [
     ['standings', 'Clasificación'], ['matches', 'Partidos'],
     ...(isTournament ? [['playoffs', 'Fase final'] as [Tab, string]] : []),
-    ['pairs', 'Parejas'],
+    ...(isRotating ? [] : [['pairs', 'Parejas'] as [Tab, string]]),
   ]
 
   return (
@@ -75,9 +86,13 @@ export default function CompetitionDetailPage() {
       </div>
       {error && <p className="error">{error}</p>}
 
-      {summary.status === 'Draft' && isAdmin && <RegistrationPanel detail={detail} players={players} onChanged={load}
+      {summary.status === 'Draft' && isAdmin && isRotating && <RotatingDrawPanel detail={detail} players={players}
+        onChanged={load} onPlayersChanged={async () => { setPlayers(await api.players.list()); await load() }} />}
+      {summary.status === 'Draft' && isAdmin && !isRotating && <RegistrationPanel detail={detail} players={players} onChanged={load}
         onPlayersChanged={async () => { setPlayers(await api.players.list()); await load() }} />}
-      {summary.status === 'Draft' && !isAdmin && <p className="muted">Inscripción abierta: {summary.registeredPairs}/{summary.pairCount} parejas.</p>}
+      {summary.status === 'Draft' && !isAdmin && (isRotating
+        ? <p className="muted">Pendiente de sorteo ({summary.pairCount} jugadores).</p>
+        : <p className="muted">Inscripción abierta: {summary.registeredPairs}/{summary.pairCount} parejas.</p>)}
 
       {summary.status !== 'Draft' && (
         <>
@@ -95,16 +110,27 @@ export default function CompetitionDetailPage() {
             </div>
           )}
 
+          {isRotating && summary.status === 'Finished' && (
+            <div className="card row between">
+              <span>
+                Liga terminada: el primero de cada grupo sube (▲) y el último baja (▼).
+              </span>
+              {summary.nextCompetitionId
+                ? <Link className="button" to={`/competiciones/${summary.nextCompetitionId}`}>Ver la siguiente liga</Link>
+                : isAdmin && <button onClick={() => void createNext()}>Crear la siguiente liga</button>}
+            </div>
+          )}
+
           {tab === 'standings' && (
             <>
               <div className="row">
                 <button className="secondary" disabled={standings.length === 0}
-                  onClick={() => void exportStandingsPdf(summary.name, standings)}>
+                  onClick={() => void exportStandingsPdf(summary.name, standings, isRotating)}>
                   Exportar clasificación a PDF
                 </button>
               </div>
               {standings.map(g => (
-                <StandingsTable key={g.groupId} group={g} showQualifiers={isTournament} />
+                <StandingsTable key={g.groupId} group={g} showQualifiers={isTournament} individual={isRotating} />
               ))}
             </>
           )}
@@ -131,7 +157,7 @@ export default function CompetitionDetailPage() {
         </>
       )}
 
-      {(tab === 'pairs' || summary.status === 'Draft') && detail.pairs.length > 0 && (
+      {!isRotating && (tab === 'pairs' || summary.status === 'Draft') && detail.pairs.length > 0 && (
         <section className="card">
           <h3>Parejas inscritas</h3>
           <ul className="plain">

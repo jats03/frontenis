@@ -14,7 +14,8 @@ public sealed record CompetitionSettings(
     int PointsPerWin,
     int PointsPerLoss,
     bool DoubleRound,
-    int QualifiersPerGroup);    // solo torneos (fase final)
+    int QualifiersPerGroup,     // solo torneos (fase final)
+    int Rounds = 0);            // solo ligas rotatorias (0 = automático)
 
 /// <summary>Aggregate root: liga o torneo con sus grupos, parejas inscritas y partidos.</summary>
 public sealed class Competition
@@ -36,6 +37,8 @@ public sealed class Competition
     public int PointsPerLoss { get; private set; }
     public bool DoubleRound { get; private set; }
     public int QualifiersPerGroup { get; private set; }
+    public int Rounds { get; private set; }
+    public int? NextCompetitionId { get; private set; }
     public DateTime CreatedAtUtc { get; private set; }
 
     public IReadOnlyCollection<Group> Groups => _groups;
@@ -45,6 +48,7 @@ public sealed class Competition
     public static Competition Create(CompetitionSettings s)
     {
         if (string.IsNullOrWhiteSpace(s.Name)) throw new DomainException("El nombre es obligatorio.");
+        if (s.Type == CompetitionType.RotatingLeague) return CreateRotating(s);
         if (s.PairCount < 2) throw new DomainException("Se necesitan al menos 2 parejas.");
         if (s.GroupCount < 1) throw new DomainException("Debe haber al menos 1 grupo.");
         if (s.PairCount / s.GroupCount < 2)
@@ -84,8 +88,41 @@ public sealed class Competition
         };
     }
 
+    private static Competition CreateRotating(CompetitionSettings s)
+    {
+        if (s.GroupCount < 1) throw new DomainException("Debe haber al menos 1 grupo.");
+        var perGroup = s.PairsPerGroup; // jugadores por grupo
+        if (perGroup < 4 || perGroup % 4 != 0)
+            throw new DomainException("Cada grupo necesita un número de jugadores múltiplo de 4 (4, 8, 12…).");
+        if (s.PointsPerWin < 1) throw new DomainException("Una victoria debe valer al menos 1 punto.");
+        if (s.PointsPerLoss < 0 || s.PointsPerLoss >= s.PointsPerWin)
+            throw new DomainException("Los puntos por derrota deben ser >= 0 y menores que los de victoria.");
+        var rounds = s.Rounds > 0 ? s.Rounds : perGroup / 2;
+        if (rounds > perGroup - 1)
+            throw new DomainException($"Con {perGroup} jugadores por grupo el máximo es {perGroup - 1} jornadas.");
+
+        return new Competition
+        {
+            Name = s.Name.Trim(),
+            Type = CompetitionType.RotatingLeague,
+            Status = CompetitionStatus.Draft,
+            PairCount = s.GroupCount * perGroup,
+            GroupCount = s.GroupCount,
+            PairsPerGroup = perGroup,
+            PointsPerWin = s.PointsPerWin,
+            PointsPerLoss = s.PointsPerLoss,
+            DoubleRound = false,
+            QualifiersPerGroup = 0,
+            Rounds = rounds,
+            CreatedAtUtc = DateTime.UtcNow
+        };
+    }
+
+    public bool IsRotating => Type == CompetitionType.RotatingLeague;
+
     public CompetitionEntry AddPair(Pair pair)
     {
+        if (IsRotating) throw new DomainException("En una liga rotatoria se inscriben jugadores sueltos, no parejas.");
         if (Status != CompetitionStatus.Draft) throw new DomainException("Ya no se pueden inscribir parejas.");
         if (_entries.Count >= PairCount) throw new DomainException("La competición ya tiene todas sus parejas.");
         var clash = _entries.Any(e => e.Pair.Contains(pair.Player1Id) || e.Pair.Contains(pair.Player2Id));
@@ -98,6 +135,7 @@ public sealed class Competition
     /// <summary>Sortea los grupos y genera el calendario de la fase de grupos.</summary>
     public void Draw(IGroupDistributor distributor, IScheduleGenerator scheduler)
     {
+        if (IsRotating) throw new DomainException("Una liga rotatoria se sortea con jugadores sueltos.");
         if (Status != CompetitionStatus.Draft) throw new DomainException("El sorteo ya se realizó.");
         if (_entries.Count != PairCount)
             throw new DomainException($"Faltan parejas por inscribir ({_entries.Count}/{PairCount}).");
@@ -114,6 +152,101 @@ public sealed class Competition
                 _matches.Add(Match.ForGroup(group, m.Round, ++order, m.Home, m.Away));
         }
         Status = CompetitionStatus.GroupStage;
+    }
+
+    /// <summary>Reparte los jugadores al azar en grupos equilibrados por puesto y genera las jornadas.</summary>
+    public void DrawRotating(IReadOnlyList<Player> players, IRandomizer randomizer, IRotationPlanner planner)
+    {
+        if (!IsRotating) throw new DomainException("Solo las ligas rotatorias se sortean con jugadores.");
+        if (Status != CompetitionStatus.Draft) throw new DomainException("El sorteo ya se realizó.");
+        if (players.Count != PairCount)
+            throw new DomainException($"Se necesitan exactamente {PairCount} jugadores ({players.Count} seleccionados).");
+        if (players.Select(p => p.Id).Distinct().Count() != players.Count)
+            throw new DomainException("Hay jugadores repetidos.");
+
+        var fw = players.Where(p => p.Position == PlayerPosition.Delantero).ToList();
+        randomizer.Shuffle(fw);
+        var bk = players.Where(p => p.Position != PlayerPosition.Delantero).ToList();
+        randomizer.Shuffle(bk);
+        var buckets = Enumerable.Range(0, GroupCount).Select(_ => new List<Player>()).ToList();
+        var i = 0;
+        foreach (var p in fw.Concat(bk)) buckets[i++ % GroupCount].Add(p);
+        BuildRotating(buckets, planner);
+    }
+
+    /// <summary>Crea grupos con los jugadores dados (en orden de nivel) y genera sus jornadas.</summary>
+    public void BuildRotating(IReadOnlyList<IReadOnlyList<Player>> groups, IRotationPlanner planner)
+    {
+        if (!IsRotating) throw new DomainException("Solo las ligas rotatorias se construyen así.");
+        if (Status != CompetitionStatus.Draft) throw new DomainException("El sorteo ya se realizó.");
+        if (groups.Count != GroupCount) throw new DomainException("Número de grupos incorrecto.");
+
+        for (var g = 0; g < groups.Count; g++)
+        {
+            var group = new Group(GroupName(g));
+            _groups.Add(group);
+            var order = 0;
+            foreach (var round in planner.Plan(groups[g], Rounds))
+            {
+                foreach (var m in round.Matches)
+                {
+                    var home = new CompetitionEntry(new Pair(m.Home.First, m.Home.Second));
+                    var away = new CompetitionEntry(new Pair(m.Away.First, m.Away.Second));
+                    home.AssignToGroup(group);
+                    away.AssignToGroup(group);
+                    _entries.Add(home);
+                    _entries.Add(away);
+                    _matches.Add(Match.ForGroup(group, round.Number, ++order, home, away));
+                }
+            }
+        }
+        Status = CompetitionStatus.GroupStage;
+    }
+
+    /// <summary>Jugadores distintos que participan en un grupo de una liga rotatoria.</summary>
+    public IReadOnlyList<Player> GroupPlayers(Group group) =>
+        _entries
+            .Where(e => e.Group == group || (e.GroupId.HasValue && e.GroupId == group.Id))
+            .SelectMany(e => new[] { e.Pair.Player1, e.Pair.Player2 })
+            .GroupBy(p => p.Id)
+            .Select(g => g.First())
+            .ToList();
+
+    /// <summary>Resultados por equipos (ids de jugadores) de un grupo de una liga rotatoria.</summary>
+    public IReadOnlyList<TeamOutcome> GroupTeamOutcomes(Group group) =>
+        _matches
+            .Where(m => m.Phase == MatchPhase.Group && m.IsPlayed && (m.Group == group || m.GroupId == group.Id))
+            .Select(m => new TeamOutcome(
+                new[] { m.HomeEntry!.Pair.Player1Id, m.HomeEntry.Pair.Player2Id },
+                new[] { m.AwayEntry!.Pair.Player1Id, m.AwayEntry.Pair.Player2Id },
+                m.HomeScore!.Value, m.AwayScore!.Value))
+            .ToList();
+
+    public void SetNextCompetition(int id)
+    {
+        if (!IsRotating) throw new DomainException("Solo las ligas rotatorias tienen continuación.");
+        if (Status != CompetitionStatus.Finished) throw new DomainException("La liga aún no ha terminado.");
+        if (NextCompetitionId.HasValue) throw new DomainException("La siguiente liga ya fue creada.");
+        NextCompetitionId = id;
+    }
+
+    /// <summary>Crea la siguiente liga con los grupos ya regrupados (tras ascensos y descensos).</summary>
+    public static Competition CreateNext(Competition previous, IReadOnlyList<IReadOnlyList<Player>> rosters, IRotationPlanner planner)
+    {
+        if (!previous.IsRotating) throw new DomainException("Solo las ligas rotatorias tienen continuación.");
+        if (previous.Status != CompetitionStatus.Finished) throw new DomainException("La liga aún no ha terminado.");
+        if (previous.NextCompetitionId.HasValue) throw new DomainException("La siguiente liga ya fue creada.");
+        var next = Create(new CompetitionSettings(
+            NextName(previous.Name), CompetitionType.RotatingLeague, previous.PairCount, previous.GroupCount,
+            previous.PairsPerGroup, previous.PointsPerWin, previous.PointsPerLoss, false, 0, previous.Rounds));
+        next.BuildRotating(rosters, planner);
+        return next;
+    }
+
+    private static string NextName(string name)
+    {
+        var m = System.Text.RegularExpressions.Regex.Match(name, @"^(.*) \((\d+)\)$");
+        return m.Success ? $"{m.Groups[1].Value} ({int.Parse(m.Groups[2].Value) + 1})" : $"{name} (2)";
     }
 
     public bool GroupStageCompleted =>
@@ -215,7 +348,7 @@ public sealed class Competition
     private void RefreshStatus()
     {
         if (Status == CompetitionStatus.Draft) return;
-        if (Type == CompetitionType.League)
+        if (Type != CompetitionType.Tournament)
         {
             Status = _matches.All(m => m.IsPlayed) ? CompetitionStatus.Finished : CompetitionStatus.GroupStage;
             return;

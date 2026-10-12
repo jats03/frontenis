@@ -6,7 +6,9 @@ export const statusLabel: Record<CompetitionStatus, string> = {
   Playoffs: 'Fase final',
   Finished: 'Finalizada',
 }
-export const typeLabel: Record<CompetitionType, string> = { League: 'Liga', Tournament: 'Torneo' }
+export const typeLabel: Record<CompetitionType, string> = {
+  League: 'Liga', Tournament: 'Torneo', RotatingLeague: 'Liga rotatoria',
+}
 export const positionLabel: Record<Position, string> = { Delantero: 'Delantero', Zaguero: 'Zaguero' }
 
 export function roundName(round: number, totalRounds: number): string {

@@ -106,6 +106,16 @@ public sealed class CompetitionsController : ControllerBase
     public async Task<ActionResult<CompetitionDetailDto>> Draw(int id, CancellationToken ct) =>
         Ok(await _competitions.DrawAsync(id, ct));
 
+    /// <summary>Liga rotatoria: reparte los jugadores elegidos en grupos y genera las jornadas.</summary>
+    [HttpPost("{id:int}/draw-rotating"), Authorize(Roles = Roles.Admin)]
+    public async Task<ActionResult<CompetitionDetailDto>> DrawRotating(int id, PlayersSelection selection, CancellationToken ct) =>
+        Ok(await _competitions.DrawRotatingAsync(id, selection, ct));
+
+    /// <summary>Liga rotatoria terminada: crea la siguiente con ascensos y descensos.</summary>
+    [HttpPost("{id:int}/next-league"), Authorize(Roles = Roles.Admin)]
+    public async Task<ActionResult<CompetitionSummaryDto>> NextLeague(int id, CancellationToken ct) =>
+        Ok(await _competitions.CreateNextLeagueAsync(id, ct));
+
     [HttpPost("{id:int}/playoffs"), Authorize(Roles = Roles.Admin)]
     public async Task<ActionResult<CompetitionDetailDto>> Playoffs(int id, CancellationToken ct) =>
         Ok(await _competitions.GeneratePlayoffsAsync(id, ct));

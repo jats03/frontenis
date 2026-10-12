@@ -1,5 +1,5 @@
 export type Position = 'Delantero' | 'Zaguero'
-export type CompetitionType = 'League' | 'Tournament'
+export type CompetitionType = 'League' | 'Tournament' | 'RotatingLeague'
 export type CompetitionStatus = 'Draft' | 'GroupStage' | 'Playoffs' | 'Finished'
 export type MatchPhase = 'Group' | 'Playoff'
 
@@ -17,6 +17,7 @@ export interface CompetitionSummary {
   pairCount: number; groupCount: number; pairsPerGroup: number
   pointsPerWin: number; pointsPerLoss: number; doubleRound: boolean
   qualifiersPerGroup: number; registeredPairs: number; createdAtUtc: string
+  rounds: number; nextCompetitionId: number | null
 }
 export interface Group { id: number; name: string }
 export interface MatchDto {
@@ -34,10 +35,12 @@ export interface StandingRow {
   rank: number; entryId: number; pairName: string; played: number; won: number; lost: number
   pointsFor: number; pointsAgainst: number; pointsDiff: number; classificationPoints: number
   qualifies: boolean
+  /** 1 = sube de grupo, -1 = baja, 0 = se mantiene (solo ligas rotatorias terminadas). */
+  movement: number
 }
 export interface GroupStandings { groupId: number; groupName: string; rows: StandingRow[] }
 export interface CreateCompetition {
   name: string; type: CompetitionType; pairCount: number; groupCount: number
   pairsPerGroup: number; pointsPerWin: number; pointsPerLoss: number
-  doubleRound: boolean; qualifiersPerGroup: number
+  doubleRound: boolean; qualifiersPerGroup: number; rounds: number
 }

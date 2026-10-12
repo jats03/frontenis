@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { notify } from '../alerts'
 import { api } from '../api/client'
 import type { CompetitionDetail, Player } from '../api/types'
 import PlayerPicker from './PlayerPicker'
@@ -68,7 +69,7 @@ export default function RegistrationPanel({ detail, players, onChanged, onPlayer
             onSwap={p => void swap(p)} swappingIds={swapping} />
           <div className="row">
             <button disabled={busy || selected.size < 2}
-              onClick={() => void run(async () => { await api.competitions.registerRandom(summary.id, [...selected]); setSelected(new Set()) })}>
+              onClick={() => void run(async () => { const r = await api.competitions.registerRandom(summary.id, [...selected]); notify(`${r.length} pareja(s) creada(s)`); setSelected(new Set()) })}>
               Emparejar al azar e inscribir ({selected.size})
             </button>
           </div>
@@ -86,7 +87,7 @@ export default function RegistrationPanel({ detail, players, onChanged, onPlayer
             {swapButton(manual1)}
             {swapButton(manual2)}
             <button disabled={busy || !manual1 || !manual2}
-              onClick={() => void run(async () => { await api.competitions.registerManual(summary.id, Number(manual1), Number(manual2)); setManual1(''); setManual2('') })}>
+              onClick={() => void run(async () => { await api.competitions.registerManual(summary.id, Number(manual1), Number(manual2)); notify('Pareja creada'); setManual1(''); setManual2('') })}>
               Añadir
             </button>
           </div>
@@ -95,7 +96,7 @@ export default function RegistrationPanel({ detail, players, onChanged, onPlayer
 
       {missing === 0 && (
         <div className="row">
-          <button disabled={busy} onClick={() => void run(() => api.competitions.draw(summary.id))}>
+          <button disabled={busy} onClick={() => void run(async () => { await api.competitions.draw(summary.id); notify('Sorteo realizado y calendario creado') })}>
             🎲 Sortear grupos y generar calendario
           </button>
         </div>

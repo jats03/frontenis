@@ -15,6 +15,10 @@ public interface ICompetitionService
     Task DeleteAsync(int id, CancellationToken ct = default);
     Task<CompetitionDetailDto> DrawAsync(int id, CancellationToken ct = default);
     Task<CompetitionDetailDto> GeneratePlayoffsAsync(int id, CancellationToken ct = default);
+    /// <summary>Liga rotatoria: reparte los jugadores en grupos y genera las jornadas con parejas cambiantes.</summary>
+    Task<CompetitionDetailDto> DrawRotatingAsync(int id, PlayersSelection selection, CancellationToken ct = default);
+    /// <summary>Liga rotatoria terminada: crea la siguiente con ascensos y descensos aplicados.</summary>
+    Task<CompetitionSummaryDto> CreateNextLeagueAsync(int id, CancellationToken ct = default);
     Task<IReadOnlyList<GroupStandingsDto>> GetStandingsAsync(int id, CancellationToken ct = default);
 }
 
@@ -26,9 +30,15 @@ public sealed class CompetitionService : ICompetitionService
     private readonly IStandingsCalculator _calculator;
     private readonly IBracketGenerator _bracket;
     private readonly IUnitOfWork _uow;
+    private readonly IPlayerRepository _players;
+    private readonly IRandomizer _randomizer;
+    private readonly IRotationPlanner _planner;
+    private readonly IIndividualStandingsCalculator _individual;
 
     public CompetitionService(ICompetitionRepository repository, IGroupDistributor distributor,
-        IScheduleGenerator scheduler, IStandingsCalculator calculator, IBracketGenerator bracket, IUnitOfWork uow)
+        IScheduleGenerator scheduler, IStandingsCalculator calculator, IBracketGenerator bracket, IUnitOfWork uow,
+        IPlayerRepository players, IRandomizer randomizer, IRotationPlanner planner,
+        IIndividualStandingsCalculator individual)
     {
         _repository = repository;
         _distributor = distributor;
@@ -36,6 +46,10 @@ public sealed class CompetitionService : ICompetitionService
         _calculator = calculator;
         _bracket = bracket;
         _uow = uow;
+        _players = players;
+        _randomizer = randomizer;
+        _planner = planner;
+        _individual = individual;
     }
 
     public async Task<IReadOnlyList<CompetitionSummaryDto>> ListAsync(CancellationToken ct = default) =>
@@ -48,7 +62,7 @@ public sealed class CompetitionService : ICompetitionService
     {
         var competition = Competition.Create(new CompetitionSettings(
             r.Name, r.Type, r.PairCount, r.GroupCount, r.PairsPerGroup,
-            r.PointsPerWin, r.PointsPerLoss, r.DoubleRound, r.QualifiersPerGroup));
+            r.PointsPerWin, r.PointsPerLoss, r.DoubleRound, r.QualifiersPerGroup, r.Rounds));
         await _repository.AddAsync(competition, ct);
         await _uow.SaveChangesAsync(ct);
         return competition.ToSummary();
@@ -76,10 +90,70 @@ public sealed class CompetitionService : ICompetitionService
         return ToDetail(competition);
     }
 
+    public async Task<CompetitionDetailDto> DrawRotatingAsync(int id, PlayersSelection selection, CancellationToken ct = default)
+    {
+        var competition = await LoadAsync(id, ct);
+        var ids = selection.PlayerIds ?? Array.Empty<int>();
+        if (ids.Distinct().Count() != ids.Count) throw new DomainException("Hay jugadores repetidos en la selección.");
+        var players = await _players.GetByIdsAsync(ids.ToList(), ct);
+        if (players.Count != ids.Count) throw new NotFoundException("Algún jugador no existe.");
+        competition.DrawRotating(players, _randomizer, _planner);
+        await _uow.SaveChangesAsync(ct);
+        return ToDetail(competition);
+    }
+
+    public async Task<CompetitionSummaryDto> CreateNextLeagueAsync(int id, CancellationToken ct = default)
+    {
+        var previous = await LoadAsync(id, ct);
+        var groups = previous.Groups.OrderBy(g => g.Id).ToList();
+        var standings = RotatingStandings(previous, groups);
+        var moves = PromotionRules.Compute(standings.Select(s => s.Rows).ToList());
+
+        var playersById = groups.SelectMany(previous.GroupPlayers).GroupBy(p => p.Id).ToDictionary(g => g.Key, g => g.First());
+        var rosters = PromotionRules.NextRosters(
+                groups.Select(g => (IReadOnlyList<int>)previous.GroupPlayers(g).Select(p => p.Id).ToList()).ToList(), moves)
+            .Select(r => (IReadOnlyList<Player>)r.Select(pid => playersById[pid]).ToList())
+            .ToList();
+
+        var next = Competition.CreateNext(previous, rosters, _planner);
+        await _repository.AddAsync(next, ct);
+        await _uow.SaveChangesAsync(ct);
+        previous.SetNextCompetition(next.Id);
+        await _uow.SaveChangesAsync(ct);
+        return next.ToSummary();
+    }
+
+    private (int GroupId, string GroupName, IReadOnlyList<StandingRow> Rows)[] RotatingStandings(
+        Competition competition, IReadOnlyList<Group> groups) =>
+        groups.Select(g => (g.Id, g.Name, _individual.Calculate(
+            competition.GroupPlayers(g).Select(p => p.Id).ToList(), competition.GroupTeamOutcomes(g),
+            competition.PointsPerWin, competition.PointsPerLoss))).ToArray();
+
     public async Task<IReadOnlyList<GroupStandingsDto>> GetStandingsAsync(int id, CancellationToken ct = default)
     {
         var competition = await LoadAsync(id, ct);
         var result = new List<GroupStandingsDto>();
+
+        if (competition.IsRotating)
+        {
+            var groupList = competition.Groups.OrderBy(g => g.Id).ToList();
+            var tables = RotatingStandings(competition, groupList);
+            var finished = competition.Status == CompetitionStatus.Finished;
+            var movement = new Dictionary<int, int>();
+            if (finished)
+                foreach (var m in PromotionRules.Compute(tables.Select(t => t.Rows).ToList()))
+                    movement[m.PlayerId] = m.IsPromotion ? 1 : -1;
+
+            foreach (var (groupId, groupName, rows) in tables)
+            {
+                var names = competition.GroupPlayers(groupList.First(g => g.Id == groupId)).ToDictionary(p => p.Id, p => p.Name);
+                result.Add(new GroupStandingsDto(groupId, groupName, rows.Select(row => new StandingDto(
+                    row.Rank, row.EntryId, names[row.EntryId], row.Played, row.Won, row.Lost,
+                    row.PointsFor, row.PointsAgainst, row.PointsDiff, row.ClassificationPoints, false,
+                    movement.GetValueOrDefault(row.EntryId))).ToList()));
+            }
+            return result;
+        }
 
         foreach (var group in competition.Groups.OrderBy(g => g.Id))
         {

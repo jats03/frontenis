@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import { confirmDelete, notify } from '../alerts'
 import { api } from '../api/client'
 import type { PairingPreview, Player, Position } from '../api/types'
 import PlayerPicker from '../components/PlayerPicker'
@@ -51,7 +52,14 @@ export default function PlayersPage() {
 
   const add = (e: FormEvent) => {
     e.preventDefault()
-    void guard(async () => { await api.players.create(name, position); setName(''); await reload() })
+    void guard(async () => { await api.players.create(name, position); notify(`Jugador «${name.trim()}» creado`); setName(''); await reload() })
+  }
+
+  async function deleteSelected() {
+    const n = selected.size
+    if (!(await confirmDelete(`¿Eliminar ${n} jugador(es)?`))) return
+    await Promise.all([...selected].map(remove))
+    notify(`${n} jugador(es) eliminado(s)`)
   }
 
   const remove = (id: number) => guard(async () => {
@@ -154,7 +162,7 @@ export default function PlayersPage() {
               Emparejar al azar ({selected.size})
             </button>
             <button className="secondary" disabled={selected.size === 0}
-              onClick={() => { if (confirm(`¿Borrar ${selected.size} jugador(es) seleccionado(s)? No se puede deshacer.`)) void Promise.all([...selected].map(remove)) }}>
+              onClick={() => void deleteSelected()}>
               Borrar seleccionados
             </button>
           </div>

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { confirmDelete, notify } from '../alerts'
 import { api } from '../api/client'
 import type { MatchDto } from '../api/types'
 
@@ -22,6 +23,12 @@ export default function MatchCard({ match, canEdit, onChanged }: Props) {
     try { onChanged(await action()) }
     catch (e) { setError(e instanceof Error ? e.message : 'Error') }
     finally { setBusy(false) }
+  }
+
+  async function clear() {
+    if (!(await confirmDelete('¿Borrar el resultado de este partido?'))) return
+    await run(async () => { const m = await api.matches.clearResult(match.id); notify('Resultado eliminado'); return m })
+    setHome(''); setAway('')
   }
 
   function save() {
@@ -53,7 +60,7 @@ export default function MatchCard({ match, canEdit, onChanged }: Props) {
           <button disabled={busy} onClick={save}>Guardar</button>
           {match.isPlayed && (
             <button className="secondary" disabled={busy}
-              onClick={() => run(() => api.matches.clearResult(match.id)).then(() => { setHome(''); setAway('') })}>
+              onClick={() => void clear()}>
               Borrar
             </button>
           )}

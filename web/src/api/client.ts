@@ -82,6 +82,9 @@ export const api = {
     registerManual: (id: number, player1Id: number, player2Id: number) =>
       request<PairDto>('POST', `/api/competitions/${id}/pairs`, { player1Id, player2Id }),
     draw: (id: number) => request<CompetitionDetail>('POST', `/api/competitions/${id}/draw`),
+    drawRotating: (id: number, playerIds: number[]) =>
+      request<CompetitionDetail>('POST', `/api/competitions/${id}/draw-rotating`, { playerIds }),
+    nextLeague: (id: number) => request<CompetitionSummary>('POST', `/api/competitions/${id}/next-league`),
     playoffs: (id: number) => request<CompetitionDetail>('POST', `/api/competitions/${id}/playoffs`),
   },
 
