@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { notify } from '../alerts'
 import { api } from '../api/client'
 import type { CompetitionDetail, Player } from '../api/types'
+import ManualGroups from './ManualGroups'
 import PlayerPicker from './PlayerPicker'
 
 interface Props {
@@ -17,6 +18,7 @@ export default function RotatingDrawPanel({ detail, players, onChanged, onPlayer
   const [selected, setSelected] = useState<Set<number>>(new Set())
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const [manual, setManual] = useState(false)
   const [swapping, setSwapping] = useState<Set<number>>(new Set())
 
   const needed = summary.pairCount
@@ -27,6 +29,13 @@ export default function RotatingDrawPanel({ detail, players, onChanged, onPlayer
   async function draw() {
     setBusy(true); setError(null)
     try { await api.competitions.drawRotating(summary.id, [...selected]); notify('Grupos y jornadas creados'); await onChanged() }
+    catch (e) { setError(e instanceof Error ? e.message : 'Error') }
+    finally { setBusy(false) }
+  }
+
+  async function drawManual(groups: number[][]) {
+    setBusy(true); setError(null)
+    try { await api.competitions.drawRotatingManual(summary.id, groups); notify('Grupos y jornadas creados'); await onChanged() }
     catch (e) { setError(e instanceof Error ? e.message : 'Error') }
     finally { setBusy(false) }
   }
@@ -56,7 +65,15 @@ export default function RotatingDrawPanel({ detail, players, onChanged, onPlayer
       {error && <p className="error">{error}</p>}
       <button disabled={busy || chosen.length < needed} onClick={() => void draw()}>
         Sortear grupos y jornadas
+      </button>{' '}
+      <button className="secondary" disabled={busy || chosen.length < needed} onClick={() => setManual(v => !v)}>
+        ✋ {manual ? 'Cancelar grupos manuales' : 'Formar grupos a mano'}
       </button>
+      {manual && chosen.length >= needed && (
+        <ManualGroups items={chosen.map(p => ({ id: p.id, label: `${p.name} (${p.position})` }))}
+          groupCount={summary.groupCount} minPerGroup={4} noun="jugador(es)" busy={busy}
+          submitLabel="Crear grupos y jornadas" onSubmit={g => void drawManual(g)} />
+      )}
     </section>
   )
 }

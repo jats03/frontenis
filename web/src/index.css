@@ -146,3 +146,8 @@ button.swap { min-height: 36px; padding: .15rem .6rem; font-size: .85rem; white-
 .standings tr.relegated { background: rgba(185, 28, 28, .08); }
 
 .picker-groups { display: flex; flex-wrap: wrap; gap: .25rem 1.25rem; }
+
+.manual-list { display: grid; gap: .4rem; margin: .5rem 0; }
+.manual-row { display: flex; justify-content: space-between; align-items: center; gap: .75rem; }
+.manual-row span { overflow-wrap: anywhere; }
+.manual-row select { width: auto; min-width: 9rem; }

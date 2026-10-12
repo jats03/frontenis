@@ -146,7 +146,47 @@ public sealed class Competition
         if (_entries.Count != PairCount)
             throw new DomainException($"Faltan parejas por inscribir ({_entries.Count}/{PairCount}).");
 
-        var buckets = distributor.Distribute(_entries, GroupCount);
+        ApplyGroups(distributor.Distribute(_entries, GroupCount), scheduler);
+    }
+
+    /// <summary>Forma los grupos a mano (ids de inscripción por grupo) y genera el calendario.</summary>
+    public void DrawManual(IReadOnlyList<IReadOnlyList<int>> groupEntryIds, IScheduleGenerator scheduler)
+    {
+        if (IsRotating) throw new DomainException("Una liga rotatoria se forma con jugadores sueltos.");
+        if (Status != CompetitionStatus.Draft) throw new DomainException("El sorteo ya se realizó.");
+        if (_entries.Count != PairCount)
+            throw new DomainException($"Faltan parejas por inscribir ({_entries.Count}/{PairCount}).");
+        if (groupEntryIds.Count != GroupCount)
+            throw new DomainException($"Debe haber exactamente {GroupCount} grupo(s).");
+
+        var all = groupEntryIds.SelectMany(g => g).ToList();
+        if (all.Count != _entries.Count || all.Distinct().Count() != all.Count || all.Any(id => _entries.All(e => e.Id != id)))
+            throw new DomainException("Cada pareja debe estar en un grupo, y solo en uno.");
+        if (groupEntryIds.Any(g => g.Count < 2)) throw new DomainException("Cada grupo necesita al menos 2 parejas.");
+        if (Type == CompetitionType.Tournament && groupEntryIds.Any(g => g.Count < QualifiersPerGroup))
+            throw new DomainException($"Cada grupo necesita al menos {QualifiersPerGroup} parejas (clasificados por grupo).");
+
+        var buckets = groupEntryIds
+            .Select(g => (IReadOnlyList<CompetitionEntry>)g.Select(id => _entries.First(e => e.Id == id)).ToList())
+            .ToList();
+        ApplyGroups(buckets, scheduler);
+    }
+
+    /// <summary>Liga rotatoria con los grupos formados a mano (jugadores por grupo, de mayor a menor nivel).</summary>
+    public void DrawRotatingManual(IReadOnlyList<IReadOnlyList<Player>> groups, IRotationPlanner planner)
+    {
+        if (!IsRotating) throw new DomainException("Solo las ligas rotatorias se forman con jugadores.");
+        if (Status != CompetitionStatus.Draft) throw new DomainException("El sorteo ya se realizó.");
+        if (groups.Count != GroupCount) throw new DomainException($"Debe haber exactamente {GroupCount} grupo(s).");
+        var all = groups.SelectMany(g => g).ToList();
+        if (all.Select(p => p.Id).Distinct().Count() != all.Count) throw new DomainException("Hay jugadores repetidos.");
+        if (groups.Any(g => g.Count < 4)) throw new DomainException("Cada grupo necesita al menos 4 jugadores.");
+        PairCount = all.Count;
+        BuildRotating(groups, planner);
+    }
+
+    private void ApplyGroups(IReadOnlyList<IReadOnlyList<CompetitionEntry>> buckets, IScheduleGenerator scheduler)
+    {
         for (var g = 0; g < buckets.Count; g++)
         {
             var group = new Group(GroupName(g));

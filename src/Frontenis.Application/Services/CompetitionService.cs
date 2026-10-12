@@ -15,6 +15,8 @@ public interface ICompetitionService
     Task DeleteAsync(int id, CancellationToken ct = default);
     Task<CompetitionSummaryDto> RenameAsync(int id, RenameCompetitionRequest request, CancellationToken ct = default);
     Task<CompetitionDetailDto> DrawAsync(int id, CancellationToken ct = default);
+    Task<CompetitionDetailDto> DrawManualAsync(int id, ManualDrawRequest request, CancellationToken ct = default);
+    Task<CompetitionDetailDto> DrawRotatingManualAsync(int id, ManualDrawRequest request, CancellationToken ct = default);
     Task<CompetitionDetailDto> GeneratePlayoffsAsync(int id, CancellationToken ct = default);
     /// <summary>Liga rotatoria: reparte los jugadores en grupos y genera las jornadas con parejas cambiantes.</summary>
     Task<CompetitionDetailDto> DrawRotatingAsync(int id, PlayersSelection selection, CancellationToken ct = default);
@@ -87,6 +89,28 @@ public sealed class CompetitionService : ICompetitionService
     {
         var competition = await LoadAsync(id, ct);
         competition.Draw(_distributor, _scheduler);
+        await _uow.SaveChangesAsync(ct);
+        return ToDetail(competition);
+    }
+
+    public async Task<CompetitionDetailDto> DrawManualAsync(int id, ManualDrawRequest request, CancellationToken ct = default)
+    {
+        var competition = await LoadAsync(id, ct);
+        competition.DrawManual(request.Groups ?? Array.Empty<IReadOnlyList<int>>(), _scheduler);
+        await _uow.SaveChangesAsync(ct);
+        return ToDetail(competition);
+    }
+
+    public async Task<CompetitionDetailDto> DrawRotatingManualAsync(int id, ManualDrawRequest request, CancellationToken ct = default)
+    {
+        var competition = await LoadAsync(id, ct);
+        var groups = request.Groups ?? Array.Empty<IReadOnlyList<int>>();
+        var ids = groups.SelectMany(g => g).ToList();
+        var players = await _players.GetByIdsAsync(ids.Distinct().ToList(), ct);
+        if (players.Count != ids.Distinct().Count()) throw new NotFoundException("Algún jugador no existe.");
+        var byId = players.ToDictionary(p => p.Id);
+        competition.DrawRotatingManual(
+            groups.Select(g => (IReadOnlyList<Player>)g.Select(pid => byId[pid]).ToList()).ToList(), _planner);
         await _uow.SaveChangesAsync(ct);
         return ToDetail(competition);
     }

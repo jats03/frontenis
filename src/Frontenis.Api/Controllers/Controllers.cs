@@ -110,6 +110,16 @@ public sealed class CompetitionsController : ControllerBase
     public async Task<ActionResult<CompetitionDetailDto>> Draw(int id, CancellationToken ct) =>
         Ok(await _competitions.DrawAsync(id, ct));
 
+    /// <summary>Forma los grupos a mano y genera el calendario.</summary>
+    [HttpPost("{id:int}/draw-manual"), Authorize(Roles = Roles.Admin)]
+    public async Task<ActionResult<CompetitionDetailDto>> DrawManual(int id, ManualDrawRequest request, CancellationToken ct) =>
+        Ok(await _competitions.DrawManualAsync(id, request, ct));
+
+    /// <summary>Liga rotatoria con los grupos de jugadores formados a mano.</summary>
+    [HttpPost("{id:int}/draw-rotating-manual"), Authorize(Roles = Roles.Admin)]
+    public async Task<ActionResult<CompetitionDetailDto>> DrawRotatingManual(int id, ManualDrawRequest request, CancellationToken ct) =>
+        Ok(await _competitions.DrawRotatingManualAsync(id, request, ct));
+
     /// <summary>Liga rotatoria: reparte los jugadores elegidos en grupos y genera las jornadas.</summary>
     [HttpPost("{id:int}/draw-rotating"), Authorize(Roles = Roles.Admin)]
     public async Task<ActionResult<CompetitionDetailDto>> DrawRotating(int id, PlayersSelection selection, CancellationToken ct) =>

@@ -186,4 +186,42 @@ public class RotatingLeagueTests
         Assert.Equal("Liga (2)", next.Name);
         Assert.Equal(CompetitionStatus.GroupStage, next.Status);
     }
+
+    [Fact]
+    public void Manual_rotating_groups_keep_the_chosen_players()
+    {
+        var c = NewLeague(2, 4);
+        var all = Players(10);
+        var groups = new List<IReadOnlyList<Player>> { all.Take(4).ToList(), all.Skip(4).ToList() };
+        c.DrawRotatingManual(groups, new RotationPlanner(Rnd()));
+
+        Assert.Equal(10, c.PairCount);
+        Assert.Equal(4, c.GroupPlayers(c.Groups.First()).Count);
+        Assert.Equal(6, c.GroupPlayers(c.Groups.Last()).Count);
+        Assert.True(c.GroupPlayers(c.Groups.First()).All(p => p.Id <= 4));
+    }
+
+    [Fact]
+    public void Manual_rotating_groups_need_four_players_each()
+    {
+        var c = NewLeague(2, 4);
+        var all = Players(8);
+        var groups = new List<IReadOnlyList<Player>> { all.Take(3).ToList(), all.Skip(3).ToList() };
+        Assert.Throws<DomainException>(() => c.DrawRotatingManual(groups, new RotationPlanner(Rnd())));
+    }
+
+    [Fact]
+    public void Manual_groups_for_regular_competition_validate_and_schedule()
+    {
+        var c = Competition.Create(new CompetitionSettings("L", CompetitionType.League, 4, 2, 2, 3, 0, false, 0));
+        for (var i = 0; i < 4; i++)
+            c.AddPair(new Pair(TestHelpers.Player(i * 2 + 1, $"Z{i}", PlayerPosition.Zaguero),
+                               TestHelpers.Player(i * 2 + 2, $"D{i}", PlayerPosition.Delantero)));
+        var n = 1; foreach (var e in c.Entries) e.WithId(n++);
+
+        Assert.Throws<DomainException>(() => c.DrawManual(new List<IReadOnlyList<int>> { new[] { 1, 2, 3 }, new[] { 4 } }, new RoundRobinScheduleGenerator()));
+        c.DrawManual(new List<IReadOnlyList<int>> { new[] { 1, 4 }, new[] { 2, 3 } }, new RoundRobinScheduleGenerator());
+        Assert.Equal(CompetitionStatus.GroupStage, c.Status);
+        Assert.Equal(2, c.Matches.Count);
+    }
 }

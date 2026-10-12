@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { notify } from '../alerts'
 import { api } from '../api/client'
 import type { CompetitionDetail, Player } from '../api/types'
+import ManualGroups from './ManualGroups'
 import PlayerPicker from './PlayerPicker'
 
 interface Props {
@@ -20,6 +21,7 @@ export default function RegistrationPanel({ detail, players, onChanged, onPlayer
   const [manual2, setManual2] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const [manualGroups, setManualGroups] = useState(false)
   const [swapping, setSwapping] = useState<Set<number>>(new Set())
 
   const taken = useMemo(() => new Set(pairs.flatMap(p => [p.player1.id, p.player2.id])), [pairs])
@@ -99,7 +101,15 @@ export default function RegistrationPanel({ detail, players, onChanged, onPlayer
           <button disabled={busy} onClick={() => void run(async () => { await api.competitions.draw(summary.id); notify('Sorteo realizado y calendario creado') })}>
             🎲 Sortear grupos y generar calendario
           </button>
+          <button className="secondary" disabled={busy} onClick={() => setManualGroups(v => !v)}>
+            ✋ {manualGroups ? 'Cancelar grupos manuales' : 'Formar grupos a mano'}
+          </button>
         </div>
+      )}
+      {missing === 0 && manualGroups && (
+        <ManualGroups items={pairs.map(p => ({ id: p.entryId, label: p.name }))} groupCount={summary.groupCount}
+          minPerGroup={2} noun="pareja(s)" busy={busy} submitLabel="Crear grupos y generar calendario"
+          onSubmit={groups => void run(async () => { await api.competitions.drawManual(summary.id, groups); notify('Grupos creados y calendario generado') })} />
       )}
     </section>
   )
