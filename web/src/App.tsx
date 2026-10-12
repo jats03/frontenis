@@ -13,7 +13,7 @@ export default function App() {
   return (
     <div className="app">
       <header className="topbar">
-        <span className="brand"><img src="/logo.png" alt="Frontenis Club Ciudad de Jaén" className="logo" /> Frontenis</span>
+        <span className="brand"><img src="/logo.png" alt="Frontenis Club Ciudad de Jaén" className="logo" /></span>
         <nav>
           <NavLink to="/" end>Competiciones</NavLink>
           <NavLink to="/jugadores">Jugadores</NavLink>
