@@ -37,7 +37,7 @@ export default function RegistrationPanel({ detail, players, onChanged, onPlayer
   async function swap(p: Player) {
     const next = p.position === 'Delantero' ? 'Zaguero' : 'Delantero'
     setSwapping(prev => new Set(prev).add(p.id)); setError(null)
-    try { await api.players.update(p.id, p.name, next); await onPlayersChanged() }
+    try { await api.players.update(p.id, p.name, next, p.groupNumber ?? null); await onPlayersChanged() }
     catch (e) { setError(e instanceof Error ? e.message : 'Error') }
     finally { setSwapping(prev => { const n = new Set(prev); n.delete(p.id); return n }) }
   }

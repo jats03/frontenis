@@ -63,9 +63,10 @@ export const api = {
 
   players: {
     list: () => request<Player[]>('GET', '/api/players'),
-    create: (name: string, position: Position) => request<Player>('POST', '/api/players', { name, position }),
-    update: (id: number, name: string, position: Position) =>
-      request<Player>('PUT', `/api/players/${id}`, { name, position }),
+    create: (name: string, position: Position, groupNumber: number | null = null) =>
+      request<Player>('POST', '/api/players', { name, position, groupNumber }),
+    update: (id: number, name: string, position: Position, groupNumber: number | null = null) =>
+      request<Player>('PUT', `/api/players/${id}`, { name, position, groupNumber }),
     remove: (id: number) => request<void>('DELETE', `/api/players/${id}`),
     pairingPreview: (playerIds: number[]) =>
       request<PairingPreview>('POST', '/api/players/pairing-preview', { playerIds }),

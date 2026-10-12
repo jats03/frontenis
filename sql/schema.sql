@@ -7,7 +7,8 @@ GO
 CREATE TABLE Players (
     Id INT IDENTITY PRIMARY KEY,
     Name NVARCHAR(100) NOT NULL,
-    Position TINYINT NOT NULL            -- 1 = Delantero, 2 = Zaguero
+    Position TINYINT NOT NULL,           -- 1 = Delantero, 2 = Zaguero
+    GroupNumber INT NULL                 -- grupo de jugadores (1, 2, 3…) para seleccionarlos juntos
 );
 CREATE TABLE Pairs (
     Id INT IDENTITY PRIMARY KEY,

@@ -64,6 +64,8 @@ public static class DependencyInjection
         await db.Database.ExecuteSqlRawAsync(
             "IF COL_LENGTH('Competitions','Rounds') IS NULL ALTER TABLE Competitions ADD Rounds INT NOT NULL CONSTRAINT DF_Competitions_Rounds DEFAULT 0;");
         await db.Database.ExecuteSqlRawAsync(
+            "IF COL_LENGTH('Players','GroupNumber') IS NULL ALTER TABLE Players ADD GroupNumber INT NULL;");
+        await db.Database.ExecuteSqlRawAsync(
             "IF COL_LENGTH('Competitions','NextCompetitionId') IS NULL ALTER TABLE Competitions ADD NextCompetitionId INT NULL;");
 
         var username = config["Admin:Username"] ?? "admin";

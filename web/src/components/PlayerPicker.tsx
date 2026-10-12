@@ -54,7 +54,7 @@ export default function PlayerPicker({ players, selected, onChange, disabledIds,
             <label className="check">
               <input type="checkbox" checked={selected.has(p.id)} disabled={disabledIds?.has(p.id)}
                 onChange={() => toggle(p.id)} />
-              {p.name}
+              {p.name}{p.groupNumber != null && <span className="muted"> · G{p.groupNumber}</span>}
             </label>
             {onSwap && (
               <button type="button" className="secondary swap" disabled={swappingIds?.has(p.id)}
@@ -70,12 +70,29 @@ export default function PlayerPicker({ players, selected, onChange, disabledIds,
     </div>
   )
 
+  // Grupos de jugadores (1, 2, 3…) presentes en la lista, para seleccionarlos de una vez.
+  const groupNumbers = [...new Set(players.map(p => p.groupNumber).filter((g): g is number => g != null))].sort((a, b) => a - b)
+  const ungrouped = players.filter(p => p.groupNumber == null)
+
   return (
     <>
       <div className="picker-all">
         <SelectAll label="Seleccionar todos" total={enabled(players).length} checked={count(players)}
           onToggle={() => toggleMany(players)} />
       </div>
+      {groupNumbers.length > 0 && (
+        <div className="picker-all picker-groups">
+          {groupNumbers.map(g => {
+            const list = players.filter(p => p.groupNumber === g)
+            return <SelectAll key={g} label={`Jugadores grupo ${g}`} total={enabled(list).length}
+              checked={count(list)} onToggle={() => toggleMany(list)} />
+          })}
+          {ungrouped.length > 0 && (
+            <SelectAll label="Sin grupo" total={enabled(ungrouped).length} checked={count(ungrouped)}
+              onToggle={() => toggleMany(ungrouped)} />
+          )}
+        </div>
+      )}
       <div className="picker">
         {group('Delanteros', players.filter(p => p.position === 'Delantero'))}
         {group('Zagueros', players.filter(p => p.position === 'Zaguero'))}

@@ -4,7 +4,7 @@ namespace Frontenis.Application.Dtos;
 
 internal static class Mapper
 {
-    public static PlayerDto ToDto(this Player p) => new(p.Id, p.Name, p.Position);
+    public static PlayerDto ToDto(this Player p) => new(p.Id, p.Name, p.Position, p.GroupNumber);
 
     public static PairDto ToDto(this CompetitionEntry e) => new(
         e.Id, e.PairId, e.Pair.DisplayName, e.Pair.Player1.ToDto(), e.Pair.Player2.ToDto(), e.GroupId);

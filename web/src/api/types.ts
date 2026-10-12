@@ -3,7 +3,7 @@ export type CompetitionType = 'League' | 'Tournament' | 'RotatingLeague'
 export type CompetitionStatus = 'Draft' | 'GroupStage' | 'Playoffs' | 'Finished'
 export type MatchPhase = 'Group' | 'Playoff'
 
-export interface Player { id: number; name: string; position: Position }
+export interface Player { id: number; name: string; position: Position; groupNumber?: number | null }
 export interface PairDto {
   entryId: number; pairId: number; name: string
   player1: Player; player2: Player; groupId: number | null

@@ -11,6 +11,8 @@ export default function PlayersPage() {
   const { data: players, error, loading, reload } = useAsync(() => api.players.list(), [])
   const [name, setName] = useState('')
   const [position, setPosition] = useState<Position>('Delantero')
+  const [groupInput, setGroupInput] = useState('')
+  const [assignGroup, setAssignGroup] = useState('')
   const [message, setMessage] = useState<string | null>(null)
   const [selected, setSelected] = useState<Set<number>>(new Set())
   const [preview, setPreview] = useState<PairingPreview | null>(null)
@@ -52,7 +54,7 @@ export default function PlayersPage() {
 
   const add = (e: FormEvent) => {
     e.preventDefault()
-    void guard(async () => { await api.players.create(name, position); notify(`Jugador «${name.trim()}» creado`); setName(''); await reload() })
+    void guard(async () => { await api.players.create(name, position, groupInput === '' ? null : Number(groupInput)); notify(`Jugador «${name.trim()}» creado`); setName(''); await reload() })
   }
 
   async function deleteSelected() {
@@ -60,6 +62,17 @@ export default function PlayersPage() {
     if (!(await confirmDelete(`¿Eliminar ${n} jugador(es)?`))) return
     await Promise.all([...selected].map(remove))
     notify(`${n} jugador(es) eliminado(s)`)
+  }
+
+  /** Asigna (o quita, con null) el grupo a todos los jugadores marcados. */
+  async function applyGroup(group: number | null) {
+    if (group !== null && (!Number.isInteger(group) || group < 1)) { setMessage('Indica un número de grupo válido (1, 2, 3…).'); return }
+    const targets = view.filter(p => selected.has(p.id))
+    await guard(async () => {
+      await Promise.all(targets.map(p => api.players.update(p.id, p.name, p.position, group)))
+      notify(group === null ? `${targets.length} jugador(es) sin grupo` : `${targets.length} jugador(es) asignados al grupo ${group}`)
+      await reload()
+    })
   }
 
   const remove = (id: number) => guard(async () => {
@@ -78,7 +91,7 @@ export default function PlayersPage() {
     }
     // Administrador: se guarda en la base de datos y afecta a todas las pantallas.
     setSwapping(prev => new Set(prev).add(p.id))
-    void guard(async () => { await api.players.update(p.id, p.name, next); await reload() })
+    void guard(async () => { await api.players.update(p.id, p.name, next, p.groupNumber ?? null); await reload() })
       .finally(() => setSwapping(prev => { const n = new Set(prev); n.delete(p.id); return n }))
   }
 
@@ -97,6 +110,8 @@ export default function PlayersPage() {
             <option value="Delantero">Delantero</option>
             <option value="Zaguero">Zaguero</option>
           </select>
+          <input type="number" min={1} max={99} placeholder="Grupo (opcional)" aria-label="Grupo de jugadores"
+            value={groupInput} onChange={e => setGroupInput(e.target.value)} />
           <button type="submit">Añadir</button>
         </form>
       )}
@@ -157,6 +172,18 @@ export default function PlayersPage() {
 
       {isAdmin && (
         <>
+          <section className="card">
+            <h3>Grupo de jugadores</h3>
+            <p className="muted">Asigna un grupo (1, 2, 3…) a los jugadores marcados para poder seleccionarlos juntos después.</p>
+            <div className="row">
+              <input type="number" min={1} max={99} placeholder="Nº de grupo" aria-label="Número de grupo"
+                value={assignGroup} onChange={e => setAssignGroup(e.target.value)} />
+              <button disabled={selected.size === 0 || assignGroup === ''}
+                onClick={() => void applyGroup(Number(assignGroup))}>Asignar grupo</button>
+              <button className="secondary" disabled={selected.size === 0}
+                onClick={() => void applyGroup(null)}>Quitar grupo</button>
+            </div>
+          </section>
           <div className="row">
             <button disabled={selected.size < 2} onClick={() => void makePreview()}>
               Emparejar al azar ({selected.size})

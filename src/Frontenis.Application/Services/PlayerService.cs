@@ -29,7 +29,7 @@ public sealed class PlayerService : IPlayerService
 
     public async Task<PlayerDto> CreateAsync(PlayerRequest request, CancellationToken ct = default)
     {
-        var player = new Player(request.Name, request.Position);
+        var player = new Player(request.Name, request.Position, request.GroupNumber);
         await _players.AddAsync(player, ct);
         await _uow.SaveChangesAsync(ct);
         return player.ToDto();
@@ -38,7 +38,7 @@ public sealed class PlayerService : IPlayerService
     public async Task<PlayerDto> UpdateAsync(int id, PlayerRequest request, CancellationToken ct = default)
     {
         var player = await _players.GetByIdAsync(id, ct) ?? throw new NotFoundException("Jugador no encontrado.");
-        player.Update(request.Name, request.Position);
+        player.Update(request.Name, request.Position, request.GroupNumber);
         await _uow.SaveChangesAsync(ct);
         return player.ToDto();
     }

@@ -144,3 +144,5 @@ button.swap { min-height: 36px; padding: .15rem .6rem; font-size: .85rem; white-
 .move.down { color: #b91c1c; }
 .standings tr.relegated td:first-child { border-left: 4px solid #b91c1c; }
 .standings tr.relegated { background: rgba(185, 28, 28, .08); }
+
+.picker-groups { display: flex; flex-wrap: wrap; gap: .25rem 1.25rem; }

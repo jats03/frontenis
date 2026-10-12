@@ -6,8 +6,8 @@ public sealed record LoginRequest(string Username, string Password);
 public sealed record LoginResponse(string Token, DateTime ExpiresAtUtc, string Username, string Role);
 
 public sealed record RenameCompetitionRequest(string Name);
-public sealed record PlayerRequest(string Name, PlayerPosition Position);
-public sealed record PlayerDto(int Id, string Name, PlayerPosition Position);
+public sealed record PlayerRequest(string Name, PlayerPosition Position, int? GroupNumber = null);
+public sealed record PlayerDto(int Id, string Name, PlayerPosition Position, int? GroupNumber = null);
 
 public sealed record PairDto(int EntryId, int PairId, string Name, PlayerDto Player1, PlayerDto Player2, int? GroupId);
 public sealed record PairingPreviewDto(IReadOnlyList<PlayerPairDto> Pairs, PlayerDto? Unpaired);
