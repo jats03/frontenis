@@ -8,6 +8,7 @@ import CompetitionNewPage from './pages/CompetitionNewPage'
 import CompetitionsPage from './pages/CompetitionsPage'
 import LoginPage from './pages/LoginPage'
 import PlayersPage from './pages/PlayersPage'
+import WhatsappPage from './pages/WhatsappPage'
 import TimerPage from './pages/TimerPage'
 
 export default function App() {
@@ -29,6 +30,7 @@ export default function App() {
           <NavLink to="/" end>Competiciones</NavLink>
           <NavLink to="/jugadores">Jugadores</NavLink>
           <NavLink to="/cronometro">Cronómetro</NavLink>
+          <NavLink to="/plantillas">Plantillas</NavLink>
         </nav>
         {isAdmin ? (
           <button className="link" onClick={logout}>Salir ({username})</button>
@@ -45,6 +47,7 @@ export default function App() {
           <Route path="/competiciones/:id" element={<CompetitionDetailPage />} />
           <Route path="/jugadores" element={<PlayersPage />} />
           <Route path="/cronometro" element={<TimerPage />} />
+          <Route path="/plantillas" element={<WhatsappPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="*" element={<><h1>Página no encontrada</h1><p><Link to="/">Volver al inicio</Link></p></>} />
         </Routes>
