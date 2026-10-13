@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import PageHeader from '../components/PageHeader'
+import PlayersTabs from '../components/PlayersTabs'
 import SourceFilter, { useHistoryFilter } from '../components/SourceFilter'
 import { api } from '../api/client'
 import type { PlayerHistoryRow } from '../api/types'
@@ -42,10 +44,8 @@ export default function PlayerHistoryPage() {
 
   return (
     <>
-      <div className="row between">
-        <h1>Histórico de jugadores</h1>
-        <Link className="button secondary" to="/jugadores">Volver a jugadores</Link>
-      </div>
+      <PageHeader title="Jugadores" subtitle="Histórico: partidos, puntos, compañeros y rivales" />
+      <PlayersTabs current="historico" />
       <SourceFilter value={filter} onChange={setFilter} />
       <StaleNotice savedAt={savedAt} error={error} />
       {error && !data && <p className="error">{error}</p>}

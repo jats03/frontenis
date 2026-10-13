@@ -3,21 +3,20 @@ import { Link, useNavigate } from 'react-router-dom'
 import { notify } from '../alerts'
 import { api } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
+import EmptyState from '../components/EmptyState'
+import PageHeader from '../components/PageHeader'
 import StaleNotice from '../components/StaleNotice'
+import { formatDate, todayIso } from '../dates'
 import { useAsync, useDocumentTitle } from '../hooks'
-
-// Fechas en hora local (toISOString usaría UTC y de madrugada daría el día anterior).
-const pad = (n: number) => String(n).padStart(2, '0')
-const today = () => { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}` }
-const fmt = (iso: string) => new Date(iso.length === 10 ? `${iso}T00:00:00` : iso).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
 
 export default function TrainingsPage() {
   useDocumentTitle('Entrenamientos')
   const { isAdmin } = useAuth()
   const navigate = useNavigate()
   const { data, error, loading, savedAt } = useAsync(() => api.trainings.list(), [], '/api/trainings')
+  const [creating, setCreating] = useState(false)
   const [name, setName] = useState('')
-  const [date, setDate] = useState(today())
+  const [date, setDate] = useState(todayIso())
   const [win, setWin] = useState(3)
   const [loss, setLoss] = useState(0)
   const [formError, setFormError] = useState<string | null>(null)
@@ -26,7 +25,7 @@ export default function TrainingsPage() {
     e.preventDefault()
     setFormError(null)
     try {
-      const t = await api.trainings.create(name.trim() || `Entrenamiento ${fmt(date)}`, date, win, loss)
+      const t = await api.trainings.create(name.trim() || `Entrenamiento ${formatDate(date)}`, date, win, loss)
       notify('Entrenamiento creado')
       navigate(`/entrenamientos/${t.id}`)
     } catch (err) { setFormError(err instanceof Error ? err.message : 'Error') }
@@ -34,9 +33,10 @@ export default function TrainingsPage() {
 
   return (
     <>
-      <h1>Entrenamientos</h1>
-      <p className="muted">Partidos sueltos «a X tantos» con las parejas que quieras, con clasificación por parejas e individual y sugerencias del siguiente partido.</p>
-      {isAdmin && (
+      <PageHeader title="Entrenamientos" subtitle="Partidos sueltos «a X tantos» con clasificación por parejas e individual"
+        actions={isAdmin && !creating && <button onClick={() => setCreating(true)}>+ Nueva sesión</button>} />
+
+      {isAdmin && creating && (
         <form className="card form" onSubmit={create}>
           <h2>Nueva sesión</h2>
           <div className="cols">
@@ -48,18 +48,27 @@ export default function TrainingsPage() {
             <label>Puntos por derrota<input type="number" min={0} value={Number.isNaN(loss) ? '' : loss} onChange={e => setLoss(e.target.valueAsNumber)} /></label>
           </div>
           {formError && <p className="error">{formError}</p>}
-          <button type="submit">Crear sesión</button>
+          <div className="row">
+            <button type="submit">Crear sesión</button>
+            <button type="button" className="secondary" onClick={() => setCreating(false)}>Cancelar</button>
+          </div>
         </form>
       )}
+
       <StaleNotice savedAt={savedAt} error={error} />
       {loading && !data && <p className="muted">Cargando…</p>}
       {error && !data && <p className="error">{error}</p>}
-      {data?.length === 0 && <p className="muted">Aún no hay sesiones de entrenamiento.</p>}
+      {data?.length === 0 && (
+        <EmptyState title="Aún no hay sesiones de entrenamiento"
+          action={isAdmin && !creating ? <button onClick={() => setCreating(true)}>Crear la primera sesión</button> : undefined}>
+          {isAdmin ? 'Crea una sesión por día y anota los partidos que se jueguen.' : 'Cuando se cree una sesión podrás registrar partidos.'}
+        </EmptyState>
+      )}
       <div className="grid">
         {data?.map(t => (
           <Link key={t.id} to={`/entrenamientos/${t.id}`} className="card link-card">
             <strong>{t.name}</strong>
-            <p className="muted">{fmt(t.date)} · {t.matchCount} partido(s)</p>
+            <p className="muted">{formatDate(t.date)} · {t.matchCount} partido(s)</p>
           </Link>
         ))}
       </div>

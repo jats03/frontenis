@@ -1,0 +1,40 @@
+import { Link } from 'react-router-dom'
+import { useAuth } from '../auth/AuthContext'
+import PageHeader from '../components/PageHeader'
+import { useDocumentTitle } from '../hooks'
+
+export default function MorePage() {
+  useDocumentTitle('Más')
+  const { isAdmin, username, logout } = useAuth()
+  return (
+    <>
+      <PageHeader title="Más" subtitle="Herramientas y cuenta" />
+      <h2 className="section-title">Herramientas</h2>
+      <div className="menu-cards">
+        <Link className="card link-card" to="/cronometro">
+          <strong>Cronómetro</strong>
+          <span className="muted">Cuenta atrás para los partidos y los turnos.</span>
+        </Link>
+        <Link className="card link-card" to="/plantillas">
+          <strong>Plantillas de WhatsApp</strong>
+          <span className="muted">Genera el cuadro semanal de entrenamientos listo para copiar y pegar.</span>
+        </Link>
+      </div>
+      {isAdmin && (
+        <>
+          <h2 className="section-title">Cuenta de administrador</h2>
+          <div className="menu-cards">
+            <Link className="card link-card" to="/cuenta">
+              <strong>Mi cuenta</strong>
+              <span className="muted">Cambiar la contraseña ({username}).</span>
+            </Link>
+            <button className="card link-card as-button" onClick={logout}>
+              <strong>Cerrar sesión</strong>
+              <span className="muted">Salir del modo administrador en este dispositivo.</span>
+            </button>
+          </div>
+        </>
+      )}
+    </>
+  )
+}

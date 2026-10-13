@@ -4,7 +4,9 @@ import { confirmDelete, notify, promptText } from '../alerts'
 import { api, responseCache } from '../api/client'
 import type { CompetitionDetail, GroupStandings, Player } from '../api/types'
 import { useAuth } from '../auth/AuthContext'
+import ActionMenu from '../components/ActionMenu'
 import Bracket from '../components/Bracket'
+import PageHeader from '../components/PageHeader'
 import MatchCard from '../components/MatchCard'
 import RegistrationPanel from '../components/RegistrationPanel'
 import RotatingDrawPanel from '../components/RotatingDrawPanel'
@@ -93,7 +95,7 @@ function CompetitionDetailView({ id }: { id: number }) {
 
   async function remove() {
     if (!(await confirmDelete('¿Eliminar esta competición?', 'Se borrarán también sus grupos, partidos y resultados.'))) return
-    try { await api.competitions.remove(id); notify('Competición eliminada'); navigate('/') }
+    try { await api.competitions.remove(id); notify('Competición eliminada'); navigate('/competiciones') }
     catch (e) { setError(e instanceof Error ? e.message : 'Error') }
   }
 
@@ -105,27 +107,23 @@ function CompetitionDetailView({ id }: { id: number }) {
 
   return (
     <>
-      <div className="row between">
-        <div>
-          <h1>{summary.name}</h1>
-          <p className="muted">
-            {typeLabel[summary.type]} · {statusLabel[summary.status]} · {summary.pointsPerWin} pts por victoria
-            {summary.pointsPerLoss > 0 && ` · ${summary.pointsPerLoss} por derrota`}
-            {` · ${summary.setsPerMatch === 2 ? '2 sets (3.º de desempate)' : '1 set'} por partido`}
-          </p>
-        </div>
-        {isAdmin && (
-          <div className="row">
-            <button className="secondary" onClick={() => void rename()}>Editar nombre</button>
-            {!detail.matches.some(m => m.isPlayed) && (
-              <button className="secondary" onClick={() => void changeSets()}>
-                Pasar a {summary.setsPerMatch === 2 ? '1 set' : '2 sets'}
-              </button>
-            )}
-            <button className="secondary" onClick={() => void remove()}>Eliminar</button>
-          </div>
-        )}
-      </div>
+      <PageHeader title={summary.name}
+        badge={<span className={`badge ${summary.status}`}>{statusLabel[summary.status]}</span>}
+        subtitle={<>
+          {typeLabel[summary.type]} · {summary.pointsPerWin} pts por victoria
+          {summary.pointsPerLoss > 0 && ` · ${summary.pointsPerLoss} por derrota`}
+          {` · ${summary.setsPerMatch === 2 ? '2 sets (3.º de desempate)' : '1 set'} por partido`}
+        </>}
+        actions={
+          <ActionMenu items={[
+            { label: 'Exportar clasificación a PDF', hidden: standings.length === 0,
+              onSelect: () => void exportStandingsPdf(summary.name, standings, isRotating) },
+            { label: 'Editar nombre', hidden: !isAdmin, onSelect: () => void rename() },
+            { label: `Pasar a ${summary.setsPerMatch === 2 ? '1 set' : '2 sets'} por partido`,
+              hidden: !isAdmin || detail.matches.some(m => m.isPlayed), onSelect: () => void changeSets() },
+            { label: 'Eliminar competición', danger: true, hidden: !isAdmin, onSelect: () => void remove() },
+          ]} />
+        } />
       <StaleNotice savedAt={savedAt} error={error} />
       {error && savedAt === null && <p className="error">{error}</p>}
 
@@ -166,12 +164,6 @@ function CompetitionDetailView({ id }: { id: number }) {
 
           {tab === 'standings' && (
             <>
-              <div className="row">
-                <button className="secondary" disabled={standings.length === 0}
-                  onClick={() => void exportStandingsPdf(summary.name, standings, isRotating)}>
-                  Exportar clasificación a PDF
-                </button>
-              </div>
               {standings.length > 1 && (
                 <SubTabs label="Grupos" value={standingsSel} onChange={setStandingsSel}
                   options={[{ key: 'all', label: 'Todos los grupos' }, ...standings.map(g => ({ key: String(g.groupId), label: g.groupName }))]} />

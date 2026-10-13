@@ -1,9 +1,12 @@
 import { useState, type FormEvent } from 'react'
-import { Link } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import { confirmDelete, notify } from '../alerts'
 import { api } from '../api/client'
 import type { PairingPreview, Player, Position } from '../api/types'
+import Disclosure from '../components/Disclosure'
+import PageHeader from '../components/PageHeader'
 import PlayerPicker from '../components/PlayerPicker'
+import PlayersTabs from '../components/PlayersTabs'
 import { useAuth } from '../auth/AuthContext'
 import StaleNotice from '../components/StaleNotice'
 import { useAsync, useDocumentTitle } from '../hooks'
@@ -11,6 +14,7 @@ import { useAsync, useDocumentTitle } from '../hooks'
 export default function PlayersPage() {
   useDocumentTitle('Jugadores')
   const { isAdmin } = useAuth()
+  const vista = useSearchParams()[0].get('vista') === 'sorteos' ? 'sorteos' : 'lista'
   const { data: players, error, loading, reload, savedAt } = useAsync(() => api.players.list(), [], '/api/players')
   const [name, setName] = useState('')
   const [position, setPosition] = useState<Position>('Delantero')
@@ -100,117 +104,127 @@ export default function PlayersPage() {
 
   const makePreview = () => guard(async () => setPreview(await api.players.pairingPreview([...selected])))
 
+  const picker = (
+    <PlayerPicker players={view} selected={selected} onChange={setSelected}
+      onSwap={swapPosition} swappingIds={swapping} />
+  )
+
   return (
     <>
-      <div className="row between">
-        <h1>Jugadores</h1>
-        <Link className="button secondary" to="/jugadores/historico">Histórico de jugadores</Link>
-      </div>
+      <PageHeader title="Jugadores" subtitle={`${players?.length ?? 0} jugadores`} />
+      <PlayersTabs current={vista} />
       <StaleNotice savedAt={savedAt} error={error} />
       {loading && !players && <p className="muted">Cargando…</p>}
       {((error && !players) || message) && <p className="error">{(error && !players ? error : null) ?? message}</p>}
 
-      {isAdmin && (
-        <form className="card form row" onSubmit={add}>
-          <input placeholder="Nombre" value={name} onChange={e => setName(e.target.value)} required />
-          <select aria-label="Posición" value={position} onChange={e => setPosition(e.target.value as Position)}>
-            <option value="Delantero">Delantero</option>
-            <option value="Zaguero">Zaguero</option>
-          </select>
-          <input type="number" min={1} max={99} placeholder="Grupo (opcional)" aria-label="Grupo de jugadores"
-            value={groupInput} onChange={e => setGroupInput(e.target.value)} />
-          <button type="submit">Añadir</button>
-        </form>
+      {vista === 'lista' && (
+        <>
+          {isAdmin && (
+            <details className="card add-player">
+              <summary>+ Añadir jugador</summary>
+              <form className="form row" onSubmit={add}>
+                <input placeholder="Nombre" aria-label="Nombre" value={name} onChange={e => setName(e.target.value)} required />
+                <select aria-label="Posición" value={position} onChange={e => setPosition(e.target.value as Position)}>
+                  <option value="Delantero">Delantero</option>
+                  <option value="Zaguero">Zaguero</option>
+                </select>
+                <input type="number" min={1} max={99} placeholder="Grupo (opcional)" aria-label="Grupo de jugadores"
+                  value={groupInput} onChange={e => setGroupInput(e.target.value)} />
+                <button type="submit">Añadir</button>
+              </form>
+            </details>
+          )}
+
+          <section className="card" aria-label="Lista de jugadores">
+            <p className="muted">
+              Marca jugadores para sortear o gestionar. Con «⇄» cambias un jugador de delantero a zaguero y al revés
+              {isAdmin ? ' (se guarda para todos).' : ' (solo en pantalla, no se guarda).'}
+            </p>
+            {picker}
+          </section>
+
+          {isAdmin && selected.size > 0 && (
+            <section className="card selection-bar" aria-label="Acciones sobre los jugadores marcados">
+              <strong>{selected.size} marcado(s)</strong>
+              <div className="row">
+                <input type="number" min={1} max={99} placeholder="Nº de grupo" aria-label="Número de grupo"
+                  value={assignGroup} onChange={e => setAssignGroup(e.target.value)} />
+                <button className="secondary" disabled={assignGroup === ''}
+                  onClick={() => void applyGroup(Number(assignGroup))}>Asignar grupo</button>
+                <button className="secondary" onClick={() => void applyGroup(null)}>Quitar grupo</button>
+                <button className="secondary danger" onClick={() => void deleteSelected()}>Borrar</button>
+              </div>
+            </section>
+          )}
+        </>
       )}
 
-      <section className="card">
-        <p className="muted">
-          Marca los jugadores que participan en el sorteo (o usa «Seleccionar todos»).
-          Con «⇄» puedes pasar un jugador de delantero a zaguero y al revés
-          {isAdmin ? ' (se guarda para todos).' : ' (solo para este sorteo, no se guarda).'}
-        </p>
-        <PlayerPicker players={view} selected={selected} onChange={setSelected}
-          onSwap={swapPosition} swappingIds={swapping} />
-      </section>
-
-      <section className="card">
-        <h2>Pareja al azar</h2>
-        <p className="muted">
-          Sortea un delantero y un zaguero entre los jugadores marcados
-          ({chosenForwards.length} delanteros, {chosenBacks.length} zagueros).
-        </p>
-        <div className="row">
-          <button onClick={drawRandomPair} disabled={!canDraw}>
-            {randomPair ? 'Sortear otra pareja' : 'Obtener pareja al azar'}
-          </button>
-        </div>
-        {!canDraw && <p className="muted">Marca al menos un delantero y un zaguero.</p>}
-        {randomPair && (
-          <p className="random-pair">
-            <strong>{randomPair[0].name}</strong> <span className="muted">(Delantero)</span> +{' '}
-            <strong>{randomPair[1].name}</strong> <span className="muted">(Zaguero)</span>
-          </p>
-        )}
-      </section>
-
-      <section className="card">
-        <h2>Partido al azar</h2>
-        <p className="muted">
-          Sortea dos parejas (cada una con un delantero y un zaguero) entre los jugadores marcados
-          ({chosenForwards.length} delanteros, {chosenBacks.length} zagueros).
-        </p>
-        <div className="row">
-          <button onClick={drawRandomMatch} disabled={!canDrawMatch}>
-            {randomMatch ? 'Sortear otro partido' : 'Obtener partido al azar'}
-          </button>
-        </div>
-        {!canDrawMatch && <p className="muted">Marca al menos dos delanteros y dos zagueros.</p>}
-        {randomMatch && (
-          <div className="random-match">
-            {randomMatch.map((pair, i) => (
-              <p key={i} className="random-pair">
-                <strong>{pair[0].name}</strong> <span className="muted">(Delantero)</span> +{' '}
-                <strong>{pair[1].name}</strong> <span className="muted">(Zaguero)</span>
-              </p>
-            ))}
-          </div>
-        )}
-      </section>
-
-      {isAdmin && (
+      {vista === 'sorteos' && (
         <>
-          <section className="card">
-            <h2>Grupo de jugadores</h2>
-            <p className="muted">Asigna un grupo (1, 2, 3…) a los jugadores marcados para poder seleccionarlos juntos después.</p>
-            <div className="row">
-              <input type="number" min={1} max={99} placeholder="Nº de grupo" aria-label="Número de grupo"
-                value={assignGroup} onChange={e => setAssignGroup(e.target.value)} />
-              <button disabled={selected.size === 0 || assignGroup === ''}
-                onClick={() => void applyGroup(Number(assignGroup))}>Asignar grupo</button>
-              <button className="secondary" disabled={selected.size === 0}
-                onClick={() => void applyGroup(null)}>Quitar grupo</button>
-            </div>
-          </section>
-          <div className="row">
-            <button disabled={selected.size < 2} onClick={() => void makePreview()}>
-              Emparejar al azar ({selected.size})
-            </button>
-            <button className="secondary" disabled={selected.size === 0}
-              onClick={() => void deleteSelected()}>
-              Borrar seleccionados
-            </button>
-          </div>
-          {preview && (
+          <Disclosure className="card present" defaultOpen={selected.size === 0} summary={`Jugadores que participan (${selected.size})`}>
+            {picker}
+          </Disclosure>
+
+          <div className="draw-grid">
             <section className="card">
-              <h2>Vista previa</h2>
-              <ul className="plain">
-                {preview.pairs.map((p, i) => (
-                  <li key={i}>{p.player1.name} <span className="muted">({p.player1.position})</span> + {p.player2.name}{' '}
-                    <span className="muted">({p.player2.position})</span></li>
-                ))}
-              </ul>
-              {preview.unpaired && <p className="muted">Sin pareja: {preview.unpaired.name}</p>}
-              <p className="muted">Es solo una prueba: las parejas se crean al inscribirlas en una competición.</p>
+              <h2>Pareja al azar</h2>
+              <p className="muted">Un delantero y un zaguero ({chosenForwards.length} delanteros, {chosenBacks.length} zagueros).</p>
+              {randomPair && (
+                <p className="random-pair">
+                  <strong>{randomPair[0].name}</strong> <span className="muted">(Delantero)</span> +{' '}
+                  <strong>{randomPair[1].name}</strong> <span className="muted">(Zaguero)</span>
+                </p>
+              )}
+              <div className="row">
+                <button onClick={drawRandomPair} disabled={!canDraw}>
+                  {randomPair ? 'Sortear otra pareja' : 'Obtener pareja al azar'}
+                </button>
+              </div>
+              {!canDraw && <p className="muted">Marca al menos un delantero y un zaguero.</p>}
+            </section>
+
+            <section className="card">
+              <h2>Partido al azar</h2>
+              <p className="muted">Dos parejas con delantero y zaguero ({chosenForwards.length} delanteros, {chosenBacks.length} zagueros).</p>
+              {randomMatch && (
+                <div className="random-match">
+                  {randomMatch.map((pair, i) => (
+                    <p key={i} className="random-pair">
+                      <strong>{pair[0].name}</strong> <span className="muted">(Delantero)</span> +{' '}
+                      <strong>{pair[1].name}</strong> <span className="muted">(Zaguero)</span>
+                    </p>
+                  ))}
+                </div>
+              )}
+              <div className="row">
+                <button onClick={drawRandomMatch} disabled={!canDrawMatch}>
+                  {randomMatch ? 'Sortear otro partido' : 'Obtener partido al azar'}
+                </button>
+              </div>
+              {!canDrawMatch && <p className="muted">Marca al menos dos delanteros y dos zagueros.</p>}
+            </section>
+          </div>
+
+          {isAdmin && (
+            <section className="card">
+              <h2>Emparejar a todos</h2>
+              <p className="muted">Prueba cómo quedarían las parejas con todos los marcados. Es solo una vista previa: las parejas se crean al inscribirlas en una competición.</p>
+              <div className="row">
+                <button className="secondary" disabled={selected.size < 2} onClick={() => void makePreview()}>
+                  Emparejar al azar ({selected.size})
+                </button>
+              </div>
+              {preview && (
+                <>
+                  <ul className="plain">
+                    {preview.pairs.map((p, i) => (
+                      <li key={i}>{p.player1.name} <span className="muted">({p.player1.position})</span> + {p.player2.name}{' '}
+                        <span className="muted">({p.player2.position})</span></li>
+                    ))}
+                  </ul>
+                  {preview.unpaired && <p className="muted">Sin pareja: {preview.unpaired.name}</p>}
+                </>
+              )}
             </section>
           )}
         </>

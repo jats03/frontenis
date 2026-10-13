@@ -1,4 +1,5 @@
 import { Link, useParams } from 'react-router-dom'
+import PageHeader from '../components/PageHeader'
 import SourceFilter, { useHistoryFilter } from '../components/SourceFilter'
 import { api } from '../api/client'
 import type { Relation } from '../api/types'
@@ -57,10 +58,7 @@ export default function PlayerDetailPage() {
 
   return (
     <>
-      <div className="row between">
-        <h1>{s.name}</h1>
-        <Link className="button secondary" to={`/jugadores/historico${query}`}>Volver al histórico</Link>
-      </div>
+      <PageHeader title={s.name} subtitle={<Link to={`/jugadores/historico${query}`}>← Volver al histórico</Link>} />
       <SourceFilter value={filter} onChange={setFilter} />
       <StaleNotice savedAt={savedAt} error={error} />
       <section className="card stats">

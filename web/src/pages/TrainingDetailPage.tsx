@@ -1,5 +1,9 @@
 import { useMemo, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
+import Disclosure from '../components/Disclosure'
+import ActionMenu from '../components/ActionMenu'
+import PageHeader from '../components/PageHeader'
+import { formatShortDate } from '../dates'
 import { confirmDelete, notify } from '../alerts'
 import { api } from '../api/client'
 import type { Player, TrainingDetail, TrainingRow, TrainingSuggestion } from '../api/types'
@@ -52,6 +56,7 @@ export default function TrainingDetailPage() {
 
   const [tab, setTab] = useState<'pairs' | 'players'>('pairs')
   const [showMatches, setShowMatches] = useState(true)
+  const [formOpen, setFormOpen] = useState(false)
   const [slots, setSlots] = useState<Slots>(EMPTY)
   const [target, setTarget] = useState(15)
   const [homeScore, setHomeScore] = useState('')
@@ -82,6 +87,7 @@ export default function TrainingDetailPage() {
       commit(updated)
       notify('Partido añadido')
       setSlots(EMPTY); setHomeScore(''); setAwayScore('')
+      setFormOpen(false)
       if (suggestions) void suggest()
     } catch (e) { setFormError(e instanceof Error ? e.message : 'Error') }
   }
@@ -111,7 +117,8 @@ export default function TrainingDetailPage() {
   function applySuggestion(s: TrainingSuggestion) {
     setSlots([String(s.homePlayerIds[0]), String(s.homePlayerIds[1]), String(s.awayPlayerIds[0]), String(s.awayPlayerIds[1])])
     setHomeScore(''); setAwayScore('')
-    document.getElementById('nuevo-partido')?.scrollIntoView({ behavior: 'smooth' })
+    setFormOpen(true)
+    setTimeout(() => document.getElementById('nuevo-partido')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50)
   }
 
   if (error && !data) return <p className="error">{error}</p>
@@ -129,25 +136,21 @@ export default function TrainingDetailPage() {
 
   return (
     <>
-      <div className="row between">
-        <div>
-          <h1>{s.name}</h1>
-          <p className="muted">
-            {new Date(s.date).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })} · {s.pointsPerWin} pts por victoria
-            {s.pointsPerLoss > 0 && ` · ${s.pointsPerLoss} por derrota`}
-          </p>
-        </div>
-        <div className="row">
-          <Link className="button secondary" to="/entrenamientos">Todas las sesiones</Link>
-          {isAdmin && <button className="secondary" onClick={() => void removeSession()}>Eliminar</button>}
-        </div>
-      </div>
+      <PageHeader title={s.name}
+        subtitle={<>{formatShortDate(s.date)} · {s.pointsPerWin} pts por victoria{s.pointsPerLoss > 0 && ` · ${s.pointsPerLoss} por derrota`}</>}
+        actions={<>
+          {!formOpen && <button onClick={() => setFormOpen(true)}>+ Registrar partido</button>}
+          <ActionMenu items={[
+            { label: 'Todas las sesiones', onSelect: () => navigate('/entrenamientos') },
+            { label: 'Eliminar sesión', danger: true, hidden: !isAdmin, onSelect: () => void removeSession() },
+          ]} />
+        </>} />
       <StaleNotice savedAt={savedAt} error={error} />
 
       <div className="training-layout">
         <div>
-          {(
-            <section className="card form" id="nuevo-partido">
+          {formOpen && (
+            <section className="card form" id="nuevo-partido" aria-label="Registrar partido">
               <h2>Registrar partido</h2>
               <p className="muted">Cualquier persona puede registrar un partido; solo el administrador puede borrarlos.</p>
               <div className="cols">
@@ -164,14 +167,17 @@ export default function TrainingDetailPage() {
                 <label>Marcador pareja B<input inputMode="numeric" value={awayScore} onChange={e => setAwayScore(e.target.value)} /></label>
               </div>
               {formError && <p className="error">{formError}</p>}
-              <button onClick={() => void addMatch()}>Registrar partido</button>
+              <div className="row">
+                <button onClick={() => void addMatch()}>Guardar partido</button>
+                <button className="secondary" onClick={() => { setFormOpen(false); setFormError(null) }}>Cancelar</button>
+              </div>
             </section>
           )}
 
           <section className="card">
             <div className="row between">
               <h2>Partidos jugados ({data.matches.length})</h2>
-              <button className="secondary" aria-expanded={showMatches} onClick={() => setShowMatches(v => !v)}>
+              <button className="secondary small" aria-expanded={showMatches} onClick={() => setShowMatches(v => !v)}>
                 {showMatches ? 'Ocultar partidos' : 'Mostrar partidos'}
               </button>
             </div>
@@ -179,11 +185,15 @@ export default function TrainingDetailPage() {
               <ol className="training-matches">
                 {[...data.matches].reverse().map(m => (
                   <li key={m.id} value={m.order}>
-                    <span className={m.homeWon ? 'team winner' : 'team'}>{m.homeName}</span>
-                    <strong className="score"> {m.homeScore} - {m.awayScore} </strong>
-                    <span className={!m.homeWon ? 'team winner' : 'team'}>{m.awayName}</span>
-                    <small className="muted"> (a {m.targetPoints})</small>
-                    {isAdmin && <button className="secondary small" onClick={() => void removeMatch(m.id)}>Borrar</button>}
+                    <div className="tm-teams">
+                      <span className={m.homeWon ? 'team winner' : 'team'}>{m.homeName}</span>
+                      <span className={!m.homeWon ? 'team winner' : 'team'}>{m.awayName}</span>
+                    </div>
+                    <div className="tm-score">
+                      <strong>{m.homeScore} - {m.awayScore}</strong>
+                      <small className="muted">a {m.targetPoints}</small>
+                    </div>
+                    {isAdmin && <button className="secondary small tm-del" onClick={() => void removeMatch(m.id)}>Borrar</button>}
                   </li>
                 ))}
               </ol>
@@ -203,13 +213,17 @@ export default function TrainingDetailPage() {
 
       <section className="card">
         <h2>Siguiente partido</h2>
-        <p className="muted">
-          Marca quién está presente y calculo los partidos más recomendables. Criterio: primero que todos jueguen parecido
-          (prioridad a quien ha jugado menos y descanso a quien jugó el último partido); después parejas lo más igualadas
-          posible, según el nivel de cada jugador (porcentaje de victorias suavizado, con un pequeño ajuste por el margen
-          de tantos); y se evita repetir compañero o el mismo cruce.
-        </p>
-        <PlayerPicker players={list} selected={present} onChange={setPresentChosen} />
+        <details className="how">
+          <summary>¿Cómo se elige?</summary>
+          <p className="muted">
+            Primero, que todos jueguen parecido (prioridad a quien ha jugado menos y descanso a quien jugó el último partido).
+            Después, parejas lo más igualadas posible según el nivel de cada jugador (porcentaje de victorias suavizado, con un
+            pequeño ajuste por el margen de tantos). Se evita repetir compañero o el mismo cruce.
+          </p>
+        </details>
+        <Disclosure className="present" defaultOpen={present.size < 4} summary={`Jugadores presentes (${present.size})`}>
+          <PlayerPicker players={list} selected={present} onChange={setPresentChosen} />
+        </Disclosure>
         <div className="row">
           <button disabled={present.size < 4} onClick={() => void suggest()}>
             {suggestions ? 'Recalcular sugerencias' : 'Sugerir siguiente partido'}

@@ -1,12 +1,14 @@
 import { useEffect, useRef } from 'react'
-import { Link, NavLink, Route, Routes, useLocation } from 'react-router-dom'
-import { useAuth } from './auth/AuthContext'
+import { Link, Route, Routes, useLocation } from 'react-router-dom'
 import ApiStatus from './components/ApiStatus'
+import AppNav from './components/AppNav'
 import LoadingSpinner from './components/LoadingSpinner'
 import CompetitionDetailPage from './pages/CompetitionDetailPage'
 import CompetitionNewPage from './pages/CompetitionNewPage'
 import CompetitionsPage from './pages/CompetitionsPage'
+import HomePage from './pages/HomePage'
 import LoginPage from './pages/LoginPage'
+import MorePage from './pages/MorePage'
 import PlayerDetailPage from './pages/PlayerDetailPage'
 import PlayerHistoryPage from './pages/PlayerHistoryPage'
 import PlayersPage from './pages/PlayersPage'
@@ -17,7 +19,6 @@ import WhatsappPage from './pages/WhatsappPage'
 import TimerPage from './pages/TimerPage'
 
 export default function App() {
-  const { isAdmin, username, logout } = useAuth()
   const { pathname } = useLocation()
   const main = useRef<HTMLElement>(null)
   const first = useRef(true)
@@ -29,24 +30,14 @@ export default function App() {
   return (
     <div className="app">
       <a className="skip-link" href="#contenido" onClick={e => { e.preventDefault(); main.current?.focus() }}>Saltar al contenido</a>
-      <header className="topbar">
-        <span className="brand"><img src="/logo.png" alt="Frontenis Club Ciudad de Jaén" className="logo" /></span>
-        <nav aria-label="Principal">
-          <NavLink to="/" end>Competiciones</NavLink>
-          <NavLink to="/jugadores">Jugadores</NavLink>
-          <NavLink to="/entrenamientos">Entrenamientos</NavLink>
-          <NavLink to="/cronometro">Cronómetro</NavLink>
-          <NavLink to="/plantillas">Plantillas</NavLink>
-        </nav>
-        {isAdmin && <NavLink to="/cuenta">Mi cuenta</NavLink>}
-        {/* El acceso de administrador no se anuncia: se entra escribiendo la dirección /acceso */}
-        {isAdmin && <button className="link" onClick={logout}>Salir ({username})</button>}
-      </header>
+      <AppNav />
       <ApiStatus />
       <LoadingSpinner />
       <main id="contenido" className="content" tabIndex={-1} ref={main}>
         <Routes>
-          <Route path="/" element={<CompetitionsPage />} />
+          <Route path="/" element={<HomePage />} />
+          <Route path="/competiciones" element={<CompetitionsPage />} />
+          <Route path="/mas" element={<MorePage />} />
           <Route path="/competiciones/nueva" element={<CompetitionNewPage />} />
           <Route path="/competiciones/:id" element={<CompetitionDetailPage />} />
           <Route path="/jugadores" element={<PlayersPage />} />
