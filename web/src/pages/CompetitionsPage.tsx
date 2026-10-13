@@ -1,13 +1,14 @@
 import { Link } from 'react-router-dom'
 import { api } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
+import StaleNotice from '../components/StaleNotice'
 import { useAsync, useDocumentTitle } from '../hooks'
 import { statusLabel, typeLabel } from '../labels'
 
 export default function CompetitionsPage() {
   useDocumentTitle('Competiciones')
   const { isAdmin } = useAuth()
-  const { data, error, loading } = useAsync(() => api.competitions.list(), [])
+  const { data, error, loading, savedAt } = useAsync(() => api.competitions.list(), [], '/api/competitions')
 
   return (
     <>
@@ -15,8 +16,9 @@ export default function CompetitionsPage() {
         <h1>Competiciones</h1>
         {isAdmin && <Link className="button" to="/competiciones/nueva">+ Nueva</Link>}
       </div>
-      {loading && <p className="muted">Cargando…</p>}
-      {error && <p className="error">{error}</p>}
+      <StaleNotice savedAt={savedAt} error={error} />
+      {loading && !data && <p className="muted">Cargando…</p>}
+      {error && !data && <p className="error">{error}</p>}
       {data?.length === 0 && <p className="muted">Aún no hay competiciones.</p>}
       <div className="grid">
         {data?.map(c => (

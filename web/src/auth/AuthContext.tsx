@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
-import { api, tokenStore } from '../api/client'
+import { api, responseCache, tokenStore } from '../api/client'
 
 interface AuthState {
   isAdmin: boolean
@@ -20,6 +20,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(() => {
     tokenStore.clear()
+    responseCache.clear()
     try { localStorage.removeItem(USER_KEY) } catch { /* sin almacenamiento */ }
     setUsername(null)
   }, [])

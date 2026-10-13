@@ -1,16 +1,16 @@
 import { useState, type FormEvent } from 'react'
-import { Link } from 'react-router-dom'
 import { confirmDelete, notify } from '../alerts'
 import { api } from '../api/client'
 import type { PairingPreview, Player, Position } from '../api/types'
 import PlayerPicker from '../components/PlayerPicker'
 import { useAuth } from '../auth/AuthContext'
+import StaleNotice from '../components/StaleNotice'
 import { useAsync, useDocumentTitle } from '../hooks'
 
 export default function PlayersPage() {
   useDocumentTitle('Jugadores')
   const { isAdmin } = useAuth()
-  const { data: players, error, loading, reload } = useAsync(() => api.players.list(), [])
+  const { data: players, error, loading, reload, savedAt } = useAsync(() => api.players.list(), [], '/api/players')
   const [name, setName] = useState('')
   const [position, setPosition] = useState<Position>('Delantero')
   const [groupInput, setGroupInput] = useState('')
@@ -102,8 +102,9 @@ export default function PlayersPage() {
   return (
     <>
       <h1>Jugadores</h1>
-      {loading && <p className="muted">Cargando…</p>}
-      {(error || message) && <p className="error">{error ?? message}</p>}
+      <StaleNotice savedAt={savedAt} error={error} />
+      {loading && !players && <p className="muted">Cargando…</p>}
+      {((error && !players) || message) && <p className="error">{(error && !players ? error : null) ?? message}</p>}
 
       {isAdmin && (
         <form className="card form row" onSubmit={add}>
@@ -116,12 +117,6 @@ export default function PlayersPage() {
             value={groupInput} onChange={e => setGroupInput(e.target.value)} />
           <button type="submit">Añadir</button>
         </form>
-      )}
-      {isAdmin && (
-        <p className="muted">
-          Aviso: los nombres se publican en la web. Informa a los jugadores y obtén su consentimiento (el de sus
-          padres o tutores si son menores de 14 años). Más información en la <Link to="/privacidad">política de privacidad</Link>.
-        </p>
       )}
 
       <section className="card">

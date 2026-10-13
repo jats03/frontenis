@@ -172,16 +172,6 @@ button.swap { min-height: 36px; padding: .15rem .6rem; font-size: .85rem; white-
 .topbar :focus-visible, .banner :focus-visible { outline-color: #fff; }
 main:focus { outline: none; }
 
-/* Páginas legales y pie */
-.site-footer { border-top: 1px solid var(--border); padding: 1rem; margin-top: 1.5rem; }
-.site-footer nav { max-width: 960px; margin: 0 auto; display: flex; flex-wrap: wrap; gap: .25rem 1.25rem; }
-.site-footer a { color: var(--text); min-height: 44px; display: inline-flex; align-items: center; }
-.legal { line-height: 1.6; }
-.legal h1 { margin-top: 0; }
-.legal h2 { margin-top: 1.4rem; font-size: 1.15rem; }
-.legal ul { padding-left: 1.2rem; }
-.legal a { color: var(--link, #0b5d56); }
-.legal-table { width: 100%; border-collapse: collapse; font-size: .92rem; display: block; overflow-x: auto; }
-.legal-table th, .legal-table td { border: 1px solid var(--border); padding: .45rem .6rem; text-align: left; vertical-align: top; }
-mark.todo { background: #fde047; color: #1a1a1a; padding: 0 .25rem; border-radius: 4px; font-weight: 700; }
-.legal-nav { margin-top: 1.5rem; }
+
+
+.stale-notice { margin: .5rem 0; padding: .5rem .75rem; border-radius: 8px; background: var(--accent); color: #3b3200; font-size: .92rem; }

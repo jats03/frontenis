@@ -12,6 +12,36 @@ export const tokenStore = {
   clear: () => { try { localStorage.removeItem(TOKEN_KEY) } catch { /* sin almacenamiento */ } },
 }
 
+/**
+ * Copia local de la última respuesta correcta de cada lectura (GET). Permite pintar al instante lo último
+ * conocido mientras el servidor o la base de datos despiertan, y se refresca por detrás.
+ */
+const CACHE_PREFIX = 'frontenis.cache:'
+export interface CachedEntry<T> { data: T; savedAt: number }
+export const responseCache = {
+  peek<T>(path: string): CachedEntry<T> | null {
+    try {
+      const raw = localStorage.getItem(CACHE_PREFIX + path)
+      if (!raw) return null
+      const parsed = JSON.parse(raw) as CachedEntry<T>
+      return typeof parsed?.savedAt === 'number' && parsed.data !== undefined ? parsed : null
+    } catch { return null }
+  },
+  save<T>(path: string, data: T) {
+    try { localStorage.setItem(CACHE_PREFIX + path, JSON.stringify({ data, savedAt: Date.now() })) }
+    catch { /* sin almacenamiento o cuota llena: no pasa nada */ }
+  },
+  remove(path: string) {
+    try { localStorage.removeItem(CACHE_PREFIX + path) } catch { /* sin almacenamiento */ }
+  },
+  /** Borra todas las copias (se usa al cerrar sesión). */
+  clear() {
+    try {
+      Object.keys(localStorage).filter(k => k.startsWith(CACHE_PREFIX)).forEach(k => localStorage.removeItem(k))
+    } catch { /* sin almacenamiento */ }
+  },
+}
+
 export class ApiError extends Error {
   status: number
   constructor(status: number, message: string) { super(message); this.status = status }
@@ -25,7 +55,9 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
 
   // Si el servidor está dormido (Render) o la BD se está reanudando, las lecturas se reintentan
   // y, si tardan, se avisa al usuario (ver ApiStatus).
-  window.dispatchEvent(new Event('frontenis:request-start'))
+  // Una lectura con copia local es "silenciosa": no tapa la pantalla con el spinner porque ya hay datos que mostrar.
+  const silent = method === 'GET' && responseCache.peek(path) !== null
+  if (!silent) window.dispatchEvent(new Event('frontenis:request-start'))
   const SLOW_MS = 4000
   const attempts = method === 'GET' ? 4 : 1
   let slowFired = false
@@ -51,10 +83,11 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
       if (res.status === 401 && token) window.dispatchEvent(new Event('frontenis:unauthorized'))
       throw new ApiError(res.status, data?.detail ?? data?.title ?? `Error ${res.status}`)
     }
+    if (method === 'GET' && data !== undefined) responseCache.save(path, data)
     return data as T
   } finally {
     clearTimeout(slowTimer)
-    window.dispatchEvent(new Event('frontenis:request-end'))
+    if (!silent) window.dispatchEvent(new Event('frontenis:request-end'))
     if (slowFired) window.dispatchEvent(new Event('frontenis:slow-end'))
   }
 }
@@ -80,7 +113,11 @@ export const api = {
     standings: (id: number) => request<GroupStandings[]>('GET', `/api/competitions/${id}/standings`),
     create: (c: CreateCompetition) => request<CompetitionSummary>('POST', '/api/competitions', c),
     rename: (id: number, name: string) => request<CompetitionSummary>('PUT', `/api/competitions/${id}/name`, { name }),
-    remove: (id: number) => request<void>('DELETE', `/api/competitions/${id}`),
+    remove: async (id: number) => {
+      await request<void>('DELETE', `/api/competitions/${id}`)
+      responseCache.remove(`/api/competitions/${id}`)
+      responseCache.remove(`/api/competitions/${id}/standings`)
+    },
     registerRandom: (id: number, playerIds: number[]) =>
       request<PairDto[]>('POST', `/api/competitions/${id}/pairs/random`, { playerIds }),
     registerManual: (id: number, player1Id: number, player2Id: number) =>

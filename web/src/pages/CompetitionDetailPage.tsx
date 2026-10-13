@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { confirmDelete, notify, promptText } from '../alerts'
-import { api } from '../api/client'
+import { api, responseCache } from '../api/client'
 import type { CompetitionDetail, GroupStandings, Player } from '../api/types'
 import { useAuth } from '../auth/AuthContext'
 import Bracket from '../components/Bracket'
 import MatchCard from '../components/MatchCard'
 import RegistrationPanel from '../components/RegistrationPanel'
 import RotatingDrawPanel from '../components/RotatingDrawPanel'
+import StaleNotice from '../components/StaleNotice'
 import SubTabs from '../components/SubTabs'
 import StandingsTable from '../components/StandingsTable'
 import { statusLabel, typeLabel } from '../labels'
@@ -16,12 +17,20 @@ import { exportStandingsPdf } from '../pdf'
 
 type Tab = 'standings' | 'matches' | 'playoffs' | 'pairs'
 
+/** El componente interno se recrea al cambiar de competición para no arrastrar estado ni copias locales ajenas. */
 export default function CompetitionDetailPage() {
   const id = Number(useParams().id)
+  return <CompetitionDetailView key={id} id={id} />
+}
+
+function CompetitionDetailView({ id }: { id: number }) {
   const navigate = useNavigate()
   const { isAdmin } = useAuth()
-  const [detail, setDetail] = useState<CompetitionDetail | null>(null)
-  const [standings, setStandings] = useState<GroupStandings[]>([])
+  const cachedDetail = responseCache.peek<CompetitionDetail>(`/api/competitions/${id}`)
+  const [detail, setDetail] = useState<CompetitionDetail | null>(cachedDetail?.data ?? null)
+  const [standings, setStandings] = useState<GroupStandings[]>(
+    () => responseCache.peek<GroupStandings[]>(`/api/competitions/${id}/standings`)?.data ?? [])
+  const [savedAt, setSavedAt] = useState<number | null>(cachedDetail?.savedAt ?? null)
   const [players, setPlayers] = useState<Player[]>([])
   const [tab, setTab] = useState<Tab>('standings')
   const [standingsSel, setStandingsSel] = useState('all')            // 'all' o id de grupo
@@ -35,6 +44,7 @@ export default function CompetitionDetailPage() {
       setDetail(d)
       setStandings(d.summary.status === 'Draft' ? [] : await api.competitions.standings(id))
       setError(null)
+      setSavedAt(null)
     } catch (e) { setError(e instanceof Error ? e.message : 'Error') }
   }, [id])
 
@@ -102,7 +112,8 @@ export default function CompetitionDetailPage() {
           </div>
         )}
       </div>
-      {error && <p className="error">{error}</p>}
+      <StaleNotice savedAt={savedAt} error={error} />
+      {error && savedAt === null && <p className="error">{error}</p>}
 
       {summary.status === 'Draft' && isAdmin && isRotating && <RotatingDrawPanel detail={detail} players={players}
         onChanged={load} onPlayersChanged={async () => { setPlayers(await api.players.list()); await load() }} />}

@@ -7,9 +7,6 @@ import CompetitionDetailPage from './pages/CompetitionDetailPage'
 import CompetitionNewPage from './pages/CompetitionNewPage'
 import CompetitionsPage from './pages/CompetitionsPage'
 import LoginPage from './pages/LoginPage'
-import CookiesPage from './pages/CookiesPage'
-import PrivacyPage from './pages/PrivacyPage'
-import TermsPage from './pages/TermsPage'
 import PlayersPage from './pages/PlayersPage'
 import TimerPage from './pages/TimerPage'
 
@@ -49,19 +46,9 @@ export default function App() {
           <Route path="/jugadores" element={<PlayersPage />} />
           <Route path="/cronometro" element={<TimerPage />} />
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/privacidad" element={<PrivacyPage />} />
-          <Route path="/terminos" element={<TermsPage />} />
-          <Route path="/cookies" element={<CookiesPage />} />
           <Route path="*" element={<><h1>Página no encontrada</h1><p><Link to="/">Volver al inicio</Link></p></>} />
         </Routes>
       </main>
-      <footer className="site-footer">
-        <nav aria-label="Información legal">
-          <Link to="/privacidad">Política de privacidad</Link>
-          <Link to="/terminos">Términos y condiciones</Link>
-          <Link to="/cookies">Política de cookies</Link>
-        </nav>
-      </footer>
     </div>
   )
 }
