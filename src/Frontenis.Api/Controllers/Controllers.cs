@@ -48,12 +48,24 @@ public sealed class PlayersController : ControllerBase
 {
     private readonly IPlayerService _players;
     private readonly IPairingService _pairing;
+    private readonly IPlayerHistoryService _history;
 
-    public PlayersController(IPlayerService players, IPairingService pairing)
+    public PlayersController(IPlayerService players, IPairingService pairing, IPlayerHistoryService history)
     {
         _players = players;
         _pairing = pairing;
+        _history = history;
     }
+
+    /// <summary>Histórico de todos los jugadores (puntos, victorias, derrotas…), opcionalmente de una competición.</summary>
+    [HttpGet("history")]
+    public async Task<ActionResult<IReadOnlyList<PlayerHistoryRowDto>>> History([FromQuery] int? competitionId, CancellationToken ct) =>
+        Ok(await _history.RankingAsync(competitionId, ct));
+
+    /// <summary>Ficha histórica de un jugador: compañeros, rivales y últimos partidos.</summary>
+    [HttpGet("{id:int}/history")]
+    public async Task<ActionResult<PlayerHistoryDto>> PlayerHistory(int id, [FromQuery] int? competitionId, CancellationToken ct) =>
+        Ok(await _history.PlayerAsync(id, competitionId, ct));
 
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<PlayerDto>>> List(CancellationToken ct) =>
@@ -112,6 +124,10 @@ public sealed class CompetitionsController : ControllerBase
     [HttpPut("{id:int}/name"), Authorize(Roles = Roles.Admin)]
     public async Task<ActionResult<CompetitionSummaryDto>> Rename(int id, RenameCompetitionRequest request, CancellationToken ct) =>
         Ok(await _competitions.RenameAsync(id, request, ct));
+
+    [HttpPut("{id:int}/sets-per-match"), Authorize(Roles = Roles.Admin)]
+    public async Task<ActionResult<CompetitionSummaryDto>> ChangeSets(int id, SetsPerMatchRequest request, CancellationToken ct) =>
+        Ok(await _competitions.ChangeSetsPerMatchAsync(id, request, ct));
 
     [HttpDelete("{id:int}"), Authorize(Roles = Roles.Admin)]
     public async Task<IActionResult> Delete(int id, CancellationToken ct)

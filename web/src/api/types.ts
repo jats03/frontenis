@@ -18,6 +18,8 @@ export interface CompetitionSummary {
   pointsPerWin: number; pointsPerLoss: number; doubleRound: boolean
   qualifiersPerGroup: number; registeredPairs: number; createdAtUtc: string
   rounds: number; nextCompetitionId: number | null
+  /** 1 o 2 sets por partido (con 2, un 3.º de desempate). */
+  setsPerMatch: number
 }
 export interface Group { id: number; name: string }
 export interface MatchDto {
@@ -27,7 +29,9 @@ export interface MatchDto {
   awayEntryId: number | null; awayName: string | null
   homeScore: number | null; awayScore: number | null
   isPlayed: boolean; winnerEntryId: number | null
+  sets: SetScore[] | null; homeSets: number | null; awaySets: number | null
 }
+export interface SetScore { home: number; away: number }
 export interface CompetitionDetail {
   summary: CompetitionSummary; groups: Group[]; pairs: PairDto[]; matches: MatchDto[]
 }
@@ -42,5 +46,24 @@ export interface GroupStandings { groupId: number; groupName: string; rows: Stan
 export interface CreateCompetition {
   name: string; type: CompetitionType; pairCount: number; groupCount: number
   pairsPerGroup: number; pointsPerWin: number; pointsPerLoss: number
-  doubleRound: boolean; qualifiersPerGroup: number; rounds: number
+  doubleRound: boolean; qualifiersPerGroup: number; rounds: number; setsPerMatch: number
+}
+
+export interface PlayerHistoryRow {
+  playerId: number; name: string; position: Position
+  played: number; won: number; lost: number; winRate: number
+  setsFor: number; setsAgainst: number; tantosFor: number; tantosAgainst: number; tantosDiff: number
+  classificationPoints: number; competitions: number
+}
+export interface Relation {
+  playerId: number; name: string; played: number; won: number; lost: number
+  winRate: number; tantosFor: number; tantosAgainst: number
+}
+export interface RecentMatch {
+  matchId: number; competitionId: number; competitionName: string
+  partner: string; rivals: string; sets: SetScore[]; won: boolean
+}
+export interface PlayerHistory {
+  summary: PlayerHistoryRow; partners: Relation[]; rivals: Relation[]
+  recent: RecentMatch[]; competitions: { id: number; name: string }[]
 }

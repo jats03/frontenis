@@ -77,6 +77,9 @@ public sealed class FrontenisDbContext : DbContext, IUnitOfWork
             e.Ignore(x => x.IsPlayed);
             e.Ignore(x => x.IsReady);
             e.Ignore(x => x.Winner);
+            e.Ignore(x => x.Sets);
+            e.Ignore(x => x.HomeSets);
+            e.Ignore(x => x.AwaySets);
             e.HasOne(x => x.Group).WithMany().HasForeignKey(x => x.GroupId).OnDelete(DeleteBehavior.Restrict);
             e.HasOne(x => x.HomeEntry).WithMany().HasForeignKey(x => x.HomeEntryId).OnDelete(DeleteBehavior.Restrict);
             e.HasOne(x => x.AwayEntry).WithMany().HasForeignKey(x => x.AwayEntryId).OnDelete(DeleteBehavior.Restrict);

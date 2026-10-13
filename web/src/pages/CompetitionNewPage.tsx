@@ -20,6 +20,7 @@ export default function CompetitionNewPage() {
   const [doubleRound, setDoubleRound] = useState(false)
   const [qualifiers, setQualifiers] = useState(2)
   const [rounds, setRounds] = useState(0) // 0 = automático (la mitad de jugadores por grupo)
+  const [setsPerMatch, setSetsPerMatch] = useState(1)
   const [error, setError] = useState<string | null>(null)
 
   // Mantiene coherentes los tres parámetros: parejas = grupos × parejas por grupo.
@@ -42,7 +43,7 @@ export default function CompetitionNewPage() {
       const rotating = type === 'RotatingLeague'
       const created = await api.competitions.create({
         name, type, pairCount: rotating ? groupCount * pairsPerGroup : pairCount, groupCount,
-        rounds: rotating ? rounds : 0,
+        rounds: rotating ? rounds : 0, setsPerMatch,
         pairsPerGroup: rotating || groupCount * pairsPerGroup === pairCount ? pairsPerGroup : 0,
         pointsPerWin, pointsPerLoss, doubleRound: rotating ? false : doubleRound,
         qualifiersPerGroup: type === 'Tournament' ? qualifiers : 0,
@@ -101,6 +102,12 @@ export default function CompetitionNewPage() {
         <label>Puntos por derrota{num(pointsPerLoss, setPointsPerLoss, 0)}</label>
         {type === 'Tournament' && <label>Clasificados por grupo{num(qualifiers, setQualifiers, 1)}</label>}
       </div>
+      <label>Sets por partido
+        <select value={setsPerMatch} onChange={e => setSetsPerMatch(Number(e.target.value))}>
+          <option value={1}>1 set</option>
+          <option value={2}>2 sets (si empatan 1-1, un 3.º de desempate)</option>
+        </select>
+      </label>
       {type !== 'RotatingLeague' && <label className="check">
         <input type="checkbox" checked={doubleRound} onChange={e => setDoubleRound(e.target.checked)} />
         Ida y vuelta

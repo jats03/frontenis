@@ -21,8 +21,19 @@ cd web && cp .env.example .env && npm install && npm run dev
 
 La API crea la base de datos al arrancar (`EnsureCreated`; el esquema equivalente está en `sql/schema.sql`)
 y siembra el administrador definido en `appsettings.json` (`Admin:Username` / `Admin:Password`,
-por defecto `admin` / `admin1234`). **Cámbialos y cambia `Jwt:Key` antes de publicar.**
+por defecto `admin` / `Cambia-Esta-Clave-2026!`). **Cámbialos y cambia `Jwt:Key` antes de publicar:** en producción
+la API se niega a arrancar con la clave JWT de ejemplo, y la contraseña inicial debe tener al menos 12 caracteres.
 Cualquier visitante puede consultar; solo el administrador crea o modifica datos.
+
+### Seguridad de la autenticación
+
+- Contraseñas con PBKDF2-SHA256 (600.000 iteraciones, sal aleatoria); los hashes antiguos se actualizan solos al iniciar sesión.
+- Límite de intentos: 5 fallos seguidos bloquean al usuario 15 minutos y 20 fallos bloquean la IP; además, 8 peticiones por minuto
+  y por IP a `/api/auth/*` y 300 por minuto al resto. Responde 429 con `Retry-After`.
+- Respuesta idéntica y mismo tiempo para «usuario inexistente» y «contraseña incorrecta».
+- JWT firmado con HS256 (algoritmo fijado), caduca a las 4 h (`Jwt:ExpiresMinutes`).
+- El administrador puede cambiar su contraseña en `/cuenta` (pide la actual; mínimo 12 caracteres).
+- Cabeceras de seguridad en la API y CSP en la web (`web/public/_headers`).
 
 ## Reglas del dominio
 

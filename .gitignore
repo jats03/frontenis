@@ -4,3 +4,6 @@ node_modules/
 dist/
 *.user
 .vs/
+.env
+.env.local
+appsettings.Development.json

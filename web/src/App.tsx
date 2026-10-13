@@ -7,6 +7,8 @@ import CompetitionDetailPage from './pages/CompetitionDetailPage'
 import CompetitionNewPage from './pages/CompetitionNewPage'
 import CompetitionsPage from './pages/CompetitionsPage'
 import LoginPage from './pages/LoginPage'
+import PlayerDetailPage from './pages/PlayerDetailPage'
+import PlayerHistoryPage from './pages/PlayerHistoryPage'
 import PlayersPage from './pages/PlayersPage'
 import AccountPage from './pages/AccountPage'
 import WhatsappPage from './pages/WhatsappPage'
@@ -45,6 +47,8 @@ export default function App() {
           <Route path="/competiciones/nueva" element={<CompetitionNewPage />} />
           <Route path="/competiciones/:id" element={<CompetitionDetailPage />} />
           <Route path="/jugadores" element={<PlayersPage />} />
+          <Route path="/jugadores/historico" element={<PlayerHistoryPage />} />
+          <Route path="/jugadores/:id" element={<PlayerDetailPage />} />
           <Route path="/cronometro" element={<TimerPage />} />
           <Route path="/plantillas" element={<WhatsappPage />} />
           <Route path="/cuenta" element={<AccountPage />} />

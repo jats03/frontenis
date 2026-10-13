@@ -1,5 +1,6 @@
 using Frontenis.Application.Abstractions;
 using Frontenis.Application.Dtos;
+using Frontenis.Domain.Entities;
 using Frontenis.Domain.Exceptions;
 
 namespace Frontenis.Application.Services;
@@ -25,7 +26,9 @@ public sealed class MatchService : IMatchService
     {
         var competition = await _competitions.GetDetailedByMatchIdAsync(matchId, ct)
             ?? throw new NotFoundException("Partido no encontrado.");
-        var match = competition.RecordResult(matchId, request.HomeScore, request.AwayScore);
+        var match = request.Sets is { Count: > 0 }
+            ? competition.RecordResult(matchId, request.Sets.Select(s => new SetScore(s.Home, s.Away)).ToList())
+            : competition.RecordResult(matchId, request.HomeScore, request.AwayScore);
         await _uow.SaveChangesAsync(ct);
         return match.ToDto();
     }

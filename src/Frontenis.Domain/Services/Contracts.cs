@@ -47,7 +47,11 @@ public interface IScheduleGenerator
 }
 
 // ---------- Clasificación ----------
-public sealed record MatchOutcome(int HomeId, int AwayId, int HomeScore, int AwayScore);
+/// <param name="HomeSets">Sets ganados (si se indican, deciden el ganador; si no, los tantos).</param>
+public sealed record MatchOutcome(int HomeId, int AwayId, int HomeScore, int AwayScore, int? HomeSets = null, int? AwaySets = null)
+{
+    public bool HomeWon => HomeSets.HasValue && AwaySets.HasValue ? HomeSets > AwaySets : HomeScore > AwayScore;
+}
 
 public sealed record StandingRow(
     int EntryId, int Rank, int Played, int Won, int Lost,
@@ -81,7 +85,11 @@ public interface IRotationPlanner
 
 /// <summary>Resultado de un partido por equipos: cada lado son los ids de sus jugadores.</summary>
 public sealed record TeamOutcome(
-    IReadOnlyList<int> HomePlayerIds, IReadOnlyList<int> AwayPlayerIds, int HomeScore, int AwayScore);
+    IReadOnlyList<int> HomePlayerIds, IReadOnlyList<int> AwayPlayerIds, int HomeScore, int AwayScore,
+    int? HomeSets = null, int? AwaySets = null)
+{
+    public bool HomeWon => HomeSets.HasValue && AwaySets.HasValue ? HomeSets > AwaySets : HomeScore > AwayScore;
+}
 
 /// <summary>Clasificación individual: en <see cref="StandingRow.EntryId"/> viaja el id del jugador.</summary>
 public interface IIndividualStandingsCalculator

@@ -1,6 +1,6 @@
 import type {
   CompetitionDetail, CompetitionSummary, CreateCompetition, GroupStandings, MatchDto,
-  PairDto, PairingPreview, Player, Position,
+  PairDto, PairingPreview, Player, PlayerHistory, PlayerHistoryRow, Position, SetScore,
 } from './types'
 
 export const BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:5080'
@@ -108,6 +108,10 @@ export const api = {
     update: (id: number, name: string, position: Position, groupNumber: number | null = null) =>
       request<Player>('PUT', `/api/players/${id}`, { name, position, groupNumber }),
     remove: (id: number) => request<void>('DELETE', `/api/players/${id}`),
+    history: (competitionId?: number) =>
+      request<PlayerHistoryRow[]>('GET', `/api/players/history${competitionId ? `?competitionId=${competitionId}` : ''}`),
+    playerHistory: (id: number, competitionId?: number) =>
+      request<PlayerHistory>('GET', `/api/players/${id}/history${competitionId ? `?competitionId=${competitionId}` : ''}`),
     pairingPreview: (playerIds: number[]) =>
       request<PairingPreview>('POST', '/api/players/pairing-preview', { playerIds }),
   },
@@ -117,6 +121,8 @@ export const api = {
     get: (id: number) => request<CompetitionDetail>('GET', `/api/competitions/${id}`),
     standings: (id: number) => request<GroupStandings[]>('GET', `/api/competitions/${id}/standings`),
     create: (c: CreateCompetition) => request<CompetitionSummary>('POST', '/api/competitions', c),
+    setSetsPerMatch: (id: number, setsPerMatch: number) =>
+      request<CompetitionSummary>('PUT', `/api/competitions/${id}/sets-per-match`, { setsPerMatch }),
     rename: (id: number, name: string) => request<CompetitionSummary>('PUT', `/api/competitions/${id}/name`, { name }),
     remove: async (id: number) => {
       await request<void>('DELETE', `/api/competitions/${id}`)
@@ -139,8 +145,8 @@ export const api = {
   },
 
   matches: {
-    setResult: (id: number, homeScore: number, awayScore: number) =>
-      request<MatchDto>('PUT', `/api/matches/${id}/result`, { homeScore, awayScore }),
+    setResult: (id: number, sets: SetScore[]) =>
+      request<MatchDto>('PUT', `/api/matches/${id}/result`, { sets }),
     clearResult: (id: number) => request<MatchDto>('DELETE', `/api/matches/${id}/result`),
   },
 }

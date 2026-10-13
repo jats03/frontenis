@@ -83,6 +83,14 @@ function CompetitionDetailView({ id }: { id: number }) {
     catch (e) { setError(e instanceof Error ? e.message : 'Error') }
   }
 
+  async function changeSets() {
+    try {
+      await api.competitions.setSetsPerMatch(id, summary.setsPerMatch === 2 ? 1 : 2)
+      notify('Formato de partido actualizado')
+      await load()
+    } catch (e) { setError(e instanceof Error ? e.message : 'Error') }
+  }
+
   async function remove() {
     if (!(await confirmDelete('¿Eliminar esta competición?', 'Se borrarán también sus grupos, partidos y resultados.'))) return
     try { await api.competitions.remove(id); notify('Competición eliminada'); navigate('/') }
@@ -103,11 +111,17 @@ function CompetitionDetailView({ id }: { id: number }) {
           <p className="muted">
             {typeLabel[summary.type]} · {statusLabel[summary.status]} · {summary.pointsPerWin} pts por victoria
             {summary.pointsPerLoss > 0 && ` · ${summary.pointsPerLoss} por derrota`}
+            {` · ${summary.setsPerMatch === 2 ? '2 sets (3.º de desempate)' : '1 set'} por partido`}
           </p>
         </div>
         {isAdmin && (
           <div className="row">
             <button className="secondary" onClick={() => void rename()}>Editar nombre</button>
+            {!detail.matches.some(m => m.isPlayed) && (
+              <button className="secondary" onClick={() => void changeSets()}>
+                Pasar a {summary.setsPerMatch === 2 ? '1 set' : '2 sets'}
+              </button>
+            )}
             <button className="secondary" onClick={() => void remove()}>Eliminar</button>
           </div>
         )}
@@ -193,7 +207,7 @@ function CompetitionDetailView({ id }: { id: number }) {
                           <div key={r}>
                             <h3>Jornada {r}</h3>
                             {list.filter(m => m.round === r).map(m => (
-                              <MatchCard key={m.id} match={m} canEdit={isAdmin} onChanged={() => void load()} />
+                              <MatchCard key={m.id} match={m} canEdit={isAdmin} setsPerMatch={summary.setsPerMatch} onChanged={() => void load()} />
                             ))}
                           </div>
                         ))}
@@ -222,7 +236,7 @@ function CompetitionDetailView({ id }: { id: number }) {
                             <div key={g.id}>
                               {detail.groups.length > 1 && <h3>{g.name}</h3>}
                               {list.map(m => (
-                                <MatchCard key={m.id} match={m} canEdit={isAdmin} onChanged={() => void load()} />
+                                <MatchCard key={m.id} match={m} canEdit={isAdmin} setsPerMatch={summary.setsPerMatch} onChanged={() => void load()} />
                               ))}
                             </div>
                           )
@@ -235,7 +249,7 @@ function CompetitionDetailView({ id }: { id: number }) {
             </>
           )}
 
-          {tab === 'playoffs' && <Bracket matches={detail.matches} canEdit={isAdmin} onChanged={() => void load()} />}
+          {tab === 'playoffs' && <Bracket matches={detail.matches} canEdit={isAdmin} setsPerMatch={summary.setsPerMatch} onChanged={() => void load()} />}
         </>
       )}
 

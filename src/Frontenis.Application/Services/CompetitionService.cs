@@ -14,6 +14,7 @@ public interface ICompetitionService
     Task<CompetitionSummaryDto> CreateAsync(CreateCompetitionRequest request, CancellationToken ct = default);
     Task DeleteAsync(int id, CancellationToken ct = default);
     Task<CompetitionSummaryDto> RenameAsync(int id, RenameCompetitionRequest request, CancellationToken ct = default);
+    Task<CompetitionSummaryDto> ChangeSetsPerMatchAsync(int id, SetsPerMatchRequest request, CancellationToken ct = default);
     Task<CompetitionDetailDto> DrawAsync(int id, CancellationToken ct = default);
     Task<CompetitionDetailDto> DrawManualAsync(int id, ManualDrawRequest request, CancellationToken ct = default);
     Task<CompetitionDetailDto> DrawRotatingManualAsync(int id, ManualDrawRequest request, CancellationToken ct = default);
@@ -65,7 +66,7 @@ public sealed class CompetitionService : ICompetitionService
     {
         var competition = Competition.Create(new CompetitionSettings(
             r.Name, r.Type, r.PairCount, r.GroupCount, r.PairsPerGroup,
-            r.PointsPerWin, r.PointsPerLoss, r.DoubleRound, r.QualifiersPerGroup, r.Rounds));
+            r.PointsPerWin, r.PointsPerLoss, r.DoubleRound, r.QualifiersPerGroup, r.Rounds, r.SetsPerMatch));
         await _repository.AddAsync(competition, ct);
         await _uow.SaveChangesAsync(ct);
         return competition.ToSummary();
@@ -75,6 +76,14 @@ public sealed class CompetitionService : ICompetitionService
     {
         var competition = await LoadAsync(id, ct);
         competition.Rename(request.Name);
+        await _uow.SaveChangesAsync(ct);
+        return competition.ToSummary();
+    }
+
+    public async Task<CompetitionSummaryDto> ChangeSetsPerMatchAsync(int id, SetsPerMatchRequest request, CancellationToken ct = default)
+    {
+        var competition = await LoadAsync(id, ct);
+        competition.ChangeSetsPerMatch(request.SetsPerMatch);
         await _uow.SaveChangesAsync(ct);
         return competition.ToSummary();
     }

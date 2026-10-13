@@ -15,7 +15,8 @@ public sealed record CompetitionSettings(
     int PointsPerLoss,
     bool DoubleRound,
     int QualifiersPerGroup,     // solo torneos (fase final)
-    int Rounds = 0);            // solo ligas rotatorias (0 = automático)
+    int Rounds = 0,             // solo ligas rotatorias (0 = automático)
+    int SetsPerMatch = 1);      // 1 o 2 sets por partido (con 2, un 3.º de desempate)
 
 /// <summary>Aggregate root: liga o torneo con sus grupos, parejas inscritas y partidos.</summary>
 public sealed class Competition
@@ -38,6 +39,7 @@ public sealed class Competition
     public bool DoubleRound { get; private set; }
     public int QualifiersPerGroup { get; private set; }
     public int Rounds { get; private set; }
+    public int SetsPerMatch { get; private set; } = 1;
     public int? NextCompetitionId { get; private set; }
     public DateTime CreatedAtUtc { get; private set; }
 
@@ -49,6 +51,7 @@ public sealed class Competition
     {
         if (string.IsNullOrWhiteSpace(s.Name)) throw new DomainException("El nombre es obligatorio.");
         if (s.Type == CompetitionType.RotatingLeague) return CreateRotating(s);
+        ValidateSetsPerMatch(s.SetsPerMatch);
         if (s.PairCount < 2) throw new DomainException("Se necesitan al menos 2 parejas.");
         if (s.GroupCount < 1) throw new DomainException("Debe haber al menos 1 grupo.");
         if (s.PairCount / s.GroupCount < 2)
@@ -84,12 +87,14 @@ public sealed class Competition
             PointsPerLoss = s.PointsPerLoss,
             DoubleRound = s.DoubleRound,
             QualifiersPerGroup = qualifiers,
+            SetsPerMatch = s.SetsPerMatch,
             CreatedAtUtc = DateTime.UtcNow
         };
     }
 
     private static Competition CreateRotating(CompetitionSettings s)
     {
+        ValidateSetsPerMatch(s.SetsPerMatch);
         if (s.GroupCount < 1) throw new DomainException("Debe haber al menos 1 grupo.");
         var perGroup = s.PairsPerGroup; // mínimo de jugadores por grupo
         if (perGroup < 4)
@@ -112,8 +117,23 @@ public sealed class Competition
             DoubleRound = false,
             QualifiersPerGroup = 0,
             Rounds = s.Rounds, // 0 = todos con todos (automático, según el tamaño de cada grupo)
+            SetsPerMatch = s.SetsPerMatch,
             CreatedAtUtc = DateTime.UtcNow
         };
+    }
+
+    private static void ValidateSetsPerMatch(int sets)
+    {
+        if (sets is < 1 or > 2) throw new DomainException("Los sets por partido deben ser 1 o 2.");
+    }
+
+    /// <summary>Cambia 1 ↔ 2 sets por partido; solo si aún no se ha jugado ningún partido.</summary>
+    public void ChangeSetsPerMatch(int sets)
+    {
+        ValidateSetsPerMatch(sets);
+        if (_matches.Any(m => m.IsPlayed))
+            throw new DomainException("No se puede cambiar el formato: ya hay partidos jugados.");
+        SetsPerMatch = sets;
     }
 
     public bool IsRotating => Type == CompetitionType.RotatingLeague;
@@ -279,7 +299,7 @@ public sealed class Competition
             .Select(m => new TeamOutcome(
                 new[] { m.HomeEntry!.Pair.Player1Id, m.HomeEntry.Pair.Player2Id },
                 new[] { m.AwayEntry!.Pair.Player1Id, m.AwayEntry.Pair.Player2Id },
-                m.HomeScore!.Value, m.AwayScore!.Value))
+                m.HomeScore!.Value, m.AwayScore!.Value, m.HomeSets, m.AwaySets))
             .ToList();
 
     public void SetNextCompetition(int id)
@@ -298,7 +318,7 @@ public sealed class Competition
         if (previous.NextCompetitionId.HasValue) throw new DomainException("La siguiente liga ya fue creada.");
         var next = Create(new CompetitionSettings(
             NextName(previous.Name), CompetitionType.RotatingLeague, previous.PairCount, previous.GroupCount,
-            previous.PairsPerGroup, previous.PointsPerWin, previous.PointsPerLoss, false, 0, previous.Rounds));
+            previous.PairsPerGroup, previous.PointsPerWin, previous.PointsPerLoss, false, 0, previous.Rounds, previous.SetsPerMatch));
         next.PairCount = rosters.Sum(r => r.Count);
         next.BuildRotating(rosters, planner);
         return next;
@@ -362,11 +382,14 @@ public sealed class Competition
         Status = CompetitionStatus.Playoffs;
     }
 
-    public Match RecordResult(int matchId, int homeScore, int awayScore)
+    public Match RecordResult(int matchId, int homeScore, int awayScore) =>
+        RecordResult(matchId, new[] { new SetScore(homeScore, awayScore) });
+
+    public Match RecordResult(int matchId, IReadOnlyList<SetScore> sets)
     {
         var match = FindMatch(matchId);
         EnsureEditable(match);
-        match.SetResult(homeScore, awayScore);
+        match.SetResult(sets, SetsPerMatch);
         Advance(match);
         RefreshStatus();
         return match;
@@ -385,7 +408,7 @@ public sealed class Competition
     public IReadOnlyList<MatchOutcome> GroupOutcomes(Group group) =>
         _matches
             .Where(m => m.Phase == MatchPhase.Group && m.IsPlayed && (m.Group == group || m.GroupId == group.Id))
-            .Select(m => new MatchOutcome(m.HomeEntry!.Id, m.AwayEntry!.Id, m.HomeScore!.Value, m.AwayScore!.Value))
+            .Select(m => new MatchOutcome(m.HomeEntry!.Id, m.AwayEntry!.Id, m.HomeScore!.Value, m.AwayScore!.Value, m.HomeSets, m.AwaySets))
             .ToList();
 
     private Match FindMatch(int matchId) =>

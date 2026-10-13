@@ -29,6 +29,7 @@ public static class DependencyInjection
         services.AddScoped<IPairRepository, PairRepository>();
         services.AddScoped<ICompetitionRepository, CompetitionRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IMatchHistoryRepository, MatchHistoryRepository>();
 
         services.Configure<JwtOptions>(config.GetSection(JwtOptions.Section));
         services.AddSingleton<IPasswordHasher, Pbkdf2PasswordHasher>();
@@ -45,6 +46,7 @@ public static class DependencyInjection
         services.AddSingleton<IBracketGenerator, SingleEliminationBracketGenerator>();
         services.AddSingleton<IRotationPlanner, RotationPlanner>();
         services.AddSingleton<IIndividualStandingsCalculator, IndividualStandingsCalculator>();
+        services.AddSingleton<IPlayerStatsCalculator, PlayerStatsCalculator>();
 
         // Casos de uso
         services.AddScoped<IAuthService, AuthService>();
@@ -52,6 +54,7 @@ public static class DependencyInjection
         services.AddScoped<IPairingService, PairingService>();
         services.AddScoped<ICompetitionService, CompetitionService>();
         services.AddScoped<IMatchService, MatchService>();
+        services.AddScoped<IPlayerHistoryService, PlayerHistoryService>();
         return services;
     }
 
@@ -69,6 +72,16 @@ public static class DependencyInjection
             "IF COL_LENGTH('Players','GroupNumber') IS NULL ALTER TABLE Players ADD GroupNumber INT NULL;");
         await db.Database.ExecuteSqlRawAsync(
             "IF COL_LENGTH('Competitions','NextCompetitionId') IS NULL ALTER TABLE Competitions ADD NextCompetitionId INT NULL;");
+
+        await db.Database.ExecuteSqlRawAsync(
+            "IF COL_LENGTH('Competitions','SetsPerMatch') IS NULL ALTER TABLE Competitions ADD SetsPerMatch INT NOT NULL CONSTRAINT DF_Competitions_SetsPerMatch DEFAULT 1;");
+        foreach (var col in new[] { "Set1Home", "Set1Away", "Set2Home", "Set2Away", "Set3Home", "Set3Away" })
+            await db.Database.ExecuteSqlRawAsync(
+                $"IF COL_LENGTH('Matches','{col}') IS NULL ALTER TABLE Matches ADD {col} INT NULL;");
+
+        // Los tantos totales (suma de sets) pueden empatar: el ganador se decide por sets.
+        await db.Database.ExecuteSqlRawAsync(
+            "IF OBJECT_ID('CK_Matches_NoTie') IS NOT NULL ALTER TABLE Matches DROP CONSTRAINT CK_Matches_NoTie;");
 
         var username = config["Admin:Username"] ?? "admin";
         if (await db.Users.AnyAsync(u => u.Username == username)) return;

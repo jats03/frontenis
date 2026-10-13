@@ -29,6 +29,7 @@ CREATE TABLE Competitions (
     DoubleRound BIT NOT NULL,
     QualifiersPerGroup INT NOT NULL,
     Rounds INT NOT NULL DEFAULT 0,       -- solo liga rotatoria
+    SetsPerMatch INT NOT NULL DEFAULT 1, -- 1 o 2 sets por partido (con 2, un 3.º de desempate)
     NextCompetitionId INT NULL,          -- liga siguiente (ascensos/descensos)
     CreatedAtUtc DATETIME2 NOT NULL
 );
@@ -57,7 +58,10 @@ CREATE TABLE Matches (
     AwayScore INT NULL,
     NextMatchId INT NULL REFERENCES Matches(Id),
     NextSlot TINYINT NULL,               -- 1 = Local, 2 = Visitante
-    CONSTRAINT CK_Matches_NoTie CHECK (HomeScore IS NULL OR AwayScore IS NULL OR HomeScore <> AwayScore)
+    -- Tantos totales (suma de sets) pueden empatar; el ganador se decide por sets.
+    Set1Home INT NULL, Set1Away INT NULL,
+    Set2Home INT NULL, Set2Away INT NULL,
+    Set3Home INT NULL, Set3Away INT NULL
 );
 CREATE TABLE Users (
     Id INT IDENTITY PRIMARY KEY,

@@ -27,8 +27,22 @@ public sealed class Match
     public int? AwayEntryId { get; private set; }
     public CompetitionEntry? AwayEntry { get; private set; }
 
+    /// <summary>Tantos totales (suma de todos los sets).</summary>
     public int? HomeScore { get; private set; }
     public int? AwayScore { get; private set; }
+
+    // Marcador de cada set (hasta 3). Vacíos en partidos antiguos: se interpretan como un único set.
+    public int? Set1Home { get; private set; }
+    public int? Set1Away { get; private set; }
+    public int? Set2Home { get; private set; }
+    public int? Set2Away { get; private set; }
+    public int? Set3Home { get; private set; }
+    public int? Set3Away { get; private set; }
+
+    public IReadOnlyList<SetScore> Sets =>
+        SetScore.FromColumns(Set1Home, Set1Away, Set2Home, Set2Away, Set3Home, Set3Away, HomeScore, AwayScore);
+    public int HomeSets => Sets.Count(s => s.HomeWon);
+    public int AwaySets => Sets.Count(s => !s.HomeWon);
 
     public int? NextMatchId { get; private set; }
     public Match? NextMatch { get; private set; }
@@ -38,7 +52,7 @@ public sealed class Match
     public bool IsReady => HomeEntry is not null && AwayEntry is not null;
 
     public CompetitionEntry? Winner =>
-        !IsPlayed ? null : HomeScore > AwayScore ? HomeEntry : AwayEntry;
+        !IsPlayed ? null : HomeSets > AwaySets ? HomeEntry : AwayEntry;
 
     internal static Match ForGroup(Group group, int round, int order, CompetitionEntry home, CompetitionEntry away) =>
         new(MatchPhase.Group, round, order) { Group = group, HomeEntry = home, AwayEntry = away };
@@ -56,18 +70,47 @@ public sealed class Match
         if (slot == BracketSlot.Home) HomeEntry = entry; else AwayEntry = entry;
     }
 
-    internal void SetResult(int homeScore, int awayScore)
+    /// <summary>Registra el resultado por sets. Con 1 set por partido: un set; con 2: dos sets y, si van 1-1, un tercero.</summary>
+    internal void SetResult(IReadOnlyList<SetScore> sets, int setsPerMatch)
     {
         if (!IsReady) throw new DomainException("El partido aún no tiene las dos parejas definidas.");
-        if (homeScore < 0 || awayScore < 0) throw new DomainException("Los puntos no pueden ser negativos.");
-        if (homeScore == awayScore) throw new DomainException("En frontenis no hay empates: debe haber un ganador.");
-        HomeScore = homeScore;
-        AwayScore = awayScore;
+        ValidateSets(sets, setsPerMatch);
+        Set1Home = sets[0].Home; Set1Away = sets[0].Away;
+        Set2Home = sets.Count > 1 ? sets[1].Home : null; Set2Away = sets.Count > 1 ? sets[1].Away : null;
+        Set3Home = sets.Count > 2 ? sets[2].Home : null; Set3Away = sets.Count > 2 ? sets[2].Away : null;
+        HomeScore = sets.Sum(s => s.Home);
+        AwayScore = sets.Sum(s => s.Away);
+    }
+
+    internal static void ValidateSets(IReadOnlyList<SetScore> sets, int setsPerMatch)
+    {
+        if (setsPerMatch == 1)
+        {
+            if (sets.Count != 1) throw new DomainException("Este partido se juega a un solo set.");
+        }
+        else
+        {
+            if (sets.Count < 2) throw new DomainException("Introduce el resultado de los dos sets.");
+            if (sets.Count > 3) throw new DomainException("Como máximo hay 3 sets.");
+        }
+        foreach (var s in sets)
+        {
+            if (s.Home < 0 || s.Away < 0) throw new DomainException("Los puntos no pueden ser negativos.");
+            if (s.Home > 999 || s.Away > 999) throw new DomainException("Marcador no válido.");
+            if (s.Home == s.Away) throw new DomainException("En frontenis no hay empates: cada set debe tener un ganador.");
+        }
+        if (setsPerMatch == 2)
+        {
+            var oneOne = sets[0].HomeWon != sets[1].HomeWon;
+            if (oneOne && sets.Count == 2) throw new DomainException("Van 1-1 en sets: falta el 3.er set de desempate.");
+            if (!oneOne && sets.Count == 3) throw new DomainException("Un equipo ganó los dos primeros sets: no hay 3.er set.");
+        }
     }
 
     internal void ClearResult()
     {
         HomeScore = null;
         AwayScore = null;
+        Set1Home = Set1Away = Set2Home = Set2Away = Set3Home = Set3Away = null;
     }
 }

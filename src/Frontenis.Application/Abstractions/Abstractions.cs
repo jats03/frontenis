@@ -1,4 +1,5 @@
 using Frontenis.Domain.Entities;
+using Frontenis.Domain.Services;
 
 namespace Frontenis.Application.Abstractions;
 
@@ -30,6 +31,13 @@ public interface ICompetitionRepository
     Task<Competition?> GetDetailedByMatchIdAsync(int matchId, CancellationToken ct = default);
     Task AddAsync(Competition competition, CancellationToken ct = default);
     Task DeleteAsync(int id, CancellationToken ct = default);
+}
+
+/// <summary>Consulta de solo lectura de partidos jugados (histórico de jugadores).</summary>
+public interface IMatchHistoryRepository
+{
+    Task<IReadOnlyList<PlayedMatch>> ListPlayedAsync(int? competitionId, int? playerId, CancellationToken ct = default);
+    Task<IReadOnlyList<(int Id, string Name)>> ListCompetitionsAsync(CancellationToken ct = default);
 }
 
 public interface IUserRepository

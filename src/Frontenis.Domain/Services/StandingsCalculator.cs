@@ -19,7 +19,7 @@ public sealed class StandingsCalculator : IStandingsCalculator
             home.Played++; away.Played++;
             home.For += o.HomeScore; home.Against += o.AwayScore;
             away.For += o.AwayScore; away.Against += o.HomeScore;
-            if (o.HomeScore > o.AwayScore) { home.Won++; away.Lost++; }
+            if (o.HomeWon) { home.Won++; away.Lost++; }
             else { away.Won++; home.Lost++; }
         }
 

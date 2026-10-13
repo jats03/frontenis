@@ -27,7 +27,7 @@ public sealed class IndividualStandingsCalculator : IIndividualStandingsCalculat
 
         foreach (var o in outcomes)
         {
-            var homeWon = o.HomeScore > o.AwayScore;
+            var homeWon = o.HomeWon;
             Apply(o.HomePlayerIds, o.HomeScore, o.AwayScore, homeWon);
             Apply(o.AwayPlayerIds, o.AwayScore, o.HomeScore, !homeWon);
         }

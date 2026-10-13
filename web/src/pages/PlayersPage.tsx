@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from 'react'
+import { Link } from 'react-router-dom'
 import { confirmDelete, notify } from '../alerts'
 import { api } from '../api/client'
 import type { PairingPreview, Player, Position } from '../api/types'
@@ -101,7 +102,10 @@ export default function PlayersPage() {
 
   return (
     <>
-      <h1>Jugadores</h1>
+      <div className="row between">
+        <h1>Jugadores</h1>
+        <Link className="button secondary" to="/jugadores/historico">Histórico de jugadores</Link>
+      </div>
       <StaleNotice savedAt={savedAt} error={error} />
       {loading && !players && <p className="muted">Cargando…</p>}
       {((error && !players) || message) && <p className="error">{(error && !players ? error : null) ?? message}</p>}

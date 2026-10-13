@@ -1,6 +1,8 @@
 using Frontenis.Application.Abstractions;
 using Frontenis.Domain.Entities;
+using Frontenis.Domain.Enums;
 using Frontenis.Domain.Exceptions;
+using Frontenis.Domain.Services;
 using Frontenis.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -107,4 +109,49 @@ public sealed class UserRepository : IUserRepository
 
     public Task SetPasswordHashAsync(int id, string passwordHash, CancellationToken ct = default) =>
         _db.Users.Where(u => u.Id == id).ExecuteUpdateAsync(s => s.SetProperty(u => u.PasswordHash, passwordHash), ct);
+}
+
+public sealed class MatchHistoryRepository : IMatchHistoryRepository
+{
+    private readonly FrontenisDbContext _db;
+    public MatchHistoryRepository(FrontenisDbContext db) { _db = db; }
+
+    public async Task<IReadOnlyList<PlayedMatch>> ListPlayedAsync(int? competitionId, int? playerId, CancellationToken ct = default)
+    {
+        var q = _db.Matches.AsNoTracking().Where(m =>
+            m.HomeScore != null && m.AwayScore != null && m.HomeEntryId != null && m.AwayEntryId != null);
+        if (competitionId.HasValue) q = q.Where(m => m.CompetitionId == competitionId.Value);
+        if (playerId.HasValue)
+        {
+            var pid = playerId.Value;
+            q = q.Where(m =>
+                m.HomeEntry!.Pair.Player1Id == pid || m.HomeEntry.Pair.Player2Id == pid ||
+                m.AwayEntry!.Pair.Player1Id == pid || m.AwayEntry.Pair.Player2Id == pid);
+        }
+
+        var rows = await q.Select(m => new
+        {
+            m.Id, m.CompetitionId, m.Phase, m.HomeScore, m.AwayScore,
+            m.Set1Home, m.Set1Away, m.Set2Home, m.Set2Away, m.Set3Home, m.Set3Away,
+            H1 = m.HomeEntry!.Pair.Player1Id, H2 = m.HomeEntry.Pair.Player2Id,
+            A1 = m.AwayEntry!.Pair.Player1Id, A2 = m.AwayEntry.Pair.Player2Id
+        }).ToListAsync(ct);
+
+        var comps = await _db.Competitions.AsNoTracking()
+            .Select(c => new { c.Id, c.Name, c.PointsPerWin, c.PointsPerLoss }).ToDictionaryAsync(c => c.Id, ct);
+
+        return rows.Select(r =>
+        {
+            var c = comps[r.CompetitionId];
+            return new PlayedMatch(
+                r.Id, r.CompetitionId, c.Name, r.Phase == MatchPhase.Group, c.PointsPerWin, c.PointsPerLoss,
+                new[] { r.H1, r.H2 }, new[] { r.A1, r.A2 },
+                SetScore.FromColumns(r.Set1Home, r.Set1Away, r.Set2Home, r.Set2Away, r.Set3Home, r.Set3Away,
+                    r.HomeScore, r.AwayScore));
+        }).ToList();
+    }
+
+    public async Task<IReadOnlyList<(int Id, string Name)>> ListCompetitionsAsync(CancellationToken ct = default) =>
+        (await _db.Competitions.AsNoTracking().OrderByDescending(c => c.CreatedAtUtc)
+            .Select(c => new { c.Id, c.Name }).ToListAsync(ct)).Select(c => (c.Id, c.Name)).ToList();
 }
