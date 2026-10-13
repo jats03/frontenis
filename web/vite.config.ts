@@ -8,8 +8,8 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
-        name: 'Frontenis Ligas y Torneos',
-        short_name: 'Frontenis',
+        name: 'Club Frontenis Ciudad de Jaén',
+        short_name: 'Frontenis Jaén',
         description: 'Gestión de ligas y torneos de frontenis',
         theme_color: '#0f766e',
         background_color: '#f4f7f6',

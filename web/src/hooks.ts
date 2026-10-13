@@ -3,7 +3,7 @@ import { responseCache } from './api/client'
 
 /** Título de la pestaña por página (los lectores de pantalla lo anuncian al navegar). */
 export function useDocumentTitle(title: string) {
-  useEffect(() => { document.title = `${title} · Frontenis` }, [title])
+  useEffect(() => { document.title = `${title} · Club Frontenis Ciudad de Jaén` }, [title])
 }
 
 /**

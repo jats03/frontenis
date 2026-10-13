@@ -22,7 +22,7 @@ export default function HomePage() {
 
   return (
     <>
-      <PageHeader title="Frontenis Club Ciudad de Jaén" subtitle="Ligas, torneos y entrenamientos" />
+      <PageHeader title="Club Frontenis Ciudad de Jaén" subtitle="Ligas, torneos y entrenamientos" />
       <StaleNotice savedAt={comps.savedAt ?? trainings.savedAt} error={error} />
 
       <section aria-labelledby="h-entreno">
