@@ -96,6 +96,11 @@ export const api = {
   login: (username: string, password: string) =>
     request<{ token: string; username: string; role: string }>('POST', '/api/auth/login', { username, password }),
 
+  auth: {
+    changePassword: (currentPassword: string, newPassword: string) =>
+      request<void>('POST', '/api/auth/change-password', { currentPassword, newPassword }),
+  },
+
   players: {
     list: () => request<Player[]>('GET', '/api/players'),
     create: (name: string, position: Position, groupNumber: number | null = null) =>

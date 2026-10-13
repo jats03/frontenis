@@ -2,7 +2,9 @@ using Frontenis.Application.Dtos;
 using Frontenis.Application.Services;
 using Frontenis.Application.Abstractions;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Frontenis.Api.Controllers;
 
@@ -11,11 +13,33 @@ namespace Frontenis.Api.Controllers;
 public sealed class AuthController : ControllerBase
 {
     private readonly IAuthService _auth;
-    public AuthController(IAuthService auth) { _auth = auth; }
+    private readonly ILogger<AuthController> _logger;
+    public AuthController(IAuthService auth, ILogger<AuthController> logger) { _auth = auth; _logger = logger; }
 
-    [HttpPost("login")]
-    public async Task<ActionResult<LoginResponse>> Login(LoginRequest request, CancellationToken ct) =>
-        Ok(await _auth.LoginAsync(request, ct));
+    private string ClientIp => HttpContext.Connection.RemoteIpAddress?.ToString() ?? "desconocida";
+
+    [HttpPost("login"), EnableRateLimiting("login")]
+    public async Task<ActionResult<LoginResponse>> Login(LoginRequest request, CancellationToken ct)
+    {
+        try { return Ok(await _auth.LoginAsync(request, ClientIp, ct)); }
+        catch (Exception ex) when (ex is UnauthorizedAppException or TooManyAttemptsException)
+        {
+            // Se registra el intento (sin la contraseña) para poder detectar ataques en los logs de Render.
+            _logger.LogWarning("Inicio de sesión rechazado ({Reason}) desde {Ip}.", ex.GetType().Name, ClientIp);
+            throw;
+        }
+    }
+
+    /// <summary>Cambio de contraseña del administrador con sesión iniciada.</summary>
+    [HttpPost("change-password"), Authorize(Roles = Roles.Admin), EnableRateLimiting("login")]
+    public async Task<IActionResult> ChangePassword(ChangePasswordRequest request, CancellationToken ct)
+    {
+        var raw = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.FindFirstValue("sub");
+        if (!int.TryParse(raw, out var userId)) return Unauthorized();
+        await _auth.ChangePasswordAsync(userId, request, ClientIp, ct);
+        _logger.LogInformation("Contraseña de administrador cambiada (usuario {UserId}).", userId);
+        return NoContent();
+    }
 }
 
 [ApiController]

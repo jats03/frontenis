@@ -32,6 +32,8 @@ public static class DependencyInjection
 
         services.Configure<JwtOptions>(config.GetSection(JwtOptions.Section));
         services.AddSingleton<IPasswordHasher, Pbkdf2PasswordHasher>();
+        services.AddSingleton(TimeProvider.System);
+        services.AddSingleton<ILoginThrottle, LoginThrottle>();
         services.AddSingleton<ITokenService, JwtTokenService>();
 
         // Dominio (sin estado -> singleton)
@@ -71,6 +73,9 @@ public static class DependencyInjection
         var username = config["Admin:Username"] ?? "admin";
         if (await db.Users.AnyAsync(u => u.Username == username)) return;
         var password = config["Admin:Password"] ?? throw new InvalidOperationException("Falta Admin:Password en la configuración.");
+        var weak = PasswordPolicy.Validate(password, username);
+        if (weak is not null)
+            throw new InvalidOperationException($"Admin:Password no es segura ({weak}) Cámbiala en la configuración antes del primer arranque.");
         var hasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
         db.Users.Add(new User(username, hasher.Hash(password), Roles.Admin));
         await db.SaveChangesAsync();

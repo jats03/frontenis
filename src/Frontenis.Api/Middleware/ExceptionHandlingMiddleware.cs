@@ -29,11 +29,14 @@ public sealed class ExceptionHandlingMiddleware
                 DomainException => (StatusCodes.Status400BadRequest, "Solicitud no válida"),
                 NotFoundException => (StatusCodes.Status404NotFound, "No encontrado"),
                 UnauthorizedAppException => (StatusCodes.Status401Unauthorized, "No autorizado"),
+                TooManyAttemptsException => (StatusCodes.Status429TooManyRequests, "Demasiados intentos"),
                 _ => (StatusCodes.Status500InternalServerError, "Error interno")
             };
             if (status == StatusCodes.Status500InternalServerError) _logger.LogError(ex, "Error no controlado");
 
             context.Response.StatusCode = status;
+            if (ex is TooManyAttemptsException tooMany)
+                context.Response.Headers.RetryAfter = ((int)Math.Ceiling(tooMany.RetryAfter.TotalSeconds)).ToString();
             await context.Response.WriteAsJsonAsync(new ProblemDetails
             {
                 Status = status,

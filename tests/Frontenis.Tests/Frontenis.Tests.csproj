@@ -12,5 +12,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Frontenis.Domain\Frontenis.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Frontenis.Application\Frontenis.Application.csproj" />
   </ItemGroup>
 </Project>

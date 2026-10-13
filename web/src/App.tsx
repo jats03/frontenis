@@ -8,6 +8,7 @@ import CompetitionNewPage from './pages/CompetitionNewPage'
 import CompetitionsPage from './pages/CompetitionsPage'
 import LoginPage from './pages/LoginPage'
 import PlayersPage from './pages/PlayersPage'
+import AccountPage from './pages/AccountPage'
 import WhatsappPage from './pages/WhatsappPage'
 import TimerPage from './pages/TimerPage'
 
@@ -32,6 +33,7 @@ export default function App() {
           <NavLink to="/cronometro">Cronómetro</NavLink>
           <NavLink to="/plantillas">Plantillas</NavLink>
         </nav>
+        {isAdmin && <NavLink to="/cuenta">Mi cuenta</NavLink>}
         {/* El acceso de administrador no se anuncia: se entra escribiendo la dirección /acceso */}
         {isAdmin && <button className="link" onClick={logout}>Salir ({username})</button>}
       </header>
@@ -45,6 +47,7 @@ export default function App() {
           <Route path="/jugadores" element={<PlayersPage />} />
           <Route path="/cronometro" element={<TimerPage />} />
           <Route path="/plantillas" element={<WhatsappPage />} />
+          <Route path="/cuenta" element={<AccountPage />} />
           <Route path="/acceso" element={<LoginPage />} />
           <Route path="*" element={<><h1>Página no encontrada</h1><p><Link to="/">Volver al inicio</Link></p></>} />
         </Routes>
