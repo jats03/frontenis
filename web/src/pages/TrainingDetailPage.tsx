@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { confirmDelete, notify } from '../alerts'
 import { api } from '../api/client'
@@ -57,19 +57,17 @@ export default function TrainingDetailPage() {
   const [homeScore, setHomeScore] = useState('')
   const [awayScore, setAwayScore] = useState('')
   const [formError, setFormError] = useState<string | null>(null)
-  const [present, setPresent] = useState<Set<number>>(new Set())
-  const [presentTouched, setPresentTouched] = useState(false)
+  const [presentChosen, setPresentChosen] = useState<Set<number> | null>(null) // null = los que ya han jugado
   const [suggestions, setSuggestions] = useState<TrainingSuggestion[] | null>(null)
   const [suggestError, setSuggestError] = useState<string | null>(null)
 
-  const list: Player[] = players.data ?? []
+  const list: Player[] = useMemo(() => players.data ?? [], [players.data])
   const nameOf = useMemo(() => new Map(list.map(p => [p.id, p.name])), [list])
 
   // Presentes por defecto: quienes ya han jugado en la sesión (hasta que se toque la selección).
-  useEffect(() => {
-    if (presentTouched || !data) return
-    setPresent(new Set(data.matches.flatMap(m => [...m.homePlayerIds, ...m.awayPlayerIds])))
-  }, [data, presentTouched])
+  const present = useMemo(
+    () => presentChosen ?? new Set(data?.matches.flatMap(m => [...m.homePlayerIds, ...m.awayPlayerIds]) ?? []),
+    [presentChosen, data])
 
   async function addMatch() {
     setFormError(null)
@@ -211,7 +209,7 @@ export default function TrainingDetailPage() {
           posible, según el nivel de cada jugador (porcentaje de victorias suavizado, con un pequeño ajuste por el margen
           de tantos); y se evita repetir compañero o el mismo cruce.
         </p>
-        <PlayerPicker players={list} selected={present} onChange={n => { setPresent(n); setPresentTouched(true) }} />
+        <PlayerPicker players={list} selected={present} onChange={setPresentChosen} />
         <div className="row">
           <button disabled={present.size < 4} onClick={() => void suggest()}>
             {suggestions ? 'Recalcular sugerencias' : 'Sugerir siguiente partido'}

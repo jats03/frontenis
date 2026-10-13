@@ -193,7 +193,7 @@ main:focus { outline: none; }
 
 .filter { max-width: 24rem; margin-bottom: .8rem; }
 button.link-button { background: none; border: 0; padding: .1rem .2rem; font: inherit; font-weight: 700; color: inherit;
-  cursor: pointer; text-decoration: underline dotted; min-height: 0; }
+  cursor: pointer; text-decoration: underline dotted; min-height: 24px; min-width: 24px; }
 th[aria-sort="ascending"] button.link-button::after { content: ' ▲'; }
 th[aria-sort="descending"] button.link-button::after { content: ' ▼'; }
 .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: .8rem; }
@@ -202,7 +202,7 @@ th[aria-sort="descending"] button.link-button::after { content: ' ▼'; }
 .stat span { font-size: .85rem; color: var(--muted); }
 .recent { list-style: none; padding: 0; display: grid; gap: .5rem; }
 .res { font-weight: 700; }
-.res.win { color: var(--primary); }
+.res.win { color: var(--link); }
 .res.loss { color: var(--danger); }
 
 .training-layout { display: grid; gap: .8rem; grid-template-columns: 1fr; align-items: start; }

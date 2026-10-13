@@ -99,7 +99,7 @@ public sealed class TrainingService : ITrainingService
         new(s.Id, s.Name, s.SessionDate, s.PointsPerWin, s.PointsPerLoss, s.Matches.Count);
 
     private static List<TrainingGame> Games(TrainingSession s) =>
-        s.Matches.OrderBy(m => m.Order)
+        s.Matches.OrderBy(m => m.Order).ThenBy(m => m.Id)
             .Select(m => new TrainingGame(m.Home1Id, m.Home2Id, m.Away1Id, m.Away2Id, m.HomeScore, m.AwayScore, m.TargetPoints))
             .ToList();
 
@@ -116,7 +116,7 @@ public sealed class TrainingService : ITrainingService
 
         return new TrainingDetailDto(
             Summary(s),
-            s.Matches.OrderBy(m => m.Order).Select(m => new TrainingMatchDto(
+            s.Matches.OrderBy(m => m.Order).ThenBy(m => m.Id).Select(m => new TrainingMatchDto(
                 m.Id, m.Order, $"{N(m.Home1Id)} / {N(m.Home2Id)}", $"{N(m.Away1Id)} / {N(m.Away2Id)}",
                 new[] { m.Home1Id, m.Home2Id }, new[] { m.Away1Id, m.Away2Id },
                 m.TargetPoints, m.HomeScore, m.AwayScore, m.HomeWon)).ToList(),

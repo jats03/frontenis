@@ -153,11 +153,25 @@ export const api = {
   trainings: {
     list: () => request<TrainingSummary[]>('GET', '/api/trainings'),
     get: (id: number) => request<TrainingDetail>('GET', `/api/trainings/${id}`),
-    create: (name: string, date: string, pointsPerWin: number, pointsPerLoss: number) =>
-      request<TrainingSummary>('POST', '/api/trainings', { name, date, pointsPerWin, pointsPerLoss }),
-    remove: (id: number) => request<void>('DELETE', `/api/trainings/${id}`),
-    addMatch: (id: number, m: NewTrainingMatch) => request<TrainingDetail>('POST', `/api/trainings/${id}/matches`, m),
-    removeMatch: (id: number, matchId: number) => request<TrainingDetail>('DELETE', `/api/trainings/${id}/matches/${matchId}`),
+    create: async (name: string, date: string, pointsPerWin: number, pointsPerLoss: number) => {
+      const t = await request<TrainingSummary>('POST', '/api/trainings', { name, date, pointsPerWin, pointsPerLoss })
+      responseCache.remove('/api/trainings')
+      return t
+    },
+    remove: async (id: number) => {
+      await request<void>('DELETE', `/api/trainings/${id}`)
+      responseCache.remove('/api/trainings'); responseCache.remove(`/api/trainings/${id}`)
+    },
+    addMatch: async (id: number, m: NewTrainingMatch) => {
+      const d = await request<TrainingDetail>('POST', `/api/trainings/${id}/matches`, m)
+      responseCache.remove('/api/trainings')
+      return d
+    },
+    removeMatch: async (id: number, matchId: number) => {
+      const d = await request<TrainingDetail>('DELETE', `/api/trainings/${id}/matches/${matchId}`)
+      responseCache.remove('/api/trainings')
+      return d
+    },
     suggest: (id: number, playerIds: number[], count = 5) =>
       request<TrainingSuggestion[]>('POST', `/api/trainings/${id}/suggestions`, { playerIds, count }),
   },

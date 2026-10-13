@@ -6,8 +6,10 @@ import { useAuth } from '../auth/AuthContext'
 import StaleNotice from '../components/StaleNotice'
 import { useAsync, useDocumentTitle } from '../hooks'
 
-const today = () => new Date().toISOString().slice(0, 10)
-const fmt = (iso: string) => new Date(iso).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+// Fechas en hora local (toISOString usaría UTC y de madrugada daría el día anterior).
+const pad = (n: number) => String(n).padStart(2, '0')
+const today = () => { const d = new Date(); return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}` }
+const fmt = (iso: string) => new Date(iso.length === 10 ? `${iso}T00:00:00` : iso).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
 
 export default function TrainingsPage() {
   useDocumentTitle('Entrenamientos')
