@@ -1,8 +1,10 @@
+import { useDocumentTitle } from '../hooks'
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 
 export default function LoginPage() {
+  useDocumentTitle('Acceso de administrador')
   const { login } = useAuth()
   const navigate = useNavigate()
   const [username, setUsername] = useState('')
@@ -17,7 +19,7 @@ export default function LoginPage() {
 
   return (
     <form className="card form narrow" onSubmit={submit}>
-      <h2>Acceso administrador</h2>
+      <h1>Acceso administrador</h1>
       <label>Usuario<input value={username} onChange={e => setUsername(e.target.value)} autoComplete="username" /></label>
       <label>Contraseña
         <input type="password" value={password} onChange={e => setPassword(e.target.value)} autoComplete="current-password" />

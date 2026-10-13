@@ -1,3 +1,4 @@
+import { useDocumentTitle } from '../hooks'
 import { useEffect, useRef, useState } from 'react'
 
 type Status = 'idle' | 'running' | 'paused' | 'finished'
@@ -26,6 +27,7 @@ function beep() {
 }
 
 export default function TimerPage() {
+  useDocumentTitle('Cronómetro')
   const [minutes, setMinutes] = useState(10)
   const [status, setStatus] = useState<Status>('idle')
   const [remaining, setRemaining] = useState(10 * 60_000)
@@ -61,7 +63,7 @@ export default function TimerPage() {
 
   return (
     <>
-      <h2>Cronómetro</h2>
+      <h1>Cronómetro</h1>
       <section className="card timer">
         <div className={`timer-display ${low ? 'low' : ''} ${status === 'finished' ? 'done' : ''}`}
           role="timer" aria-live="off">

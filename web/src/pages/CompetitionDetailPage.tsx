@@ -11,6 +11,7 @@ import RotatingDrawPanel from '../components/RotatingDrawPanel'
 import SubTabs from '../components/SubTabs'
 import StandingsTable from '../components/StandingsTable'
 import { statusLabel, typeLabel } from '../labels'
+import { useDocumentTitle } from '../hooks'
 import { exportStandingsPdf } from '../pdf'
 
 type Tab = 'standings' | 'matches' | 'playoffs' | 'pairs'
@@ -40,6 +41,7 @@ export default function CompetitionDetailPage() {
   useEffect(() => { void load() }, [load])
   useEffect(() => { if (isAdmin) api.players.list().then(setPlayers).catch(() => undefined) }, [isAdmin])
 
+  useDocumentTitle(detail?.summary.name ?? 'Competición')
   if (error && !detail) return <p className="error">{error}</p>
   if (!detail) return <p className="muted">Cargando…</p>
 
@@ -87,7 +89,7 @@ export default function CompetitionDetailPage() {
     <>
       <div className="row between">
         <div>
-          <h2>{summary.name}</h2>
+          <h1>{summary.name}</h1>
           <p className="muted">
             {typeLabel[summary.type]} · {statusLabel[summary.status]} · {summary.pointsPerWin} pts por victoria
             {summary.pointsPerLoss > 0 && ` · ${summary.pointsPerLoss} por derrota`}
@@ -175,10 +177,10 @@ export default function CompetitionDetailPage() {
                     const rounds = [...new Set(list.map(m => m.round))].sort((a, b) => a - b)
                     return (
                       <section className="card" key={g.id}>
-                        <h3>{g.name}</h3>
+                        <h2>{g.name}</h2>
                         {rounds.map(r => (
                           <div key={r}>
-                            <h4>Jornada {r}</h4>
+                            <h3>Jornada {r}</h3>
                             {list.filter(m => m.round === r).map(m => (
                               <MatchCard key={m.id} match={m} canEdit={isAdmin} onChanged={() => void load()} />
                             ))}
@@ -201,13 +203,13 @@ export default function CompetitionDetailPage() {
                     )}
                     {shown.map(r => (
                       <section className="card" key={r}>
-                        <h3>Jornada {r}</h3>
+                        <h2>Jornada {r}</h2>
                         {detail.groups.map(g => {
                           const list = groupMatches.filter(m => m.round === r && m.groupId === g.id)
                           if (list.length === 0) return null
                           return (
                             <div key={g.id}>
-                              {detail.groups.length > 1 && <h4>{g.name}</h4>}
+                              {detail.groups.length > 1 && <h3>{g.name}</h3>}
                               {list.map(m => (
                                 <MatchCard key={m.id} match={m} canEdit={isAdmin} onChanged={() => void load()} />
                               ))}
@@ -228,7 +230,7 @@ export default function CompetitionDetailPage() {
 
       {!isRotating && (tab === 'pairs' || summary.status === 'Draft') && detail.pairs.length > 0 && (
         <section className="card">
-          <h3>Parejas inscritas</h3>
+          <h2>Parejas inscritas</h2>
           <ul className="plain">
             {detail.pairs.map(p => {
               const group = detail.groups.find(g => g.id === p.groupId)

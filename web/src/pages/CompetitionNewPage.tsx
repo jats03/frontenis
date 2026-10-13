@@ -1,3 +1,4 @@
+import { useDocumentTitle } from '../hooks'
 import { useMemo, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { notify } from '../alerts'
@@ -6,6 +7,7 @@ import type { CompetitionType } from '../api/types'
 import { useAuth } from '../auth/AuthContext'
 
 export default function CompetitionNewPage() {
+  useDocumentTitle('Nueva competición')
   const { isAdmin } = useAuth()
   const navigate = useNavigate()
   const [name, setName] = useState('')
@@ -31,7 +33,7 @@ export default function CompetitionNewPage() {
     return `${groupCount} grupo(s) × ${pairsPerGroup} parejas = ${pairCount} parejas.`
   }, [groupCount, pairsPerGroup, pairCount])
 
-  if (!isAdmin) return <p className="error">Necesitas iniciar sesión como administrador.</p>
+  if (!isAdmin) return <><h1>Nueva competición</h1><p className="error">Necesitas iniciar sesión como administrador.</p></>
 
   async function submit(e: FormEvent) {
     e.preventDefault()
@@ -56,7 +58,7 @@ export default function CompetitionNewPage() {
 
   return (
     <form className="card form" onSubmit={submit}>
-      <h2>Nueva competición</h2>
+      <h1>Nueva competición</h1>
       <label>Nombre<input value={name} onChange={e => setName(e.target.value)} required /></label>
       <label>Tipo
         <select value={type} onChange={e => setType(e.target.value as CompetitionType)}>

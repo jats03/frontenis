@@ -58,7 +58,7 @@ export default function RegistrationPanel({ detail, players, onChanged, onPlayer
 
   return (
     <section className="card">
-      <h3>Inscripción ({pairs.length}/{summary.pairCount} parejas)</h3>
+      <h2>Inscripción ({pairs.length}/{summary.pairCount} parejas)</h2>
       {error && <p className="error">{error}</p>}
 
       {missing > 0 && (
@@ -76,13 +76,13 @@ export default function RegistrationPanel({ detail, players, onChanged, onPlayer
             </button>
           </div>
 
-          <h4>Pareja manual</h4>
+          <h3>Pareja manual</h3>
           <div className="row">
-            <select value={manual1} onChange={e => setManual1(e.target.value)}>
+            <select aria-label="Jugador 1 de la pareja" value={manual1} onChange={e => setManual1(e.target.value)}>
               <option value="">Jugador 1</option>
               {available.map(p => <option key={p.id} value={p.id}>{p.name} ({p.position})</option>)}
             </select>
-            <select value={manual2} onChange={e => setManual2(e.target.value)}>
+            <select aria-label="Jugador 2 de la pareja" value={manual2} onChange={e => setManual2(e.target.value)}>
               <option value="">Jugador 2</option>
               {available.filter(p => String(p.id) !== manual1).map(p => <option key={p.id} value={p.id}>{p.name} ({p.position})</option>)}
             </select>

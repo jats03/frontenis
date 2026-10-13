@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
 
+/** Título de la pestaña por página (los lectores de pantalla lo anuncian al navegar). */
+export function useDocumentTitle(title: string) {
+  useEffect(() => { document.title = `${title} · Frontenis` }, [title])
+}
+
 /** Carga datos asíncronos con estado de carga/error y recarga manual. */
 export function useAsync<T>(fn: () => Promise<T>, deps: unknown[]) {
   const [data, setData] = useState<T | null>(null)

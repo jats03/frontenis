@@ -1,17 +1,18 @@
 import { Link } from 'react-router-dom'
 import { api } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
-import { useAsync } from '../hooks'
+import { useAsync, useDocumentTitle } from '../hooks'
 import { statusLabel, typeLabel } from '../labels'
 
 export default function CompetitionsPage() {
+  useDocumentTitle('Competiciones')
   const { isAdmin } = useAuth()
   const { data, error, loading } = useAsync(() => api.competitions.list(), [])
 
   return (
     <>
       <div className="row between">
-        <h2>Competiciones</h2>
+        <h1>Competiciones</h1>
         {isAdmin && <Link className="button" to="/competiciones/nueva">+ Nueva</Link>}
       </div>
       {loading && <p className="muted">Cargando…</p>}

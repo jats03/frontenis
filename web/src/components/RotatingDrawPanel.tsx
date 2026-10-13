@@ -50,7 +50,7 @@ export default function RotatingDrawPanel({ detail, players, onChanged, onPlayer
 
   return (
     <section className="card">
-      <h3>Jugadores de la liga</h3>
+      <h2>Jugadores de la liga</h2>
       <p className="muted">
         Elige al menos {needed} jugadores ({summary.groupCount} grupo(s) de {summary.pairsPerGroup}); si hay más,
         los sobrantes van al último grupo.

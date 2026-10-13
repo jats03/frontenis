@@ -19,7 +19,7 @@ export default function Bracket({ matches, canEdit, onChanged }: Props) {
     <div className="bracket">
       {rounds.map(r => (
         <div className="bracket-round" key={r}>
-          <h4>{roundName(r, total)}</h4>
+          <h3>{roundName(r, total)}</h3>
           {playoff.filter(m => m.round === r).sort((a, b) => a.order - b.order).map(m => (
             <MatchCard key={m.id} match={m} canEdit={canEdit} onChanged={onChanged} />
           ))}

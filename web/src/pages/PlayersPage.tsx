@@ -1,12 +1,14 @@
 import { useState, type FormEvent } from 'react'
+import { Link } from 'react-router-dom'
 import { confirmDelete, notify } from '../alerts'
 import { api } from '../api/client'
 import type { PairingPreview, Player, Position } from '../api/types'
 import PlayerPicker from '../components/PlayerPicker'
 import { useAuth } from '../auth/AuthContext'
-import { useAsync } from '../hooks'
+import { useAsync, useDocumentTitle } from '../hooks'
 
 export default function PlayersPage() {
+  useDocumentTitle('Jugadores')
   const { isAdmin } = useAuth()
   const { data: players, error, loading, reload } = useAsync(() => api.players.list(), [])
   const [name, setName] = useState('')
@@ -99,14 +101,14 @@ export default function PlayersPage() {
 
   return (
     <>
-      <h2>Jugadores</h2>
+      <h1>Jugadores</h1>
       {loading && <p className="muted">Cargando…</p>}
       {(error || message) && <p className="error">{error ?? message}</p>}
 
       {isAdmin && (
         <form className="card form row" onSubmit={add}>
           <input placeholder="Nombre" value={name} onChange={e => setName(e.target.value)} required />
-          <select value={position} onChange={e => setPosition(e.target.value as Position)}>
+          <select aria-label="Posición" value={position} onChange={e => setPosition(e.target.value as Position)}>
             <option value="Delantero">Delantero</option>
             <option value="Zaguero">Zaguero</option>
           </select>
@@ -114,6 +116,12 @@ export default function PlayersPage() {
             value={groupInput} onChange={e => setGroupInput(e.target.value)} />
           <button type="submit">Añadir</button>
         </form>
+      )}
+      {isAdmin && (
+        <p className="muted">
+          Aviso: los nombres se publican en la web. Informa a los jugadores y obtén su consentimiento (el de sus
+          padres o tutores si son menores de 14 años). Más información en la <Link to="/privacidad">política de privacidad</Link>.
+        </p>
       )}
 
       <section className="card">
@@ -127,7 +135,7 @@ export default function PlayersPage() {
       </section>
 
       <section className="card">
-        <h3>Pareja al azar</h3>
+        <h2>Pareja al azar</h2>
         <p className="muted">
           Sortea un delantero y un zaguero entre los jugadores marcados
           ({chosenForwards.length} delanteros, {chosenBacks.length} zagueros).
@@ -147,7 +155,7 @@ export default function PlayersPage() {
       </section>
 
       <section className="card">
-        <h3>Partido al azar</h3>
+        <h2>Partido al azar</h2>
         <p className="muted">
           Sortea dos parejas (cada una con un delantero y un zaguero) entre los jugadores marcados
           ({chosenForwards.length} delanteros, {chosenBacks.length} zagueros).
@@ -173,7 +181,7 @@ export default function PlayersPage() {
       {isAdmin && (
         <>
           <section className="card">
-            <h3>Grupo de jugadores</h3>
+            <h2>Grupo de jugadores</h2>
             <p className="muted">Asigna un grupo (1, 2, 3…) a los jugadores marcados para poder seleccionarlos juntos después.</p>
             <div className="row">
               <input type="number" min={1} max={99} placeholder="Nº de grupo" aria-label="Número de grupo"
@@ -195,7 +203,7 @@ export default function PlayersPage() {
           </div>
           {preview && (
             <section className="card">
-              <h3>Vista previa</h3>
+              <h2>Vista previa</h2>
               <ul className="plain">
                 {preview.pairs.map((p, i) => (
                   <li key={i}>{p.player1.name} <span className="muted">({p.player1.position})</span> + {p.player2.name}{' '}

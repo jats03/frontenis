@@ -3,12 +3,13 @@ import type { GroupStandings } from '../api/types'
 export default function StandingsTable({ group, showQualifiers, individual = false }: { group: GroupStandings; showQualifiers: boolean; individual?: boolean }) {
   return (
     <section className="card">
-      <h3>{group.groupName}</h3>
+      <h2>{group.groupName}</h2>
       <div className="table-wrap">
         <table className="standings">
+          <caption className="sr-only">Clasificación de {group.groupName}</caption>
           <thead>
             <tr>
-              <th>#</th><th className="left">{individual ? 'Jugador' : 'Pareja'}</th><th title="Jugados">PJ</th><th title="Ganados">G</th>
+              <th scope="col">#</th><th className="left">{individual ? 'Jugador' : 'Pareja'}</th><th title="Jugados">PJ</th><th title="Ganados">G</th>
               <th title="Perdidos">P</th><th className="opt" title="Tantos a favor">TF</th><th className="opt" title="Tantos en contra">TC</th>
               <th title="Diferencia">Dif</th><th title="Puntos de clasificación">Pts</th>
             </tr>
@@ -19,8 +20,8 @@ export default function StandingsTable({ group, showQualifiers, individual = fal
                 <td>{r.rank}</td>
                 <td className="left">
                   {r.pairName}
-                  {r.movement > 0 && <span className="move up" title="Sube de grupo"> ▲</span>}
-                  {r.movement < 0 && <span className="move down" title="Baja de grupo"> ▼</span>}
+                  {r.movement > 0 && <span className="move up" title="Sube de grupo"> <span aria-hidden="true">▲</span><span className="sr-only">Sube de grupo</span></span>}
+                  {r.movement < 0 && <span className="move down" title="Baja de grupo"> <span aria-hidden="true">▼</span><span className="sr-only">Baja de grupo</span></span>}
                 </td>
                 <td>{r.played}</td><td>{r.won}</td><td>{r.lost}</td>
                 <td className="opt">{r.pointsFor}</td><td className="opt">{r.pointsAgainst}</td>
