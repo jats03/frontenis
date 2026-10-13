@@ -87,6 +87,7 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
     try { data = text ? JSON.parse(text) : undefined } catch { data = undefined }
     if (!res.ok) {
       if (res.status === 401 && token) window.dispatchEvent(new Event('frontenis:unauthorized'))
+      if (res.status === 429) throw new ApiError(429, 'Demasiadas peticiones seguidas. Espera un minuto e inténtalo de nuevo.')
       throw new ApiError(res.status, data?.detail ?? data?.title ?? `Error ${res.status}`)
     }
     if (method === 'GET' && data !== undefined) responseCache.save(path, data)

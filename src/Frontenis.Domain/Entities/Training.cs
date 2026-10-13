@@ -43,6 +43,7 @@ public sealed class TrainingSession
     public int PointsPerWin { get; private set; }
     public int PointsPerLoss { get; private set; }
     public DateTime CreatedAtUtc { get; private set; }
+    public const int MaxMatches = 300;
     public IReadOnlyCollection<TrainingMatch> Matches => _matches;
 
     public static TrainingSession Create(string name, DateTime date, int pointsPerWin, int pointsPerLoss)
@@ -68,6 +69,7 @@ public sealed class TrainingSession
         if (homeScore < 0 || awayScore < 0 || homeScore > 999 || awayScore > 999)
             throw new DomainException("Marcador no válido.");
         if (homeScore == awayScore) throw new DomainException("No puede haber empate.");
+        if (_matches.Count >= MaxMatches) throw new DomainException($"La sesión ya tiene el máximo de {MaxMatches} partidos.");
         var order = _matches.Count == 0 ? 1 : _matches.Max(m => m.Order) + 1;
         var match = new TrainingMatch(order, home1, home2, away1, away2, target, homeScore, awayScore);
         _matches.Add(match);

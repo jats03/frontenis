@@ -148,9 +148,10 @@ export default function TrainingDetailPage() {
 
       <div className="training-layout">
         <div>
-          {isAdmin && (
+          {(
             <section className="card form" id="nuevo-partido">
-              <h2>Añadir partido</h2>
+              <h2>Registrar partido</h2>
+              <p className="muted">Cualquier persona puede registrar un partido; solo el administrador puede borrarlos.</p>
               <div className="cols">
                 {slotSelect(0, 'Pareja A · jugador 1')}{slotSelect(1, 'Pareja A · jugador 2')}
               </div>
@@ -165,7 +166,7 @@ export default function TrainingDetailPage() {
                 <label>Marcador pareja B<input inputMode="numeric" value={awayScore} onChange={e => setAwayScore(e.target.value)} /></label>
               </div>
               {formError && <p className="error">{formError}</p>}
-              <button onClick={() => void addMatch()}>Añadir partido</button>
+              <button onClick={() => void addMatch()}>Registrar partido</button>
             </section>
           )}
 
@@ -229,7 +230,7 @@ export default function TrainingDetailPage() {
                 <small className="muted">
                   Nivel {sg.homeLevel} vs {sg.awayLevel} · {sg.reason}
                 </small>
-                {isAdmin && <div><button className="secondary small" onClick={() => applySuggestion(sg)}>Usar este partido</button></div>}
+                <div><button className="secondary small" onClick={() => applySuggestion(sg)}>Usar este partido</button></div>
               </li>
             ))}
           </ol>

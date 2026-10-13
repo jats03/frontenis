@@ -221,7 +221,8 @@ public sealed class TrainingsController : ControllerBase
         return NoContent();
     }
 
-    [HttpPost("{id:int}/matches"), Authorize(Roles = Roles.Admin)]
+    /// <summary>Abierto a cualquier persona (sin iniciar sesión): registrar un partido de la sesión. Borrar sigue siendo solo del administrador.</summary>
+    [HttpPost("{id:int}/matches"), EnableRateLimiting("public-write")]
     public async Task<ActionResult<TrainingDetailDto>> AddMatch(int id, AddTrainingMatchRequest request, CancellationToken ct) =>
         Ok(await _trainings.AddMatchAsync(id, request, ct));
 

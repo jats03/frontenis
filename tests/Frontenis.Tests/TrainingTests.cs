@@ -24,6 +24,14 @@ public class TrainingTests
     }
 
     [Fact]
+    public void Session_has_a_match_limit()
+    {
+        var s = Session();
+        for (var i = 0; i < TrainingSession.MaxMatches; i++) s.AddMatch(1, 2, 3, 4, 15, 15, 10);
+        Assert.Throws<DomainException>(() => s.AddMatch(1, 2, 3, 4, 15, 15, 10));
+    }
+
+    [Fact]
     public void Session_rules_and_remove()
     {
         Assert.Throws<DomainException>(() => TrainingSession.Create(" ", DateTime.Today, 3, 0));

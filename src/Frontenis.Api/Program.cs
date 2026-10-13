@@ -63,6 +63,10 @@ builder.Services.AddRateLimiter(o =>
     o.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(c =>
         RateLimitPartition.GetFixedWindowLimiter(ClientKey(c), _ => new FixedWindowRateLimiterOptions
         { PermitLimit = 300, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 }));
+    // Alta pública de partidos de entrenamiento (sin sesión): límite bajo por IP para frenar el spam.
+    o.AddPolicy("public-write", c =>
+        RateLimitPartition.GetFixedWindowLimiter("public-write:" + ClientKey(c), _ => new FixedWindowRateLimiterOptions
+        { PermitLimit = 20, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 }));
     o.AddPolicy("login", c =>
         RateLimitPartition.GetFixedWindowLimiter("login:" + ClientKey(c), _ => new FixedWindowRateLimiterOptions
         { PermitLimit = 8, Window = TimeSpan.FromMinutes(1), QueueLimit = 0 }));
