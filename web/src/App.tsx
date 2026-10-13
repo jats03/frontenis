@@ -32,11 +32,8 @@ export default function App() {
           <NavLink to="/cronometro">Cronómetro</NavLink>
           <NavLink to="/plantillas">Plantillas</NavLink>
         </nav>
-        {isAdmin ? (
-          <button className="link" onClick={logout}>Salir ({username})</button>
-        ) : (
-          <NavLink to="/login">Admin</NavLink>
-        )}
+        {/* El acceso de administrador no se anuncia: se entra escribiendo la dirección /acceso */}
+        {isAdmin && <button className="link" onClick={logout}>Salir ({username})</button>}
       </header>
       <ApiStatus />
       <LoadingSpinner />
@@ -48,7 +45,7 @@ export default function App() {
           <Route path="/jugadores" element={<PlayersPage />} />
           <Route path="/cronometro" element={<TimerPage />} />
           <Route path="/plantillas" element={<WhatsappPage />} />
-          <Route path="/login" element={<LoginPage />} />
+          <Route path="/acceso" element={<LoginPage />} />
           <Route path="*" element={<><h1>Página no encontrada</h1><p><Link to="/">Volver al inicio</Link></p></>} />
         </Routes>
       </main>
