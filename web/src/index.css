@@ -308,3 +308,16 @@ details.present summary { cursor: pointer; font-weight: 600; min-height: 32px; d
 }
 @media (min-width: 1400px) { .content { max-width: 1240px; } }
 @media (max-width: 899px) and (max-height: 480px) { .topbar { position: static; min-height: 48px; } .topbar .logo { height: 36px; width: 36px; } }
+
+/* ---------- Bloques plegables: se ve claramente que se pueden mostrar y ocultar ---------- */
+details > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: .6rem; min-height: 44px;
+  padding: .4rem .8rem; border: 1px solid var(--border); border-radius: 10px; background: var(--card); font-weight: 600; }
+details > summary::-webkit-details-marker { display: none; }
+details > summary::after { content: 'Mostrar  ▾'; margin-left: auto; padding: .15rem .6rem; border-radius: 999px; background: var(--bg);
+  border: 1px solid var(--border); font-size: .8rem; font-weight: 600; color: var(--link); white-space: nowrap; }
+details[open] > summary::after { content: 'Ocultar  ▴'; }
+details > summary:hover { border-color: var(--primary); }
+details[open] > summary { margin-bottom: .6rem; }
+details.card { padding: .5rem; }
+details.card > summary, details.present > summary, details.how > summary { min-height: 44px; display: flex; color: inherit; }
+details.how > summary { font-weight: 500; color: var(--link); }
