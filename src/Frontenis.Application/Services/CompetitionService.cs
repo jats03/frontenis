@@ -38,12 +38,14 @@ public sealed class CompetitionService : ICompetitionService
     private readonly IRandomizer _randomizer;
     private readonly IRotationPlanner _planner;
     private readonly IIndividualStandingsCalculator _individual;
+    private readonly IReadCache _cache;
 
     public CompetitionService(ICompetitionRepository repository, IGroupDistributor distributor,
         IScheduleGenerator scheduler, IStandingsCalculator calculator, IBracketGenerator bracket, IUnitOfWork uow,
         IPlayerRepository players, IRandomizer randomizer, IRotationPlanner planner,
-        IIndividualStandingsCalculator individual)
+        IIndividualStandingsCalculator individual, IReadCache cache)
     {
+        _cache = cache;
         _repository = repository;
         _distributor = distributor;
         _scheduler = scheduler;
@@ -57,10 +59,11 @@ public sealed class CompetitionService : ICompetitionService
     }
 
     public async Task<IReadOnlyList<CompetitionSummaryDto>> ListAsync(CancellationToken ct = default) =>
-        (await _repository.ListAsync(ct)).Select(c => c.ToSummary()).ToList();
+        await _cache.GetOrAddAsync<IReadOnlyList<CompetitionSummaryDto>>("competitions:list",
+            async () => (await _repository.ListAsync(CancellationToken.None)).Select(c => c.ToSummary()).ToList());
 
     public async Task<CompetitionDetailDto> GetAsync(int id, CancellationToken ct = default) =>
-        ToDetail(await LoadAsync(id, ct));
+        await _cache.GetOrAddAsync($"competitions:{id}", async () => ToDetail(await LoadAsync(id, CancellationToken.None)));
 
     public async Task<CompetitionSummaryDto> CreateAsync(CreateCompetitionRequest r, CancellationToken ct = default)
     {
@@ -92,6 +95,7 @@ public sealed class CompetitionService : ICompetitionService
     {
         await LoadAsync(id, ct);
         await _repository.DeleteAsync(id, ct);
+        _cache.Clear(); // el borrado no pasa por SaveChanges
     }
 
     public async Task<CompetitionDetailDto> DrawAsync(int id, CancellationToken ct = default)
@@ -171,7 +175,10 @@ public sealed class CompetitionService : ICompetitionService
             competition.GroupPlayers(g).Select(p => p.Id).ToList(), competition.GroupTeamOutcomes(g),
             competition.PointsPerWin, competition.PointsPerLoss))).ToArray();
 
-    public async Task<IReadOnlyList<GroupStandingsDto>> GetStandingsAsync(int id, CancellationToken ct = default)
+    public Task<IReadOnlyList<GroupStandingsDto>> GetStandingsAsync(int id, CancellationToken ct = default) =>
+        _cache.GetOrAddAsync($"competitions:{id}:standings", () => ComputeStandingsAsync(id, CancellationToken.None)); // sin el ct de esta petición: el resultado se comparte
+
+    private async Task<IReadOnlyList<GroupStandingsDto>> ComputeStandingsAsync(int id, CancellationToken ct)
     {
         var competition = await LoadAsync(id, ct);
         var result = new List<GroupStandingsDto>();

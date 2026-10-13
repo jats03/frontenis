@@ -97,3 +97,76 @@ public class TrainingTests
         Assert.True(a.Select(x => (x.Home1, x.Home2, x.Away1, x.Away2)).SequenceEqual(b.Select(x => (x.Home1, x.Home2, x.Away1, x.Away2))));
     }
 }
+
+public class ReadCacheTests
+{
+    [Fact]
+    public async Task Value_is_computed_once_until_cleared()
+    {
+        var cache = new Frontenis.Application.Abstractions.ReadCache();
+        var calls = 0;
+        Task<int> Load() { calls++; return Task.FromResult(calls); }
+        Assert.Equal(1, await cache.GetOrAddAsync("k", Load));
+        Assert.Equal(1, await cache.GetOrAddAsync("k", Load));
+        cache.Clear();
+        Assert.Equal(2, await cache.GetOrAddAsync("k", Load));
+        Assert.Equal(2, calls);
+    }
+
+    [Fact]
+    public async Task Concurrent_requests_share_one_computation()
+    {
+        var cache = new Frontenis.Application.Abstractions.ReadCache();
+        var calls = 0;
+        async Task<int> Slow() { Interlocked.Increment(ref calls); await Task.Delay(50); return 7; }
+        var all = await Task.WhenAll(Enumerable.Range(0, 10).Select(_ => cache.GetOrAddAsync("k", Slow)));
+        Assert.Equal(1, calls);
+        Assert.True(all.All(v => v == 7));
+    }
+
+    [Fact]
+    public async Task Errors_are_not_cached()
+    {
+        var cache = new Frontenis.Application.Abstractions.ReadCache();
+        var calls = 0;
+        Task<int> Fail() { calls++; throw new InvalidOperationException("x"); }
+        await Assert.ThrowsAsync<InvalidOperationException>(() => cache.GetOrAddAsync("k", Fail));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => cache.GetOrAddAsync("k", Fail));
+        Assert.Equal(2, calls);
+        Assert.Equal(5, await cache.GetOrAddAsync("k", () => Task.FromResult(5)));
+    }
+
+    [Fact]
+    public async Task Write_during_computation_does_not_keep_stale_result()
+    {
+        var cache = new Frontenis.Application.Abstractions.ReadCache();
+        var gate = new TaskCompletionSource();
+        var version = 1;
+        var first = cache.GetOrAddAsync("k", async () => { var v = version; await gate.Task; return v; });
+        version = 2; cache.Clear();        // alguien escribe mientras se calcula
+        gate.SetResult();
+        Assert.Equal(1, await first);       // esa petición recibe lo que leyó...
+        Assert.Equal(2, await cache.GetOrAddAsync("k", () => Task.FromResult(version))); // ...pero no se conserva
+    }
+
+    [Fact]
+    public async Task Entries_expire_after_ttl()
+    {
+        var clock = new ManualTime();
+        var cache = new Frontenis.Application.Abstractions.ReadCache(clock, TimeSpan.FromHours(12), 100);
+        var n = 0;
+        Task<int> Load() => Task.FromResult(++n);
+        Assert.Equal(1, await cache.GetOrAddAsync("k", Load));
+        clock.Advance(TimeSpan.FromHours(11));
+        Assert.Equal(1, await cache.GetOrAddAsync("k", Load));
+        clock.Advance(TimeSpan.FromHours(2));
+        Assert.Equal(2, await cache.GetOrAddAsync("k", Load));
+    }
+
+    private sealed class ManualTime : TimeProvider
+    {
+        private DateTimeOffset _now = new(2026, 10, 13, 0, 0, 0, TimeSpan.Zero);
+        public void Advance(TimeSpan t) => _now += t;
+        public override DateTimeOffset GetUtcNow() => _now;
+    }
+}

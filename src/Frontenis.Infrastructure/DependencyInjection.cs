@@ -23,7 +23,10 @@ public static class DependencyInjection
         services.AddDbContext<FrontenisDbContext>(o =>
             o.UseSqlServer(connection.ConnectionString,
                 sql => sql.EnableRetryOnFailure(maxRetryCount: 6, maxRetryDelay: TimeSpan.FromSeconds(10), errorNumbersToAdd: null)));
-        services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<FrontenisDbContext>());
+        // Caché de lecturas públicas en memoria; cada guardado correcto la vacía.
+        services.AddSingleton<IReadCache, ReadCache>();
+        services.AddScoped<IUnitOfWork>(sp =>
+            new CachingUnitOfWork(sp.GetRequiredService<FrontenisDbContext>(), sp.GetRequiredService<IReadCache>()));
 
         services.AddScoped<IPlayerRepository, PlayerRepository>();
         services.AddScoped<IPairRepository, PairRepository>();

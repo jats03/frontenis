@@ -17,15 +17,18 @@ public sealed class PlayerService : IPlayerService
 {
     private readonly IPlayerRepository _players;
     private readonly IUnitOfWork _uow;
+    private readonly IReadCache _cache;
 
-    public PlayerService(IPlayerRepository players, IUnitOfWork uow)
+    public PlayerService(IPlayerRepository players, IUnitOfWork uow, IReadCache cache)
     {
+        _cache = cache;
         _players = players;
         _uow = uow;
     }
 
     public async Task<IReadOnlyList<PlayerDto>> ListAsync(CancellationToken ct = default) =>
-        (await _players.ListAsync(ct)).Select(p => p.ToDto()).ToList();
+        await _cache.GetOrAddAsync<IReadOnlyList<PlayerDto>>("players:list",
+            async () => (await _players.ListAsync(CancellationToken.None)).Select(p => p.ToDto()).ToList());
 
     public async Task<PlayerDto> CreateAsync(PlayerRequest request, CancellationToken ct = default)
     {

@@ -26,17 +26,20 @@ public sealed class TrainingService : ITrainingService
     private readonly IPlayerRepository _players;
     private readonly ITrainingPlanner _planner;
     private readonly IUnitOfWork _uow;
+    private readonly IReadCache _cache;
 
-    public TrainingService(ITrainingRepository trainings, IPlayerRepository players, ITrainingPlanner planner, IUnitOfWork uow)
+    public TrainingService(ITrainingRepository trainings, IPlayerRepository players, ITrainingPlanner planner, IUnitOfWork uow, IReadCache cache)
     {
+        _cache = cache;
         _trainings = trainings; _players = players; _planner = planner; _uow = uow;
     }
 
     public async Task<IReadOnlyList<TrainingSummaryDto>> ListAsync(CancellationToken ct = default) =>
-        (await _trainings.ListAsync(ct)).Select(Summary).ToList();
+        await _cache.GetOrAddAsync<IReadOnlyList<TrainingSummaryDto>>("trainings:list",
+            async () => (await _trainings.ListAsync(CancellationToken.None)).Select(Summary).ToList());
 
     public async Task<TrainingDetailDto> GetAsync(int id, CancellationToken ct = default) =>
-        await DetailAsync(await LoadAsync(id, ct), ct);
+        await _cache.GetOrAddAsync($"trainings:{id}", async () => await DetailAsync(await LoadAsync(id, CancellationToken.None), CancellationToken.None));
 
     public async Task<TrainingSummaryDto> CreateAsync(CreateTrainingRequest r, CancellationToken ct = default)
     {
