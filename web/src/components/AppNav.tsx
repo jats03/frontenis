@@ -11,12 +11,17 @@ const items: { to: string; label: string; short?: string; icon: ReactNode; end?:
   { to: '/mas', label: 'Más', icon: <MoreIcon /> },
 ]
 
-/** Navegación única: barra inferior en móvil/tablet y barra lateral en ordenador. Sin cabecera con texto. */
+/** Navegación única: barra inferior en móvil/tablet y barra lateral en ordenador. Cabecera solo con el logo. */
 export default function AppNav() {
   const { isAdmin, logout, username } = useAuth()
   return (
+    <>
+    <header className="topbar">
+      <NavLink to="/" className="brand" aria-label="Club Frontenis Ciudad de Jaén, inicio">
+        <img src="/logo.png" alt="" className="logo" />
+      </NavLink>
+    </header>
     <nav aria-label="Principal" className="main-nav">
-      <img src="/logo.png" alt="Club Frontenis Ciudad de Jaén" className="nav-logo" />
       {items.map(i => (
         <NavLink key={i.to} to={i.to} end={i.end}>
           {i.icon}
@@ -26,5 +31,6 @@ export default function AppNav() {
       ))}
       {isAdmin && <button className="link nav-logout" onClick={logout}>Salir ({username})</button>}
     </nav>
+    </>
   )
 }
