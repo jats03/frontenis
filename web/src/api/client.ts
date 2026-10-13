@@ -162,6 +162,11 @@ export const api = {
       await request<void>('DELETE', `/api/trainings/${id}`)
       responseCache.remove('/api/trainings'); responseCache.remove(`/api/trainings/${id}`)
     },
+    rename: async (id: number, name: string) => {
+      const t = await request<TrainingSummary>('PUT', `/api/trainings/${id}/name`, { name })
+      responseCache.remove('/api/trainings'); responseCache.remove(`/api/trainings/${id}`)
+      return t
+    },
     addMatch: async (id: number, m: NewTrainingMatch) => {
       const d = await request<TrainingDetail>('POST', `/api/trainings/${id}/matches`, m)
       responseCache.remove('/api/trainings')

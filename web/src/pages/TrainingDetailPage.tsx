@@ -4,7 +4,7 @@ import Disclosure from '../components/Disclosure'
 import ActionMenu from '../components/ActionMenu'
 import PageHeader from '../components/PageHeader'
 import { formatShortDate } from '../dates'
-import { confirmDelete, notify } from '../alerts'
+import { confirmDelete, notify, promptText } from '../alerts'
 import { api } from '../api/client'
 import type { Player, TrainingDetail, TrainingRow, TrainingSuggestion } from '../api/types'
 import { useAuth } from '../auth/AuthContext'
@@ -102,6 +102,17 @@ export default function TrainingDetailPage() {
     catch (e) { setFormError(e instanceof Error ? e.message : 'Error') }
   }
 
+  async function rename() {
+    if (!data) return
+    const name = await promptText('Editar nombre', data.summary.name, 'Nombre del entrenamiento')
+    if (name === null || name.trim() === data.summary.name) return
+    try {
+      const t = await api.trainings.rename(id, name)
+      setData({ ...data, summary: { ...data.summary, name: t.name } })
+      notify('Nombre actualizado')
+    } catch (e) { setFormError(e instanceof Error ? e.message : 'Error') }
+  }
+
   async function removeSession() {
     if (!(await confirmDelete('¿Eliminar este entrenamiento?', 'Se borrarán todos sus partidos.'))) return
     try { await api.trainings.remove(id); notify('Entrenamiento eliminado'); navigate('/entrenamientos') }
@@ -142,10 +153,12 @@ export default function TrainingDetailPage() {
           {!formOpen && <button onClick={() => setFormOpen(true)}>+ Registrar partido</button>}
           <ActionMenu items={[
             { label: 'Todas las sesiones', onSelect: () => navigate('/entrenamientos') },
+            { label: 'Editar nombre', hidden: !isAdmin, onSelect: () => void rename() },
             { label: 'Eliminar sesión', danger: true, hidden: !isAdmin, onSelect: () => void removeSession() },
           ]} />
         </>} />
       <StaleNotice savedAt={savedAt} error={error} />
+      {!formOpen && formError && <p className="error" role="alert">{formError}</p>}
 
       <div className="training-layout">
         <div>

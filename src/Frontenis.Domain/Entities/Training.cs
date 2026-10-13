@@ -60,6 +60,13 @@ public sealed class TrainingSession
         };
     }
 
+    public void Rename(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name)) throw new DomainException("El nombre es obligatorio.");
+        if (name.Trim().Length > 150) throw new DomainException("El nombre no puede superar los 150 caracteres.");
+        Name = name.Trim();
+    }
+
     public TrainingMatch AddMatch(int home1, int home2, int away1, int away2, int target, int homeScore, int awayScore)
     {
         var players = new[] { home1, home2, away1, away2 };
