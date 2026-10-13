@@ -61,12 +61,14 @@ export interface Relation {
 }
 export interface RecentMatch {
   matchId: number; competitionId: number; competitionName: string
-  partner: string; rivals: string; sets: SetScore[]; won: boolean
+  partner: string; rivals: string; sets: SetScore[]; won: boolean; isTraining: boolean
 }
 export interface PlayerHistory {
   summary: PlayerHistoryRow; partners: Relation[]; rivals: Relation[]
-  recent: RecentMatch[]; competitions: { id: number; name: string }[]
+  recent: RecentMatch[]
 }
+/** Origen de los partidos del histórico; sin ids = todos. */
+export interface HistoryFilter { competitionIds: number[]; trainingIds: number[] }
 
 export interface TrainingSummary {
   id: number; name: string; date: string; pointsPerWin: number; pointsPerLoss: number; matchCount: number

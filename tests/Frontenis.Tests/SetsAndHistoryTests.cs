@@ -160,4 +160,27 @@ public class PlayerStatsTests
         Assert.True(all.First().ClassificationPoints == 3);
         Assert.Equal(0, calc.Calculate(99, matches).Played);
     }
+
+    [Fact]
+    public void Competition_and_training_with_same_id_are_different_sources()
+    {
+        var sets = new[] { new SetScore(15, 10) };
+        var matches = new List<PlayedMatch>
+        {
+            new(1, 1, "Liga", true, 3, 0, new[] { 1, 2 }, new[] { 3, 4 }, sets),
+            new(1, 1, "Martes", true, 2, 1, new[] { 1, 2 }, new[] { 3, 4 }, sets, true),
+        };
+        var p1 = new PlayerStatsCalculator().Calculate(1, matches);
+        Assert.Equal(2, p1.Competitions);
+        Assert.Equal(5, p1.ClassificationPoints); // 3 de la liga + 2 del entrenamiento
+    }
+
+    [Fact]
+    public void History_filter_semantics()
+    {
+        Assert.True(Frontenis.Application.Abstractions.HistoryFilter.All.IsAll);
+        var onlyTr = new Frontenis.Application.Abstractions.HistoryFilter(new int[0], new[] { 4 });
+        Assert.False(onlyTr.IncludesCompetitions);
+        Assert.True(onlyTr.IncludesTrainings);
+    }
 }

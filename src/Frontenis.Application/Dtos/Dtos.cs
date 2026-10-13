@@ -73,16 +73,14 @@ public sealed record RelationDto(
 
 public sealed record RecentMatchDto(
     int MatchId, int CompetitionId, string CompetitionName, string Partner, string Rivals,
-    IReadOnlyList<SetScoreDto> Sets, bool Won);
+    IReadOnlyList<SetScoreDto> Sets, bool Won, bool IsTraining = false);
 
-public sealed record CompetitionRefDto(int Id, string Name);
 
 public sealed record PlayerHistoryDto(
     PlayerHistoryRowDto Summary,
     IReadOnlyList<RelationDto> Partners,
     IReadOnlyList<RelationDto> Rivals,
-    IReadOnlyList<RecentMatchDto> Recent,
-    IReadOnlyList<CompetitionRefDto> Competitions);
+    IReadOnlyList<RecentMatchDto> Recent);
 
 // ---------- Entrenamientos (partidos sueltos) ----------
 public sealed record CreateTrainingRequest(string Name, DateTime Date, int PointsPerWin = 3, int PointsPerLoss = 0);

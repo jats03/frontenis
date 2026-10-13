@@ -1,7 +1,7 @@
 import type {
   CompetitionDetail, CompetitionSummary, CreateCompetition, GroupStandings, MatchDto,
   PairDto, PairingPreview, Player, PlayerHistory, PlayerHistoryRow, Position, SetScore,
-  NewTrainingMatch, TrainingDetail, TrainingSuggestion, TrainingSummary,
+  HistoryFilter, NewTrainingMatch, TrainingDetail, TrainingSuggestion, TrainingSummary,
 } from './types'
 
 export const BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:5080'
@@ -46,6 +46,11 @@ export const responseCache = {
 export class ApiError extends Error {
   status: number
   constructor(status: number, message: string) { super(message); this.status = status }
+}
+
+function historyQuery(f: HistoryFilter): string {
+  const q = [...f.competitionIds.map(i => `competitionIds=${i}`), ...f.trainingIds.map(i => `trainingIds=${i}`)]
+  return q.length ? `?${q.join('&')}` : ''
 }
 
 async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
@@ -109,10 +114,9 @@ export const api = {
     update: (id: number, name: string, position: Position, groupNumber: number | null = null) =>
       request<Player>('PUT', `/api/players/${id}`, { name, position, groupNumber }),
     remove: (id: number) => request<void>('DELETE', `/api/players/${id}`),
-    history: (competitionId?: number) =>
-      request<PlayerHistoryRow[]>('GET', `/api/players/history${competitionId ? `?competitionId=${competitionId}` : ''}`),
-    playerHistory: (id: number, competitionId?: number) =>
-      request<PlayerHistory>('GET', `/api/players/${id}/history${competitionId ? `?competitionId=${competitionId}` : ''}`),
+    history: (f: HistoryFilter) => request<PlayerHistoryRow[]>('GET', `/api/players/history${historyQuery(f)}`),
+    playerHistory: (id: number, f: HistoryFilter) =>
+      request<PlayerHistory>('GET', `/api/players/${id}/history${historyQuery(f)}`),
     pairingPreview: (playerIds: number[]) =>
       request<PairingPreview>('POST', '/api/players/pairing-preview', { playerIds }),
   },

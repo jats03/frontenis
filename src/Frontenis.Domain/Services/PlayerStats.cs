@@ -7,7 +7,8 @@ public sealed record PlayedMatch(
     int MatchId, int CompetitionId, string CompetitionName, bool IsGroupPhase,
     int PointsPerWin, int PointsPerLoss,
     IReadOnlyList<int> HomePlayerIds, IReadOnlyList<int> AwayPlayerIds,
-    IReadOnlyList<SetScore> Sets)
+    IReadOnlyList<SetScore> Sets,
+    bool IsTraining = false, DateTime? SortDate = null)
 {
     public int HomeSets => Sets.Count(s => s.HomeWon);
     public int AwaySets => Sets.Count - HomeSets;
@@ -44,7 +45,7 @@ public sealed class PlayerStatsCalculator : IPlayerStatsCalculator
     private sealed class Acc
     {
         public int Played, Won, Lost, SetsFor, SetsAgainst, TantosFor, TantosAgainst, Points;
-        public readonly HashSet<int> Comps = new();
+        public readonly HashSet<(bool, int)> Comps = new();
         public readonly Dictionary<int, int[]> Partners = new(); // played, won, lost, tf, ta
         public readonly Dictionary<int, int[]> Rivals = new();
     }
@@ -92,7 +93,7 @@ public sealed class PlayerStatsCalculator : IPlayerStatsCalculator
             a.SetsFor += setsFor; a.SetsAgainst += setsAgainst;
             a.TantosFor += tf; a.TantosAgainst += ta;
             if (m.IsGroupPhase) a.Points += won ? m.PointsPerWin : m.PointsPerLoss;
-            a.Comps.Add(m.CompetitionId);
+            a.Comps.Add((m.IsTraining, m.CompetitionId));
             foreach (var mate in mine.Where(x => x != p)) Bump(a.Partners, mate, won, tf, ta);
             foreach (var rival in theirs) Bump(a.Rivals, rival, won, tf, ta);
         }

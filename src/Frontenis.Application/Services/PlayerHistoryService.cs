@@ -8,8 +8,8 @@ namespace Frontenis.Application.Services;
 public interface IPlayerHistoryService
 {
     /// <summary>Ranking histórico de todos los jugadores (opcionalmente de una sola competición).</summary>
-    Task<IReadOnlyList<PlayerHistoryRowDto>> RankingAsync(int? competitionId, CancellationToken ct = default);
-    Task<PlayerHistoryDto> PlayerAsync(int playerId, int? competitionId, CancellationToken ct = default);
+    Task<IReadOnlyList<PlayerHistoryRowDto>> RankingAsync(HistoryFilter filter, CancellationToken ct = default);
+    Task<PlayerHistoryDto> PlayerAsync(int playerId, HistoryFilter filter, CancellationToken ct = default);
 }
 
 public sealed class PlayerHistoryService : IPlayerHistoryService
@@ -27,10 +27,10 @@ public sealed class PlayerHistoryService : IPlayerHistoryService
         _calculator = calculator;
     }
 
-    public async Task<IReadOnlyList<PlayerHistoryRowDto>> RankingAsync(int? competitionId, CancellationToken ct = default)
+    public async Task<IReadOnlyList<PlayerHistoryRowDto>> RankingAsync(HistoryFilter filter, CancellationToken ct = default)
     {
         var players = await _players.ListAsync(ct);
-        var stats = _calculator.CalculateAll(await _history.ListPlayedAsync(competitionId, null, ct))
+        var stats = _calculator.CalculateAll(await _history.ListPlayedAsync(filter, null, ct))
             .ToDictionary(s => s.PlayerId);
         return players
             .Select(p => ToRow(p.Id, p.Name, p.Position, stats.GetValueOrDefault(p.Id)))
@@ -39,18 +39,18 @@ public sealed class PlayerHistoryService : IPlayerHistoryService
             .ToList();
     }
 
-    public async Task<PlayerHistoryDto> PlayerAsync(int playerId, int? competitionId, CancellationToken ct = default)
+    public async Task<PlayerHistoryDto> PlayerAsync(int playerId, HistoryFilter filter, CancellationToken ct = default)
     {
         var player = await _players.GetByIdAsync(playerId, ct) ?? throw new NotFoundException("Jugador no encontrado.");
         var names = (await _players.ListAsync(ct)).ToDictionary(p => p.Id, p => p.Name);
-        var matches = await _history.ListPlayedAsync(competitionId, playerId, ct);
+        var matches = await _history.ListPlayedAsync(filter, playerId, ct);
         var stats = _calculator.Calculate(playerId, matches);
 
         string Name(int id) => names.GetValueOrDefault(id, "—");
         RelationDto Rel(RelationStat r) =>
             new(r.PlayerId, Name(r.PlayerId), r.Played, r.Won, r.Lost, r.WinRate, r.TantosFor, r.TantosAgainst);
 
-        var recent = matches.OrderByDescending(m => m.MatchId).Take(RecentCount).Select(m =>
+        var recent = matches.OrderByDescending(m => m.SortDate ?? DateTime.MinValue).ThenByDescending(m => m.MatchId).Take(RecentCount).Select(m =>
         {
             var home = m.HomePlayerIds.Contains(playerId);
             var mine = home ? m.HomePlayerIds : m.AwayPlayerIds;
@@ -61,13 +61,12 @@ public sealed class PlayerHistoryService : IPlayerHistoryService
                 m.MatchId, m.CompetitionId, m.CompetitionName,
                 string.Join(" / ", mine.Where(x => x != playerId).Select(Name)),
                 string.Join(" / ", theirs.Select(Name)),
-                sets, home == m.HomeWon);
+                sets, home == m.HomeWon, m.IsTraining);
         }).ToList();
 
-        var comps = (await _history.ListCompetitionsAsync(ct)).Select(c => new CompetitionRefDto(c.Id, c.Name)).ToList();
         return new PlayerHistoryDto(
             ToRow(player.Id, player.Name, player.Position, stats.Played == 0 ? null : stats),
-            stats.Partners.Select(Rel).ToList(), stats.Rivals.Select(Rel).ToList(), recent, comps);
+            stats.Partners.Select(Rel).ToList(), stats.Rivals.Select(Rel).ToList(), recent);
     }
 
     private static PlayerHistoryRowDto ToRow(int id, string name, Domain.Enums.PlayerPosition pos, PlayerStats? s) =>

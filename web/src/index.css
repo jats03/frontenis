@@ -213,3 +213,9 @@ th[aria-sort="descending"] button.link-button::after { content: ' ▼'; }
 .suggestions li { border: 1px solid var(--border); border-radius: 10px; padding: .6rem .8rem; display: grid; gap: .2rem; }
 .suggestions li.best { border-color: var(--primary); background: var(--win); }
 button.small { padding: .15rem .5rem; font-size: .85rem; margin-left: .4rem; }
+
+.source-filter summary { cursor: pointer; font-weight: 600; }
+.source-groups { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); margin: .6rem 0; }
+.source-group { border: 1px solid var(--border); border-radius: 10px; padding: .5rem .8rem; margin: 0; min-width: 0; }
+.source-group legend { font-weight: 600; padding: 0 .3rem; }
+.source-list { display: grid; gap: .2rem; max-height: 14rem; overflow-y: auto; }

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import SourceFilter, { useHistoryFilter } from '../components/SourceFilter'
 import { api } from '../api/client'
 import type { PlayerHistoryRow } from '../api/types'
 import StaleNotice from '../components/StaleNotice'
@@ -19,11 +20,10 @@ const columns: { key: SortKey; label: string; title: string; opt?: boolean }[] =
 
 export default function PlayerHistoryPage() {
   useDocumentTitle('Histórico de jugadores')
-  const [competitionId, setCompetitionId] = useState<number | undefined>()
+  const [filter, setFilter, query] = useHistoryFilter()
   const [sort, setSort] = useState<SortKey>('classificationPoints')
   const [desc, setDesc] = useState(true)
-  const comps = useAsync(() => api.competitions.list(), [], '/api/competitions')
-  const { data, error, loading, savedAt } = useAsync(() => api.players.history(competitionId), [competitionId])
+  const { data, error, loading, savedAt } = useAsync(() => api.players.history(filter), [query])
 
   const rows = useMemo(() => {
     const list = [...(data ?? [])]
@@ -46,12 +46,7 @@ export default function PlayerHistoryPage() {
         <h1>Histórico de jugadores</h1>
         <Link className="button secondary" to="/jugadores">Volver a jugadores</Link>
       </div>
-      <label className="filter">Competición
-        <select value={competitionId ?? ''} onChange={e => setCompetitionId(e.target.value ? Number(e.target.value) : undefined)}>
-          <option value="">Todas</option>
-          {comps.data?.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-        </select>
-      </label>
+      <SourceFilter value={filter} onChange={setFilter} />
       <StaleNotice savedAt={savedAt} error={error} />
       {error && !data && <p className="error">{error}</p>}
       {loading && !data && <p className="muted">Cargando…</p>}
@@ -77,7 +72,7 @@ export default function PlayerHistoryPage() {
                 {rows.map((r, i) => (
                   <tr key={r.playerId}>
                     <td>{i + 1}</td>
-                    <td className="left"><Link to={`/jugadores/${r.playerId}`}>{r.name}</Link></td>
+                    <td className="left"><Link to={`/jugadores/${r.playerId}${query}`}>{r.name}</Link></td>
                     <td>{r.played}</td><td>{r.won}</td><td>{r.lost}</td><td>{r.played ? `${r.winRate}%` : '—'}</td>
                     <td className="opt">{r.tantosFor}</td>
                     <td>{r.tantosDiff > 0 ? `+${r.tantosDiff}` : r.tantosDiff}</td>
@@ -88,7 +83,7 @@ export default function PlayerHistoryPage() {
             </table>
           </div>
           <p className="muted">
-            Los puntos de clasificación solo cuentan partidos de liga o fase de grupos (cada competición con sus puntos
+            Los puntos de clasificación cuentan los partidos de liga, fase de grupos y entrenamientos (cada uno con sus puntos
             por victoria y derrota); los tantos suman todos los sets, incluida la fase final.
           </p>
         </section>
