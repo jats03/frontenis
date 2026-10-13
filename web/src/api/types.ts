@@ -67,3 +67,28 @@ export interface PlayerHistory {
   summary: PlayerHistoryRow; partners: Relation[]; rivals: Relation[]
   recent: RecentMatch[]; competitions: { id: number; name: string }[]
 }
+
+export interface TrainingSummary {
+  id: number; name: string; date: string; pointsPerWin: number; pointsPerLoss: number; matchCount: number
+}
+export interface TrainingMatch {
+  id: number; order: number; homeName: string; awayName: string
+  homePlayerIds: number[]; awayPlayerIds: number[]
+  targetPoints: number; homeScore: number; awayScore: number; homeWon: boolean
+}
+export interface TrainingRow {
+  rank: number; name: string; playerIds: number[]; played: number; won: number; lost: number
+  pointsFor: number; pointsAgainst: number; pointsDiff: number; classificationPoints: number
+}
+export interface TrainingDetail {
+  summary: TrainingSummary; matches: TrainingMatch[]
+  pairStandings: TrainingRow[]; playerStandings: TrainingRow[]
+}
+export interface TrainingSuggestion {
+  homePlayerIds: number[]; awayPlayerIds: number[]; homeName: string; awayName: string
+  homeLevel: number; awayLevel: number; balance: number; reason: string
+}
+export interface NewTrainingMatch {
+  home1Id: number; home2Id: number; away1Id: number; away2Id: number
+  targetPoints: number; homeScore: number; awayScore: number
+}

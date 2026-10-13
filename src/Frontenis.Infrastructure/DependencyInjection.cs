@@ -30,6 +30,7 @@ public static class DependencyInjection
         services.AddScoped<ICompetitionRepository, CompetitionRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IMatchHistoryRepository, MatchHistoryRepository>();
+        services.AddScoped<ITrainingRepository, TrainingRepository>();
 
         services.Configure<JwtOptions>(config.GetSection(JwtOptions.Section));
         services.AddSingleton<IPasswordHasher, Pbkdf2PasswordHasher>();
@@ -47,6 +48,7 @@ public static class DependencyInjection
         services.AddSingleton<IRotationPlanner, RotationPlanner>();
         services.AddSingleton<IIndividualStandingsCalculator, IndividualStandingsCalculator>();
         services.AddSingleton<IPlayerStatsCalculator, PlayerStatsCalculator>();
+        services.AddSingleton<ITrainingPlanner, TrainingPlanner>();
 
         // Casos de uso
         services.AddScoped<IAuthService, AuthService>();
@@ -55,6 +57,7 @@ public static class DependencyInjection
         services.AddScoped<ICompetitionService, CompetitionService>();
         services.AddScoped<IMatchService, MatchService>();
         services.AddScoped<IPlayerHistoryService, PlayerHistoryService>();
+        services.AddScoped<ITrainingService, TrainingService>();
         return services;
     }
 
@@ -78,6 +81,36 @@ public static class DependencyInjection
         foreach (var col in new[] { "Set1Home", "Set1Away", "Set2Home", "Set2Away", "Set3Home", "Set3Away" })
             await db.Database.ExecuteSqlRawAsync(
                 $"IF COL_LENGTH('Matches','{col}') IS NULL ALTER TABLE Matches ADD {col} INT NULL;");
+
+        // Tablas de entrenamientos (partidos sueltos): EnsureCreated no añade tablas a una BD existente.
+        await db.Database.ExecuteSqlRawAsync(@"
+IF OBJECT_ID('TrainingSessions') IS NULL
+CREATE TABLE TrainingSessions (
+    Id INT IDENTITY PRIMARY KEY,
+    Name NVARCHAR(150) NOT NULL,
+    SessionDate DATETIME2 NOT NULL,
+    PointsPerWin INT NOT NULL,
+    PointsPerLoss INT NOT NULL,
+    CreatedAtUtc DATETIME2 NOT NULL
+);");
+        await db.Database.ExecuteSqlRawAsync(@"
+IF OBJECT_ID('TrainingMatches') IS NULL
+CREATE TABLE TrainingMatches (
+    Id INT IDENTITY PRIMARY KEY,
+    SessionId INT NOT NULL REFERENCES TrainingSessions(Id) ON DELETE CASCADE,
+    [Order] INT NOT NULL,
+    Home1Id INT NOT NULL REFERENCES Players(Id),
+    Home2Id INT NOT NULL REFERENCES Players(Id),
+    Away1Id INT NOT NULL REFERENCES Players(Id),
+    Away2Id INT NOT NULL REFERENCES Players(Id),
+    TargetPoints INT NOT NULL,
+    HomeScore INT NOT NULL,
+    AwayScore INT NOT NULL,
+    PlayedAtUtc DATETIME2 NOT NULL
+);");
+        await db.Database.ExecuteSqlRawAsync(
+            "IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_TrainingMatches_SessionId_Order') " +
+            "CREATE INDEX IX_TrainingMatches_SessionId_Order ON TrainingMatches(SessionId, [Order]);");
 
         // Los tantos totales (suma de sets) pueden empatar: el ganador se decide por sets.
         await db.Database.ExecuteSqlRawAsync(

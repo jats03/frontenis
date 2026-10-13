@@ -204,3 +204,12 @@ th[aria-sort="descending"] button.link-button::after { content: ' ▼'; }
 .res { font-weight: 700; }
 .res.win { color: var(--primary); }
 .res.loss { color: var(--danger); }
+
+.training-layout { display: grid; gap: .8rem; grid-template-columns: 1fr; align-items: start; }
+@media (min-width: 900px) { .training-layout { grid-template-columns: 1.1fr 1fr; } }
+.training-layout .card { margin-top: 0; }
+.training-matches { padding-left: 1.4rem; display: grid; gap: .5rem; }
+.suggestions { list-style: none; padding: 0; display: grid; gap: .6rem; }
+.suggestions li { border: 1px solid var(--border); border-radius: 10px; padding: .6rem .8rem; display: grid; gap: .2rem; }
+.suggestions li.best { border-color: var(--primary); background: var(--win); }
+button.small { padding: .15rem .5rem; font-size: .85rem; margin-left: .4rem; }

@@ -15,6 +15,8 @@ public sealed class FrontenisDbContext : DbContext, IUnitOfWork
     public DbSet<CompetitionEntry> Entries => Set<CompetitionEntry>();
     public DbSet<Match> Matches => Set<Match>();
     public DbSet<User> Users => Set<User>();
+    public DbSet<TrainingSession> TrainingSessions => Set<TrainingSession>();
+    public DbSet<TrainingMatch> TrainingMatches => Set<TrainingMatch>();
 
     Task IUnitOfWork.SaveChangesAsync(CancellationToken ct) => SaveChangesAsync(ct);
 
@@ -85,6 +87,23 @@ public sealed class FrontenisDbContext : DbContext, IUnitOfWork
             e.HasOne(x => x.AwayEntry).WithMany().HasForeignKey(x => x.AwayEntryId).OnDelete(DeleteBehavior.Restrict);
             e.HasOne(x => x.NextMatch).WithMany().HasForeignKey(x => x.NextMatchId).OnDelete(DeleteBehavior.Restrict);
             e.HasIndex(x => new { x.CompetitionId, x.Phase, x.GroupId, x.Round });
+        });
+
+        b.Entity<TrainingSession>(e =>
+        {
+            e.ToTable("TrainingSessions");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Name).HasMaxLength(150).IsRequired();
+            e.HasMany(x => x.Matches).WithOne().HasForeignKey(x => x.SessionId).OnDelete(DeleteBehavior.Cascade);
+            e.Navigation(x => x.Matches).UsePropertyAccessMode(PropertyAccessMode.Field);
+        });
+
+        b.Entity<TrainingMatch>(e =>
+        {
+            e.ToTable("TrainingMatches");
+            e.HasKey(x => x.Id);
+            e.Ignore(x => x.HomeWon);
+            e.HasIndex(x => new { x.SessionId, x.Order });
         });
 
         b.Entity<User>(e =>

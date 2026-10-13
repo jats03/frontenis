@@ -69,3 +69,27 @@ CREATE TABLE Users (
     PasswordHash NVARCHAR(300) NOT NULL,
     Role NVARCHAR(30) NOT NULL
 );
+
+-- Entrenamientos: partidos sueltos "a X tantos" con parejas libres
+CREATE TABLE TrainingSessions (
+    Id INT IDENTITY PRIMARY KEY,
+    Name NVARCHAR(150) NOT NULL,
+    SessionDate DATETIME2 NOT NULL,
+    PointsPerWin INT NOT NULL,
+    PointsPerLoss INT NOT NULL,
+    CreatedAtUtc DATETIME2 NOT NULL
+);
+CREATE TABLE TrainingMatches (
+    Id INT IDENTITY PRIMARY KEY,
+    SessionId INT NOT NULL REFERENCES TrainingSessions(Id) ON DELETE CASCADE,
+    [Order] INT NOT NULL,
+    Home1Id INT NOT NULL REFERENCES Players(Id),
+    Home2Id INT NOT NULL REFERENCES Players(Id),
+    Away1Id INT NOT NULL REFERENCES Players(Id),
+    Away2Id INT NOT NULL REFERENCES Players(Id),
+    TargetPoints INT NOT NULL,
+    HomeScore INT NOT NULL,
+    AwayScore INT NOT NULL,
+    PlayedAtUtc DATETIME2 NOT NULL
+);
+CREATE INDEX IX_TrainingMatches_SessionId_Order ON TrainingMatches(SessionId, [Order]);

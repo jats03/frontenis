@@ -40,6 +40,15 @@ public interface IMatchHistoryRepository
     Task<IReadOnlyList<(int Id, string Name)>> ListCompetitionsAsync(CancellationToken ct = default);
 }
 
+public interface ITrainingRepository
+{
+    Task<IReadOnlyList<TrainingSession>> ListAsync(CancellationToken ct = default);
+    /// <summary>Carga la sesión con todos sus partidos.</summary>
+    Task<TrainingSession?> GetAsync(int id, CancellationToken ct = default);
+    Task AddAsync(TrainingSession session, CancellationToken ct = default);
+    void Remove(TrainingSession session);
+}
+
 public interface IUserRepository
 {
     Task<User?> GetByUsernameAsync(string username, CancellationToken ct = default);

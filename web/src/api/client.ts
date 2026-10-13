@@ -1,6 +1,7 @@
 import type {
   CompetitionDetail, CompetitionSummary, CreateCompetition, GroupStandings, MatchDto,
   PairDto, PairingPreview, Player, PlayerHistory, PlayerHistoryRow, Position, SetScore,
+  NewTrainingMatch, TrainingDetail, TrainingSuggestion, TrainingSummary,
 } from './types'
 
 export const BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:5080'
@@ -142,6 +143,18 @@ export const api = {
       request<CompetitionDetail>('POST', `/api/competitions/${id}/draw-rotating`, { playerIds }),
     nextLeague: (id: number) => request<CompetitionSummary>('POST', `/api/competitions/${id}/next-league`),
     playoffs: (id: number) => request<CompetitionDetail>('POST', `/api/competitions/${id}/playoffs`),
+  },
+
+  trainings: {
+    list: () => request<TrainingSummary[]>('GET', '/api/trainings'),
+    get: (id: number) => request<TrainingDetail>('GET', `/api/trainings/${id}`),
+    create: (name: string, date: string, pointsPerWin: number, pointsPerLoss: number) =>
+      request<TrainingSummary>('POST', '/api/trainings', { name, date, pointsPerWin, pointsPerLoss }),
+    remove: (id: number) => request<void>('DELETE', `/api/trainings/${id}`),
+    addMatch: (id: number, m: NewTrainingMatch) => request<TrainingDetail>('POST', `/api/trainings/${id}/matches`, m),
+    removeMatch: (id: number, matchId: number) => request<TrainingDetail>('DELETE', `/api/trainings/${id}/matches/${matchId}`),
+    suggest: (id: number, playerIds: number[], count = 5) =>
+      request<TrainingSuggestion[]>('POST', `/api/trainings/${id}/suggestions`, { playerIds, count }),
   },
 
   matches: {

@@ -11,6 +11,8 @@ import PlayerDetailPage from './pages/PlayerDetailPage'
 import PlayerHistoryPage from './pages/PlayerHistoryPage'
 import PlayersPage from './pages/PlayersPage'
 import AccountPage from './pages/AccountPage'
+import TrainingDetailPage from './pages/TrainingDetailPage'
+import TrainingsPage from './pages/TrainingsPage'
 import WhatsappPage from './pages/WhatsappPage'
 import TimerPage from './pages/TimerPage'
 
@@ -32,6 +34,7 @@ export default function App() {
         <nav aria-label="Principal">
           <NavLink to="/" end>Competiciones</NavLink>
           <NavLink to="/jugadores">Jugadores</NavLink>
+          <NavLink to="/entrenamientos">Entrenamientos</NavLink>
           <NavLink to="/cronometro">Cronómetro</NavLink>
           <NavLink to="/plantillas">Plantillas</NavLink>
         </nav>
@@ -49,6 +52,8 @@ export default function App() {
           <Route path="/jugadores" element={<PlayersPage />} />
           <Route path="/jugadores/historico" element={<PlayerHistoryPage />} />
           <Route path="/jugadores/:id" element={<PlayerDetailPage />} />
+          <Route path="/entrenamientos" element={<TrainingsPage />} />
+          <Route path="/entrenamientos/:id" element={<TrainingDetailPage />} />
           <Route path="/cronometro" element={<TimerPage />} />
           <Route path="/plantillas" element={<WhatsappPage />} />
           <Route path="/cuenta" element={<AccountPage />} />
