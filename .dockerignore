@@ -3,4 +3,4 @@
 **/node_modules/
 web/
 .git/
-tests/
+api/tests/

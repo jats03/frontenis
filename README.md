@@ -12,8 +12,10 @@ Aplicación web/móvil (PWA) para gestionar **ligas y torneos de frontenis** con
 docker compose up -d
 
 # 2) API  -> http://localhost:5080  (Swagger en /swagger)
+cd api
 dotnet test
 dotnet run --project src/Frontenis.Api
+cd ..
 
 # 3) Web  -> http://localhost:5173
 cd web && cp .env.example .env && npm install && npm run dev
@@ -52,6 +54,15 @@ Si sobran de un tipo, se emparejan entre sí (caso extremo); si el total es impa
 **Flujo**: crear competición → inscribir parejas (aleatorias o manuales) → sorteo de grupos y calendario
 (todos contra todos, método del círculo) → introducir resultados → (torneo) generar cuadro final con byes y cabezas de serie.
 
+## Estructura del repositorio
+
+```
+api/   backend .NET: Frontenis.sln, src/ (Domain, Application, Infrastructure, Api) y tests/
+web/   PWA React (Cloudflare Workers)
+sql/   script de esquema de referencia
+Dockerfile, docker-compose.yml   en la raíz (Render construye desde aquí)
+```
+
 ## Arquitectura (Clean Architecture / SOLID)
 
 ```
@@ -60,7 +71,7 @@ Domain          entidades y reglas puras (Competition es el aggregate root); est
 Application     casos de uso (servicios), DTOs y puertos (repositorios, hasher, tokens)
 Infrastructure  EF Core/SQL Server, repositorios, JWT, PBKDF2
 Api             controladores finos + middleware de errores
-tests           xUnit sobre la lógica de dominio
+api/tests       xUnit sobre la lógica de dominio
 web             PWA React
 ```
 
