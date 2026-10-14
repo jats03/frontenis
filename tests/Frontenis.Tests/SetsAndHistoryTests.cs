@@ -1,6 +1,7 @@
 using Frontenis.Domain.Entities;
 using Frontenis.Domain.Enums;
 using Frontenis.Domain.Exceptions;
+using Frontenis.Domain.Models;
 using Frontenis.Domain.Services;
 using Xunit;
 
@@ -178,8 +179,8 @@ public class PlayerStatsTests
     [Fact]
     public void History_filter_semantics()
     {
-        Assert.True(Frontenis.Application.Abstractions.HistoryFilter.All.IsAll);
-        var onlyTr = new Frontenis.Application.Abstractions.HistoryFilter(new int[0], new[] { 4 });
+        Assert.True(Frontenis.Application.Models.HistoryFilter.All.IsAll);
+        var onlyTr = new Frontenis.Application.Models.HistoryFilter(new int[0], new[] { 4 });
         Assert.False(onlyTr.IncludesCompetitions);
         Assert.True(onlyTr.IncludesTrainings);
     }

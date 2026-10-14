@@ -1,5 +1,8 @@
-using Frontenis.Application.Abstractions;
 using Frontenis.Application.Dtos;
+using Frontenis.Application.Exceptions;
+using Frontenis.Application.Interfaces.Repositories;
+using Frontenis.Application.Interfaces.Security;
+using Frontenis.Application.Security;
 using Frontenis.Application.Services;
 using Frontenis.Domain.Entities;
 using Frontenis.Domain.Exceptions;

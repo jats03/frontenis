@@ -1,5 +1,6 @@
 using Frontenis.Domain.Entities;
 using Frontenis.Domain.Exceptions;
+using Frontenis.Domain.Models;
 using Frontenis.Domain.Services;
 using Xunit;
 
@@ -103,7 +104,7 @@ public class ReadCacheTests
     [Fact]
     public async Task Value_is_computed_once_until_cleared()
     {
-        var cache = new Frontenis.Application.Abstractions.ReadCache();
+        var cache = new Frontenis.Application.Caching.ReadCache();
         var calls = 0;
         Task<int> Load() { calls++; return Task.FromResult(calls); }
         Assert.Equal(1, await cache.GetOrAddAsync("k", Load));
@@ -116,7 +117,7 @@ public class ReadCacheTests
     [Fact]
     public async Task Concurrent_requests_share_one_computation()
     {
-        var cache = new Frontenis.Application.Abstractions.ReadCache();
+        var cache = new Frontenis.Application.Caching.ReadCache();
         var calls = 0;
         async Task<int> Slow() { Interlocked.Increment(ref calls); await Task.Delay(50); return 7; }
         var all = await Task.WhenAll(Enumerable.Range(0, 10).Select(_ => cache.GetOrAddAsync("k", Slow)));
@@ -127,7 +128,7 @@ public class ReadCacheTests
     [Fact]
     public async Task Errors_are_not_cached()
     {
-        var cache = new Frontenis.Application.Abstractions.ReadCache();
+        var cache = new Frontenis.Application.Caching.ReadCache();
         var calls = 0;
         Task<int> Fail() { calls++; throw new InvalidOperationException("x"); }
         await Assert.ThrowsAsync<InvalidOperationException>(() => cache.GetOrAddAsync("k", Fail));
@@ -139,7 +140,7 @@ public class ReadCacheTests
     [Fact]
     public async Task Write_during_computation_does_not_keep_stale_result()
     {
-        var cache = new Frontenis.Application.Abstractions.ReadCache();
+        var cache = new Frontenis.Application.Caching.ReadCache();
         var gate = new TaskCompletionSource();
         var version = 1;
         var first = cache.GetOrAddAsync("k", async () => { var v = version; await gate.Task; return v; });
@@ -153,7 +154,7 @@ public class ReadCacheTests
     public async Task Entries_expire_after_ttl()
     {
         var clock = new ManualTime();
-        var cache = new Frontenis.Application.Abstractions.ReadCache(clock, TimeSpan.FromHours(12), 100);
+        var cache = new Frontenis.Application.Caching.ReadCache(clock, TimeSpan.FromHours(12), 100);
         var n = 0;
         Task<int> Load() => Task.FromResult(++n);
         Assert.Equal(1, await cache.GetOrAddAsync("k", Load));

@@ -1,6 +1,7 @@
 using Frontenis.Domain.Entities;
 using Frontenis.Domain.Enums;
 using Frontenis.Domain.Exceptions;
+using Frontenis.Domain.Models;
 using Frontenis.Domain.Services;
 using Xunit;
 
