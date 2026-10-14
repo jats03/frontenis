@@ -3,6 +3,7 @@ namespace Frontenis.Domain.Entities;
 /// <summary>Tantos de un set (local, visitante).</summary>
 public readonly record struct SetScore(int Home, int Away)
 {
+    /// <summary>Indica si el set lo ganó el equipo local.</summary>
     public bool HomeWon => Home > Away;
 
     /// <summary>

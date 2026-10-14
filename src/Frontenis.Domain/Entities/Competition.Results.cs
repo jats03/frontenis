@@ -7,9 +7,12 @@ namespace Frontenis.Domain.Entities;
 /// <summary>Registro, borrado y consulta de resultados de partidos.</summary>
 public sealed partial class Competition
 {
+    /// <summary>Registra un resultado simple (un solo set).</summary>
     public Match RecordResult(int matchId, int homeScore, int awayScore) =>
         RecordResult(matchId, new[] { new SetScore(homeScore, awayScore) });
 
+    /// <summary>Registra el resultado por sets, avanza al ganador en el cuadro y recalcula el estado de la competición.</summary>
+    /// <exception cref="DomainException">Marcador no válido o partido no editable.</exception>
     public Match RecordResult(int matchId, IReadOnlyList<SetScore> sets)
     {
         var match = FindMatch(matchId);
@@ -20,6 +23,7 @@ public sealed partial class Competition
         return match;
     }
 
+    /// <summary>Borra el resultado de un partido; no se permite si la ronda siguiente ya tiene resultado.</summary>
     public Match ClearResult(int matchId)
     {
         var match = FindMatch(matchId);
@@ -30,6 +34,7 @@ public sealed partial class Competition
         return match;
     }
 
+    /// <summary>Resultados de los partidos jugados del grupo, listos para calcular la clasificación.</summary>
     public IReadOnlyList<MatchOutcome> GroupOutcomes(Group group) =>
         _matches
             .Where(m => m.Phase == MatchPhase.Group && m.IsPlayed && (m.Group == group || m.GroupId == group.Id))

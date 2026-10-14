@@ -2,6 +2,7 @@ using Frontenis.Domain.Models;
 
 namespace Frontenis.Domain.Services;
 
+/// <summary>Clasificaciones de una sesión de entrenamiento, por pareja o por jugador.</summary>
 public static class TrainingStandings
 {
     private sealed class Acc { public int P, W, L, F, A; }

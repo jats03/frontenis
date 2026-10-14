@@ -8,10 +8,12 @@ namespace Frontenis.Domain.Entities;
 /// <summary>Fase final (cuadro eliminatorio) de los torneos.</summary>
 public sealed partial class Competition
 {
+    /// <summary>Indica si todos los partidos de la fase de grupos están jugados.</summary>
     public bool GroupStageCompleted =>
         _matches.Where(m => m.Phase == MatchPhase.Group).All(m => m.IsPlayed) &&
         _matches.Any(m => m.Phase == MatchPhase.Group);
 
+    /// <summary>Indica si ya se generó la fase final.</summary>
     public bool HasPlayoffs => _matches.Any(m => m.Phase == MatchPhase.Playoff);
 
     /// <summary>Crea el cuadro de eliminatorias con los clasificados de cada grupo.</summary>

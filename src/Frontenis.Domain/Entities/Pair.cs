@@ -24,7 +24,9 @@ public sealed class Pair
     public int Player2Id { get; private set; }
     public Player Player2 { get; private set; }
 
+    /// <summary>Nombre para mostrar: «Jugador 1 / Jugador 2».</summary>
     public string DisplayName => $"{Player1.Name} / {Player2.Name}";
 
+    /// <summary>Indica si el jugador forma parte de la pareja.</summary>
     public bool Contains(int playerId) => Player1Id == playerId || Player2Id == playerId;
 }

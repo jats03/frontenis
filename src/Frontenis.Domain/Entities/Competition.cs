@@ -33,6 +33,8 @@ public sealed partial class Competition
     public IReadOnlyCollection<CompetitionEntry> Entries => _entries;
     public IReadOnlyCollection<Match> Matches => _matches;
 
+    /// <summary>Crea una competición en estado <c>Draft</c> validando formato, grupos, clasificados y puntuación.</summary>
+    /// <exception cref="DomainException">La configuración no es válida.</exception>
     public static Competition Create(CompetitionSettings s)
     {
         if (string.IsNullOrWhiteSpace(s.Name)) throw new DomainException("El nombre es obligatorio.");
@@ -127,6 +129,7 @@ public sealed partial class Competition
 
     public bool IsRotating => Type == CompetitionType.RotatingLeague;
 
+    /// <summary>Cambia el nombre (obligatorio, máximo 150 caracteres).</summary>
     public void Rename(string name)
     {
         if (string.IsNullOrWhiteSpace(name)) throw new DomainException("El nombre es obligatorio.");
@@ -135,6 +138,8 @@ public sealed partial class Competition
         Name = trimmed;
     }
 
+    /// <summary>Inscribe una pareja mientras la competición está en inscripción y quedan plazas.</summary>
+    /// <exception cref="DomainException">Estado incorrecto, competición completa o jugador ya inscrito.</exception>
     public CompetitionEntry AddPair(Pair pair)
     {
         if (IsRotating) throw new DomainException("En una liga rotatoria se inscriben jugadores sueltos, no parejas.");

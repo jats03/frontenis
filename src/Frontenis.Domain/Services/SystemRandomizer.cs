@@ -2,6 +2,7 @@ using Frontenis.Domain.Interfaces;
 
 namespace Frontenis.Domain.Services;
 
+/// <summary>Aleatoriedad real del sistema (Fisher-Yates).</summary>
 public sealed class SystemRandomizer : IRandomizer
 {
     private readonly Random _random;

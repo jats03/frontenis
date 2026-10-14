@@ -25,5 +25,6 @@ public sealed class TrainingMatch
     public int AwayScore { get; private set; }
     public DateTime PlayedAtUtc { get; private set; }
 
+    /// <summary>Indica si ganó la pareja local.</summary>
     public bool HomeWon => HomeScore > AwayScore;
 }

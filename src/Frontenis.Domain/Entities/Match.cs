@@ -3,6 +3,7 @@ using Frontenis.Domain.Exceptions;
 
 namespace Frontenis.Domain.Entities;
 
+/// <summary>Partido de una competición (fase de grupos o final). Guarda el resultado por sets y, en la fase final, el partido al que avanza el ganador.</summary>
 public sealed class Match
 {
     private Match() { }
@@ -48,9 +49,12 @@ public sealed class Match
     public Match? NextMatch { get; private set; }
     public BracketSlot? NextSlot { get; private set; }
 
+    /// <summary>Indica si el partido ya tiene resultado.</summary>
     public bool IsPlayed => HomeScore.HasValue && AwayScore.HasValue;
+    /// <summary>Indica si ya están definidas las dos parejas (en la fase final pueden faltar hasta que avance la ronda anterior).</summary>
     public bool IsReady => HomeEntry is not null && AwayEntry is not null;
 
+    /// <summary>Pareja ganadora (más sets ganados) o <c>null</c> si no se ha jugado.</summary>
     public CompetitionEntry? Winner =>
         !IsPlayed ? null : HomeSets > AwaySets ? HomeEntry : AwayEntry;
 

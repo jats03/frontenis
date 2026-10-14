@@ -111,6 +111,7 @@ public sealed partial class Competition
                 GroupPlayers(g).Select(p => p.Id).ToList(), GroupTeamOutcomes(g), PointsPerWin, PointsPerLoss)))
             .ToList();
 
+    /// <summary>Enlaza esta liga terminada con la que la continúa.</summary>
     public void SetNextCompetition(int id)
     {
         if (!IsRotating) throw new DomainException("Solo las ligas rotatorias tienen continuación.");

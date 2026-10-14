@@ -2,6 +2,7 @@ using Frontenis.Domain.Models;
 
 namespace Frontenis.Domain.Interfaces;
 
+/// <summary>Estima niveles y propone partidos equilibrados para entrenar.</summary>
 public interface ITrainingPlanner
 {
     /// <summary>Mejores partidos posibles entre los jugadores presentes, del más recomendable al menos.</summary>

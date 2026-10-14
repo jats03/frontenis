@@ -3,6 +3,7 @@ using Frontenis.Domain.Models;
 
 namespace Frontenis.Domain.Services;
 
+/// <summary>Implementación de <see cref="Interfaces.IPlayerStatsCalculator"/>.</summary>
 public sealed class PlayerStatsCalculator : IPlayerStatsCalculator
 {
     private sealed class Acc

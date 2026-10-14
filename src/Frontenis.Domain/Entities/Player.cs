@@ -3,6 +3,7 @@ using Frontenis.Domain.Exceptions;
 
 namespace Frontenis.Domain.Entities;
 
+/// <summary>Jugador del club, con su posición (zaguero o delantero) y un grupo/nivel opcional.</summary>
 public sealed class Player
 {
     private Player() { Name = string.Empty; }
@@ -20,6 +21,7 @@ public sealed class Player
     /// <summary>Grupo de jugadores al que pertenece (1, 2, 3…) para seleccionarlos juntos; null = sin grupo.</summary>
     public int? GroupNumber { get; private set; }
 
+    /// <summary>Modifica nombre, posición y número de grupo (1-99, opcional).</summary>
     public void Update(string name, PlayerPosition position, int? groupNumber = null)
     {
         Name = Validate(name);

@@ -18,6 +18,7 @@ public sealed class TrainingSession
     public const int MaxMatches = 300;
     public IReadOnlyCollection<TrainingMatch> Matches => _matches;
 
+    /// <summary>Crea una sesión validando el nombre y la puntuación por victoria/derrota.</summary>
     public static TrainingSession Create(string name, DateTime date, int pointsPerWin, int pointsPerLoss)
     {
         if (string.IsNullOrWhiteSpace(name)) throw new DomainException("El nombre es obligatorio.");
@@ -32,6 +33,7 @@ public sealed class TrainingSession
         };
     }
 
+    /// <summary>Cambia el nombre (obligatorio, máximo 150 caracteres).</summary>
     public void Rename(string name)
     {
         if (string.IsNullOrWhiteSpace(name)) throw new DomainException("El nombre es obligatorio.");
@@ -39,6 +41,8 @@ public sealed class TrainingSession
         Name = name.Trim();
     }
 
+    /// <summary>Añade un partido 2 contra 2 a la sesión.</summary>
+    /// <exception cref="DomainException">Jugadores repetidos, marcador no válido, empate o límite de partidos alcanzado.</exception>
     public TrainingMatch AddMatch(int home1, int home2, int away1, int away2, int target, int homeScore, int awayScore)
     {
         var players = new[] { home1, home2, away1, away2 };
@@ -55,6 +59,8 @@ public sealed class TrainingSession
         return match;
     }
 
+    /// <summary>Elimina un partido de la sesión.</summary>
+    /// <exception cref="NotFoundException">El partido no existe en la sesión.</exception>
     public void RemoveMatch(int matchId)
     {
         var match = _matches.FirstOrDefault(m => m.Id == matchId)

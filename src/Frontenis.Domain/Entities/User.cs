@@ -1,5 +1,6 @@
 namespace Frontenis.Domain.Entities;
 
+/// <summary>Usuario con acceso de administración.</summary>
 public sealed class User
 {
     private User() { Username = string.Empty; PasswordHash = string.Empty; Role = string.Empty; }
