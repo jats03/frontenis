@@ -87,4 +87,14 @@ public class CachingDecoratorTests
         Assert.NotEqual(CacheKeys.HistoryRanking(a), CacheKeys.HistoryRanking(HistoryFilter.All));
         Assert.NotEqual(CacheKeys.HistoryPlayer(1, a), CacheKeys.HistoryPlayer(2, a));
     }
+
+    [Fact]
+    public async Task NullReadCache_ejecuta_la_consulta_real_cada_vez()
+    {
+        var cache = new NullReadCache();
+        var calls = 0;
+        await cache.GetOrAddAsync("k", () => Task.FromResult(++calls));
+        await cache.GetOrAddAsync("k", () => Task.FromResult(++calls));
+        Assert.Equal(2, calls);
+    }
 }

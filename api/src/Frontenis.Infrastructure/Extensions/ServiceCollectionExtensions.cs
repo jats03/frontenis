@@ -43,7 +43,11 @@ public static class ServiceCollectionExtensions
                 npgsql => npgsql.EnableRetryOnFailure(maxRetryCount: 6, maxRetryDelay: TimeSpan.FromSeconds(10), errorCodesToAdd: null)));
 
         // Caché de lecturas públicas en memoria; cada guardado correcto la vacía.
-        services.AddSingleton<IReadCache, ReadCache>();
+        // Con Cache__Enabled=false se desactiva (para medir los tiempos reales de la BD); por defecto está activa.
+        if (string.Equals(config["Cache:Enabled"], "false", StringComparison.OrdinalIgnoreCase))
+            services.AddSingleton<IReadCache, NullReadCache>();
+        else
+            services.AddSingleton<IReadCache, ReadCache>();
         services.AddScoped<IUnitOfWork>(sp =>
             new CachingUnitOfWork(sp.GetRequiredService<FrontenisDbContext>(), sp.GetRequiredService<IReadCache>()));
 
