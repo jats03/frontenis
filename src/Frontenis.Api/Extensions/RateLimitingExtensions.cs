@@ -3,6 +3,7 @@ using Frontenis.Api.RateLimiting;
 
 namespace Frontenis.Api.Extensions;
 
+/// <summary>Registra las políticas de limitación de peticiones.</summary>
 public static class RateLimitingExtensions
 {
     /// <summary>

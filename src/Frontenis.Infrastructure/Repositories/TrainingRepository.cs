@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Frontenis.Infrastructure.Repositories;
 
+/// <summary>Repositorio EF Core de entrenamientos.</summary>
 public sealed class TrainingRepository : ITrainingRepository
 {
     private readonly FrontenisDbContext _db;

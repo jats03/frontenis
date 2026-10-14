@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Frontenis.Infrastructure.Repositories;
 
+/// <summary>Repositorio EF Core de usuarios.</summary>
 public sealed class UserRepository : IUserRepository
 {
     private readonly FrontenisDbContext _db;

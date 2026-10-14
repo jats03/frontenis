@@ -1,5 +1,6 @@
 namespace Frontenis.Infrastructure.Security;
 
+/// <summary>Configuración de los tokens JWT (clave, emisor, audiencia y duración).</summary>
 public sealed class JwtOptions
 {
     public const string Section = "Jwt";

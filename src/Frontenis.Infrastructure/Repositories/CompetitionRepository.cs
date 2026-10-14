@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Frontenis.Infrastructure.Repositories;
 
+/// <summary>Repositorio EF Core de competiciones.</summary>
 public sealed class CompetitionRepository : ICompetitionRepository
 {
     private readonly FrontenisDbContext _db;

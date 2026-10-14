@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Frontenis.Infrastructure.Repositories;
 
+/// <summary>Repositorio EF Core de jugadores.</summary>
 public sealed class PlayerRepository : IPlayerRepository
 {
     private readonly FrontenisDbContext _db;

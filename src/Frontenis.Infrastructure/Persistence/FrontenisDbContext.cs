@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Frontenis.Infrastructure.Persistence;
 
+/// <summary>Contexto de Entity Framework Core; actúa también como unidad de trabajo.</summary>
 public sealed class FrontenisDbContext : DbContext, IUnitOfWork
 {
     public FrontenisDbContext(DbContextOptions<FrontenisDbContext> options) : base(options) { }

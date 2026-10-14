@@ -1,5 +1,6 @@
 namespace Frontenis.Api.Extensions;
 
+/// <summary>Configura CORS con los orígenes permitidos.</summary>
 public static class CorsExtensions
 {
     /// <summary>CORS limitado a los orígenes de la sección <c>Cors:Origins</c>.</summary>

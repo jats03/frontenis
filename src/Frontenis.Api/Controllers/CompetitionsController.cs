@@ -23,30 +23,37 @@ public sealed class CompetitionsController : ControllerBase
         _pairing = pairing;
     }
 
+    /// <summary>Lista las competiciones (público).</summary>
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<CompetitionSummaryDto>>> List(CancellationToken ct) =>
         Ok(await _queries.ListAsync(ct));
 
+    /// <summary>Detalle de una competición: grupos, parejas y partidos (público).</summary>
     [HttpGet("{id:int}")]
     public async Task<ActionResult<CompetitionDetailDto>> Get(int id, CancellationToken ct) =>
         Ok(await _queries.GetAsync(id, ct));
 
+    /// <summary>Clasificación de cada grupo (público).</summary>
     [HttpGet("{id:int}/standings")]
     public async Task<ActionResult<IReadOnlyList<GroupStandingsDto>>> Standings(int id, CancellationToken ct) =>
         Ok(await _queries.GetStandingsAsync(id, ct));
 
+    /// <summary>Crea una competición (administrador).</summary>
     [HttpPost, AdminOnly]
     public async Task<ActionResult<CompetitionSummaryDto>> Create(CreateCompetitionRequest request, CancellationToken ct) =>
         Ok(await _commands.CreateAsync(request, ct));
 
+    /// <summary>Renombra la competición (administrador).</summary>
     [HttpPut("{id:int}/name"), AdminOnly]
     public async Task<ActionResult<CompetitionSummaryDto>> Rename(int id, RenameCompetitionRequest request, CancellationToken ct) =>
         Ok(await _commands.RenameAsync(id, request, ct));
 
+    /// <summary>Cambia entre 1 y 2 sets por partido si no hay partidos jugados (administrador).</summary>
     [HttpPut("{id:int}/sets-per-match"), AdminOnly]
     public async Task<ActionResult<CompetitionSummaryDto>> ChangeSets(int id, SetsPerMatchRequest request, CancellationToken ct) =>
         Ok(await _commands.ChangeSetsPerMatchAsync(id, request, ct));
 
+    /// <summary>Elimina la competición (administrador).</summary>
     [HttpDelete("{id:int}"), AdminOnly]
     public async Task<IActionResult> Delete(int id, CancellationToken ct)
     {
@@ -59,6 +66,7 @@ public sealed class CompetitionsController : ControllerBase
     public async Task<ActionResult<IReadOnlyList<PairDto>>> RegisterRandom(int id, PlayersSelection selection, CancellationToken ct) =>
         Ok(await _pairing.RegisterRandomAsync(id, selection, ct));
 
+    /// <summary>Inscribe una pareja formada a mano (administrador).</summary>
     [HttpPost("{id:int}/pairs"), AdminOnly]
     public async Task<ActionResult<PairDto>> RegisterManual(int id, ManualPairRequest request, CancellationToken ct) =>
         Ok(await _pairing.RegisterManualAsync(id, request, ct));
@@ -88,6 +96,7 @@ public sealed class CompetitionsController : ControllerBase
     public async Task<ActionResult<CompetitionSummaryDto>> NextLeague(int id, CancellationToken ct) =>
         Ok(await _draws.CreateNextLeagueAsync(id, ct));
 
+    /// <summary>Genera la fase final cuando la fase de grupos ha terminado (administrador).</summary>
     [HttpPost("{id:int}/playoffs"), AdminOnly]
     public async Task<ActionResult<CompetitionDetailDto>> Playoffs(int id, CancellationToken ct) =>
         Ok(await _draws.GeneratePlayoffsAsync(id, ct));

@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Frontenis.Infrastructure.Security;
 
+/// <summary>Genera tokens JWT firmados con HMAC-SHA256.</summary>
 public sealed class JwtTokenService : ITokenService
 {
     private readonly JwtOptions _options;

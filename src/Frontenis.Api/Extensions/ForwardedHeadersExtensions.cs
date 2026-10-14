@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.HttpOverrides;
 
 namespace Frontenis.Api.Extensions;
 
+/// <summary>Respeta las cabeceras del proxy para obtener la IP real del cliente.</summary>
 public static class ForwardedHeadersExtensions
 {
     /// <summary>

@@ -4,6 +4,7 @@ using Frontenis.Infrastructure.Persistence;
 
 namespace Frontenis.Infrastructure.Repositories;
 
+/// <summary>Repositorio EF Core de parejas.</summary>
 public sealed class PairRepository : IPairRepository
 {
     private readonly FrontenisDbContext _db;

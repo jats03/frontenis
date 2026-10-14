@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Frontenis.Infrastructure.Repositories;
 
+/// <summary>Consulta unificada de partidos jugados en competiciones y entrenamientos.</summary>
 public sealed class MatchHistoryRepository : IMatchHistoryRepository
 {
     private readonly FrontenisDbContext _db;

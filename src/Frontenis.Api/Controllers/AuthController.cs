@@ -20,6 +20,7 @@ public sealed class AuthController : ControllerBase
 
     private string ClientIp => HttpContext.Connection.RemoteIpAddress?.ToString() ?? "desconocida";
 
+    /// <summary>Inicio de sesión del administrador. Devuelve un token JWT; limitado por intentos.</summary>
     [HttpPost("login"), EnableRateLimiting(RateLimitPolicies.Login)]
     public async Task<ActionResult<LoginResponse>> Login(LoginRequest request, CancellationToken ct)
     {

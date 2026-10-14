@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Frontenis.Api.Extensions;
 
+/// <summary>Configura la autenticación JWT y la política de administrador.</summary>
 public static class AuthenticationExtensions
 {
     private const int MinKeyBytes = 32;

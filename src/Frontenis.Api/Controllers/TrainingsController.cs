@@ -22,18 +22,22 @@ public sealed class TrainingsController : ControllerBase
         _suggestions = suggestions;
     }
 
+    /// <summary>Lista las sesiones de entrenamiento (público).</summary>
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<TrainingSummaryDto>>> List(CancellationToken ct) =>
         Ok(await _queries.ListAsync(ct));
 
+    /// <summary>Detalle de una sesión: partidos y clasificaciones (público).</summary>
     [HttpGet("{id:int}")]
     public async Task<ActionResult<TrainingDetailDto>> Get(int id, CancellationToken ct) =>
         Ok(await _queries.GetAsync(id, ct));
 
+    /// <summary>Crea una sesión de entrenamiento (administrador).</summary>
     [HttpPost, AdminOnly]
     public async Task<ActionResult<TrainingSummaryDto>> Create(CreateTrainingRequest request, CancellationToken ct) =>
         Ok(await _commands.CreateAsync(request, ct));
 
+    /// <summary>Elimina una sesión con sus partidos (administrador).</summary>
     [HttpDelete("{id:int}"), AdminOnly]
     public async Task<IActionResult> Delete(int id, CancellationToken ct)
     {
@@ -41,6 +45,7 @@ public sealed class TrainingsController : ControllerBase
         return NoContent();
     }
 
+    /// <summary>Renombra la sesión (administrador).</summary>
     [HttpPut("{id:int}/name"), AdminOnly]
     public async Task<ActionResult<TrainingSummaryDto>> Rename(int id, RenameTrainingRequest request, CancellationToken ct) =>
         Ok(await _commands.RenameAsync(id, request, ct));
@@ -50,6 +55,7 @@ public sealed class TrainingsController : ControllerBase
     public async Task<ActionResult<TrainingDetailDto>> AddMatch(int id, AddTrainingMatchRequest request, CancellationToken ct) =>
         Ok(await _commands.AddMatchAsync(id, request, ct));
 
+    /// <summary>Elimina un partido de la sesión (administrador).</summary>
     [HttpDelete("{id:int}/matches/{matchId:int}"), AdminOnly]
     public async Task<ActionResult<TrainingDetailDto>> RemoveMatch(int id, int matchId, CancellationToken ct) =>
         Ok(await _commands.RemoveMatchAsync(id, matchId, ct));
