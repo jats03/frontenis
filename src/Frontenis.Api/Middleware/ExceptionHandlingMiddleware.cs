@@ -1,4 +1,4 @@
-using Frontenis.Application.Services;
+using Frontenis.Application.Exceptions;
 using Frontenis.Domain.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 
