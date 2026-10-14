@@ -10,7 +10,6 @@ using Frontenis.Domain.Services;
 using Frontenis.Infrastructure.Persistence;
 using Frontenis.Infrastructure.Repositories;
 using Frontenis.Infrastructure.Security;
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -35,13 +34,13 @@ public static class ServiceCollectionExtensions
 
     private static IServiceCollection AddPersistence(this IServiceCollection services, IConfiguration config)
     {
-        // Azure SQL gratuito se pausa por inactividad y tarda en reanudarse: damos más margen de conexión
-        // (mínimo 60 s) y más reintentos antes de fallar.
-        var connection = new SqlConnectionStringBuilder(config.GetConnectionString("Default") ?? string.Empty);
-        if (connection.ConnectTimeout < 60) connection.ConnectTimeout = 60;
+        // Neon (PostgreSQL) suspende el cómputo tras unos minutos sin uso: damos margen de conexión
+        // (mínimo 30 s) y reintentos automáticos ante cortes transitorios.
+        var connection = PostgresConnectionString.Build(config.GetConnectionString("Default"));
+
         services.AddDbContext<FrontenisDbContext>(o =>
-            o.UseSqlServer(connection.ConnectionString,
-                sql => sql.EnableRetryOnFailure(maxRetryCount: 6, maxRetryDelay: TimeSpan.FromSeconds(10), errorNumbersToAdd: null)));
+            o.UseNpgsql(connection,
+                npgsql => npgsql.EnableRetryOnFailure(maxRetryCount: 6, maxRetryDelay: TimeSpan.FromSeconds(10), errorCodesToAdd: null)));
 
         // Caché de lecturas públicas en memoria; cada guardado correcto la vacía.
         services.AddSingleton<IReadCache, ReadCache>();

@@ -21,6 +21,11 @@ public sealed class FrontenisDbContext : DbContext, IUnitOfWork
 
     Task IUnitOfWork.SaveChangesAsync(CancellationToken ct) => SaveChangesAsync(ct);
 
+    protected override void ConfigureConventions(ModelConfigurationBuilder configuration)
+    {
+        configuration.Properties<DateTime>().HaveConversion<UtcDateTimeConverter>();
+    }
+
     protected override void OnModelCreating(ModelBuilder b)
     {
         b.Entity<Player>(e =>

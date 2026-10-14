@@ -11,8 +11,17 @@ public sealed class PlayerRepository : IPlayerRepository
     private readonly FrontenisDbContext _db;
     public PlayerRepository(FrontenisDbContext db) { _db = db; }
 
-    public async Task<IReadOnlyList<Player>> ListAsync(CancellationToken ct = default) =>
-        await _db.Players.AsNoTracking().OrderBy(p => p.Name).ToListAsync(ct);
+    public async Task<IReadOnlyList<Player>> ListAsync(CancellationToken ct = default)
+    {
+        // PostgreSQL ordena según la colación de la BD (en Neon, por código de carácter: mayúsculas antes que
+        // minúsculas y acentos al final). Ordenamos en memoria, sin distinguir mayúsculas ni acentos.
+        var players = await _db.Players.AsNoTracking().ToListAsync(ct);
+        return players.OrderBy(p => SortKey(p.Name), StringComparer.Ordinal).ThenBy(p => p.Id).ToList();
+    }
+
+    private static string SortKey(string name) => name.ToLowerInvariant()
+        .Replace('á', 'a').Replace('à', 'a').Replace('é', 'e').Replace('è', 'e')
+        .Replace('í', 'i').Replace('ó', 'o').Replace('ò', 'o').Replace('ú', 'u').Replace('ü', 'u');
 
     public async Task<IReadOnlyList<Player>> GetByIdsAsync(IReadOnlyCollection<int> ids, CancellationToken ct = default)
     {

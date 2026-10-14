@@ -12,7 +12,7 @@ public sealed class UserRepository : IUserRepository
     public UserRepository(FrontenisDbContext db) { _db = db; }
 
     public Task<User?> GetByUsernameAsync(string username, CancellationToken ct = default) =>
-        _db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Username == username, ct);
+        _db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Username.ToLower() == username.ToLower(), ct);
 
     public Task<User?> GetByIdAsync(int id, CancellationToken ct = default) =>
         _db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == id, ct);

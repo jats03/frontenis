@@ -1,12 +1,13 @@
 services:
-  sqlserver:
-    image: mcr.microsoft.com/mssql/server:2022-latest
+  postgres:
+    image: postgres:16
     environment:
-      ACCEPT_EULA: "Y"
-      MSSQL_SA_PASSWORD: "Frontenis_Dev1!"
+      POSTGRES_DB: frontenis
+      POSTGRES_USER: frontenis
+      POSTGRES_PASSWORD: Frontenis_Dev1
     ports:
-      - "1433:1433"
+      - "5432:5432"
     volumes:
-      - sqldata:/var/opt/mssql
+      - pgdata:/var/lib/postgresql/data
 volumes:
-  sqldata:
+  pgdata:

@@ -4,7 +4,7 @@ namespace Frontenis.Api.HostedServices;
 
 /// <summary>
 /// Inicializa la BD en segundo plano y con reintentos: así la API empieza a responder (/health) enseguida
-/// aunque Azure SQL esté pausado y tarde en reanudarse.
+/// aunque la base de datos esté suspendida y tarde en reanudarse.
 /// </summary>
 public sealed class DatabaseInitializationService : BackgroundService
 {
