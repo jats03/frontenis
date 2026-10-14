@@ -10,6 +10,7 @@ using Frontenis.Domain.Services;
 
 namespace Frontenis.Application.Services;
 
+/// <summary>Orquesta los sorteos: carga la competición, delega la regla en el dominio y guarda.</summary>
 public sealed class CompetitionDrawService : ICompetitionDrawService
 {
     private readonly ICompetitionRepository _repository;

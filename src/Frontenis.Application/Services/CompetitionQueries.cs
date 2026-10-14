@@ -11,6 +11,7 @@ using Frontenis.Domain.Services;
 
 namespace Frontenis.Application.Services;
 
+/// <summary>Lectura de competiciones y cálculo de clasificaciones (por parejas o individual en ligas rotatorias, con ascensos y descensos).</summary>
 public sealed class CompetitionQueries : ICompetitionQueries
 {
     private readonly ICompetitionRepository _repository;

@@ -9,6 +9,7 @@ using Frontenis.Domain.Interfaces;
 
 namespace Frontenis.Application.Services;
 
+/// <summary>Sugiere partidos usando el nivel estimado de los jugadores presentes.</summary>
 public sealed class TrainingSuggestionService : ITrainingSuggestionService
 {
     private const int MaxSuggestions = 10;

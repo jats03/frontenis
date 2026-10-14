@@ -4,6 +4,7 @@ using Frontenis.Application.Interfaces.Services;
 
 namespace Frontenis.Application.Caching;
 
+/// <summary>Decorador que cachea <see cref="Interfaces.Services.ITrainingQueries"/>.</summary>
 public sealed class CachedTrainingQueries : ITrainingQueries
 {
     private readonly ITrainingQueries _inner;

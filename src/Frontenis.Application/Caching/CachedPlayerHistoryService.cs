@@ -5,6 +5,7 @@ using Frontenis.Application.Models;
 
 namespace Frontenis.Application.Caching;
 
+/// <summary>Decorador que cachea <see cref="Interfaces.Services.IPlayerHistoryService"/>.</summary>
 public sealed class CachedPlayerHistoryService : IPlayerHistoryService
 {
     private readonly IPlayerHistoryService _inner;

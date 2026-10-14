@@ -9,6 +9,7 @@ using Frontenis.Domain.Interfaces;
 
 namespace Frontenis.Application.Services;
 
+/// <summary>Empareja zagueros con delanteros (aleatoria o manualmente) e inscribe las parejas.</summary>
 public sealed class PairingService : IPairingService
 {
     private readonly IPlayerRepository _players;

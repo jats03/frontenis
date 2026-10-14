@@ -3,6 +3,7 @@ using Frontenis.Domain.Entities;
 
 namespace Frontenis.Application.Mapping;
 
+/// <summary>Conversión de entidades de competiciones y jugadores a DTO.</summary>
 internal static class Mapper
 {
     public static PlayerDto ToDto(this Player p) => new(p.Id, p.Name, p.Position, p.GroupNumber);

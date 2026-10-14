@@ -3,6 +3,7 @@ using Frontenis.Application.Interfaces.Caching;
 
 namespace Frontenis.Application.Caching;
 
+/// <summary>Caché en memoria con caducidad larga, protección frente a cargas simultáneas y vaciado total por generaciones.</summary>
 public sealed class ReadCache : IReadCache
 {
     private sealed class Entry

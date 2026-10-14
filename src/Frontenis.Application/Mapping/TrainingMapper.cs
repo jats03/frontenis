@@ -4,6 +4,7 @@ using Frontenis.Domain.Models;
 
 namespace Frontenis.Application.Mapping;
 
+/// <summary>Conversión de entidades de entrenamiento a DTO.</summary>
 internal static class TrainingMapper
 {
     public static TrainingSummaryDto ToSummary(this TrainingSession s) =>

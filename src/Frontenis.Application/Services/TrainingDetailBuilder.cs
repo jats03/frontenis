@@ -8,6 +8,7 @@ using Frontenis.Domain.Services;
 
 namespace Frontenis.Application.Services;
 
+/// <summary>Compone el detalle de una sesión: partidos con nombres y clasificaciones por pareja y por jugador.</summary>
 public sealed class TrainingDetailBuilder : ITrainingDetailBuilder
 {
     private readonly IPlayerRepository _players;

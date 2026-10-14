@@ -7,6 +7,7 @@ using Frontenis.Domain.Entities;
 
 namespace Frontenis.Application.Services;
 
+/// <summary>Aplica resultados a través de la competición, que valida las reglas y avanza el cuadro.</summary>
 public sealed class MatchService : IMatchService
 {
     private readonly ICompetitionRepository _competitions;

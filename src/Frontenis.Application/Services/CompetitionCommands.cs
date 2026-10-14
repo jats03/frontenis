@@ -8,6 +8,7 @@ using Frontenis.Domain.Models;
 
 namespace Frontenis.Application.Services;
 
+/// <summary>Implementación de <see cref="Interfaces.Services.ICompetitionCommands"/>.</summary>
 public sealed class CompetitionCommands : ICompetitionCommands
 {
     private readonly ICompetitionRepository _repository;

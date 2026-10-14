@@ -8,6 +8,7 @@ using Frontenis.Domain.Exceptions;
 
 namespace Frontenis.Application.Services;
 
+/// <summary>Implementación de <see cref="Interfaces.Services.ITrainingCommands"/>.</summary>
 public sealed class TrainingCommands : ITrainingCommands
 {
     private readonly ITrainingRepository _trainings;

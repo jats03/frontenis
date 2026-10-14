@@ -8,6 +8,7 @@ using Frontenis.Domain.Models;
 
 namespace Frontenis.Application.Services;
 
+/// <summary>Calcula el histórico a partir de los partidos jugados; no se cachea porque depende del filtro.</summary>
 public sealed class PlayerHistoryService : IPlayerHistoryService
 {
     private const int RecentCount = 15;

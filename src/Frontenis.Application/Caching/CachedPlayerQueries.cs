@@ -4,6 +4,7 @@ using Frontenis.Application.Interfaces.Services;
 
 namespace Frontenis.Application.Caching;
 
+/// <summary>Decorador que cachea <see cref="Interfaces.Services.IPlayerQueries"/>.</summary>
 public sealed class CachedPlayerQueries : IPlayerQueries
 {
     private readonly IPlayerQueries _inner;

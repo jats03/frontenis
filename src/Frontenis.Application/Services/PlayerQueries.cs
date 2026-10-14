@@ -5,6 +5,7 @@ using Frontenis.Application.Mapping;
 
 namespace Frontenis.Application.Services;
 
+/// <summary>Implementación de <see cref="Interfaces.Services.IPlayerQueries"/>.</summary>
 public sealed class PlayerQueries : IPlayerQueries
 {
     private readonly IPlayerRepository _players;

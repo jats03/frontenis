@@ -8,6 +8,7 @@ using Frontenis.Domain.Exceptions;
 
 namespace Frontenis.Application.Services;
 
+/// <summary>Inicio de sesión y cambio de contraseña, con bloqueo temporal tras demasiados fallos y migración transparente de hashes antiguos.</summary>
 public sealed class AuthService : IAuthService
 {
     private const int MaxUserFailures = 5;
