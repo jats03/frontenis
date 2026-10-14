@@ -1,3 +1,5 @@
+using Frontenis.Domain.Interfaces;
+
 namespace Frontenis.Domain.Services;
 
 /// <summary>Sorteo aleatorio repartiendo uno a uno para que los grupos queden equilibrados.</summary>

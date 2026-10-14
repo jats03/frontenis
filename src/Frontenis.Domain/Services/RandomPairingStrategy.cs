@@ -1,6 +1,8 @@
 using Frontenis.Domain.Entities;
 using Frontenis.Domain.Enums;
 using Frontenis.Domain.Exceptions;
+using Frontenis.Domain.Interfaces;
+using Frontenis.Domain.Models;
 
 namespace Frontenis.Domain.Services;
 

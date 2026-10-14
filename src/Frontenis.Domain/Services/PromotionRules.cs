@@ -1,10 +1,6 @@
-namespace Frontenis.Domain.Services;
+using Frontenis.Domain.Models;
 
-/// <summary>Un jugador que cambia de grupo al terminar la liga (índices de grupo: 0 = el de más nivel).</summary>
-public sealed record PlayerMove(int PlayerId, int FromGroupIndex, int ToGroupIndex)
-{
-    public bool IsPromotion => ToGroupIndex < FromGroupIndex;
-}
+namespace Frontenis.Domain.Services;
 
 /// <summary>
 /// Ascensos y descensos: el primero de cada grupo sube al grupo superior y el último baja al inferior.

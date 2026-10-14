@@ -1,44 +1,7 @@
-using Frontenis.Domain.Entities;
+using Frontenis.Domain.Interfaces;
+using Frontenis.Domain.Models;
 
 namespace Frontenis.Domain.Services;
-
-/// <summary>Partido ya jugado, aplanado a jugadores (sin entidades) para calcular estadísticas.</summary>
-public sealed record PlayedMatch(
-    int MatchId, int CompetitionId, string CompetitionName, bool IsGroupPhase,
-    int PointsPerWin, int PointsPerLoss,
-    IReadOnlyList<int> HomePlayerIds, IReadOnlyList<int> AwayPlayerIds,
-    IReadOnlyList<SetScore> Sets,
-    bool IsTraining = false, DateTime? SortDate = null)
-{
-    public int HomeSets => Sets.Count(s => s.HomeWon);
-    public int AwaySets => Sets.Count - HomeSets;
-    public bool HomeWon => HomeSets > AwaySets;
-    public int HomeTantos => Sets.Sum(s => s.Home);
-    public int AwayTantos => Sets.Sum(s => s.Away);
-}
-
-/// <summary>Balance contra un compañero o un rival concreto.</summary>
-public sealed record RelationStat(int PlayerId, int Played, int Won, int Lost, int TantosFor, int TantosAgainst)
-{
-    public double WinRate => Played == 0 ? 0 : Math.Round(100.0 * Won / Played, 1);
-}
-
-public sealed record PlayerStats(
-    int PlayerId, int Played, int Won, int Lost,
-    int SetsFor, int SetsAgainst, int TantosFor, int TantosAgainst,
-    int ClassificationPoints, int Competitions,
-    IReadOnlyList<RelationStat> Partners, IReadOnlyList<RelationStat> Rivals)
-{
-    public int TantosDiff => TantosFor - TantosAgainst;
-    public double WinRate => Played == 0 ? 0 : Math.Round(100.0 * Won / Played, 1);
-}
-
-public interface IPlayerStatsCalculator
-{
-    /// <summary>Estadísticas de todos los jugadores que aparecen en los partidos.</summary>
-    IReadOnlyList<PlayerStats> CalculateAll(IReadOnlyList<PlayedMatch> matches);
-    PlayerStats Calculate(int playerId, IReadOnlyList<PlayedMatch> matches);
-}
 
 public sealed class PlayerStatsCalculator : IPlayerStatsCalculator
 {

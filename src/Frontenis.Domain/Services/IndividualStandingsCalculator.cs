@@ -1,3 +1,6 @@
+using Frontenis.Domain.Interfaces;
+using Frontenis.Domain.Models;
+
 namespace Frontenis.Domain.Services;
 
 /// <summary>
