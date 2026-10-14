@@ -92,5 +92,5 @@ export interface TrainingSuggestion {
 }
 export interface NewTrainingMatch {
   home1Id: number; home2Id: number; away1Id: number; away2Id: number
-  targetPoints: number; homeScore: number; awayScore: number
+  homeScore: number; awayScore: number
 }

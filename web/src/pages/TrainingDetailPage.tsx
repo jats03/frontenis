@@ -58,7 +58,6 @@ export default function TrainingDetailPage() {
   const [showMatches, setShowMatches] = useState(true)
   const [formOpen, setFormOpen] = useState(false)
   const [slots, setSlots] = useState<Slots>(EMPTY)
-  const [target, setTarget] = useState(15)
   const [homeScore, setHomeScore] = useState('')
   const [awayScore, setAwayScore] = useState('')
   const [formError, setFormError] = useState<string | null>(null)
@@ -82,7 +81,7 @@ export default function TrainingDetailPage() {
     try {
       const updated = await api.trainings.addMatch(id, {
         home1Id: h1, home2Id: h2, away1Id: a1, away2Id: a2,
-        targetPoints: target, homeScore: Number(homeScore), awayScore: Number(awayScore),
+        homeScore: Number(homeScore), awayScore: Number(awayScore),
       })
       commit(updated)
       notify('Partido añadido')
@@ -173,9 +172,6 @@ export default function TrainingDetailPage() {
                 {slotSelect(2, 'Pareja B · jugador 1')}{slotSelect(3, 'Pareja B · jugador 2')}
               </div>
               <div className="cols">
-                <label>Se juega a (tantos)
-                  <input type="number" min={1} value={Number.isNaN(target) ? '' : target} onChange={e => setTarget(e.target.valueAsNumber)} />
-                </label>
                 <label>Marcador pareja A<input inputMode="numeric" value={homeScore} onChange={e => setHomeScore(e.target.value)} /></label>
                 <label>Marcador pareja B<input inputMode="numeric" value={awayScore} onChange={e => setAwayScore(e.target.value)} /></label>
               </div>
@@ -204,7 +200,6 @@ export default function TrainingDetailPage() {
                     </div>
                     <div className="tm-score">
                       <strong>{m.homeScore} - {m.awayScore}</strong>
-                      <small className="muted">a {m.targetPoints}</small>
                     </div>
                     {isAdmin && <button className="secondary small tm-del" onClick={() => void removeMatch(m.id)}>Borrar</button>}
                   </li>

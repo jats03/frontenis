@@ -5,11 +5,11 @@ public sealed class TrainingMatch
 {
     private TrainingMatch() { }
 
-    internal TrainingMatch(int order, int home1, int home2, int away1, int away2, int target, int homeScore, int awayScore)
+    internal TrainingMatch(int order, int home1, int home2, int away1, int away2, int homeScore, int awayScore)
     {
         Order = order;
         Home1Id = home1; Home2Id = home2; Away1Id = away1; Away2Id = away2;
-        TargetPoints = target; HomeScore = homeScore; AwayScore = awayScore;
+        HomeScore = homeScore; AwayScore = awayScore;
         PlayedAtUtc = DateTime.UtcNow;
     }
 
@@ -20,6 +20,7 @@ public sealed class TrainingMatch
     public int Home2Id { get; private set; }
     public int Away1Id { get; private set; }
     public int Away2Id { get; private set; }
+    /// <summary>Obsoleto: en los entrenamientos ya no se indica a cuántos tantos se juega. Se conserva (a 0) por compatibilidad con la BD.</summary>
     public int TargetPoints { get; private set; }
     public int HomeScore { get; private set; }
     public int AwayScore { get; private set; }

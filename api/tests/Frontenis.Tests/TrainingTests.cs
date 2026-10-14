@@ -15,12 +15,11 @@ public class TrainingTests
     public void Match_validations()
     {
         var s = Session();
-        Assert.Throws<DomainException>(() => s.AddMatch(1, 2, 3, 3, 15, 15, 10));   // repetido
-        Assert.Throws<DomainException>(() => s.AddMatch(1, 2, 3, 4, 15, 15, 15));   // empate
-        Assert.Throws<DomainException>(() => s.AddMatch(1, 2, 3, 0, 15, 15, 10));   // falta jugador
-        Assert.Throws<DomainException>(() => s.AddMatch(1, 2, 3, 4, 0, 15, 10));    // objetivo
-        s.AddMatch(1, 2, 3, 4, 15, 15, 10);
-        s.AddMatch(1, 3, 2, 4, 21, 18, 21);
+        Assert.Throws<DomainException>(() => s.AddMatch(1, 2, 3, 3, 15, 10));   // repetido
+        Assert.Throws<DomainException>(() => s.AddMatch(1, 2, 3, 4, 15, 15));   // empate
+        Assert.Throws<DomainException>(() => s.AddMatch(1, 2, 3, 0, 15, 10));   // falta jugador
+        s.AddMatch(1, 2, 3, 4, 15, 10);
+        s.AddMatch(1, 3, 2, 4, 18, 21);
         Assert.Equal("1,2", string.Join(",", s.Matches.Select(m => m.Order)));
     }
 
@@ -28,8 +27,8 @@ public class TrainingTests
     public void Session_has_a_match_limit()
     {
         var s = Session();
-        for (var i = 0; i < TrainingSession.MaxMatches; i++) s.AddMatch(1, 2, 3, 4, 15, 15, 10);
-        Assert.Throws<DomainException>(() => s.AddMatch(1, 2, 3, 4, 15, 15, 10));
+        for (var i = 0; i < TrainingSession.MaxMatches; i++) s.AddMatch(1, 2, 3, 4, 15, 10);
+        Assert.Throws<DomainException>(() => s.AddMatch(1, 2, 3, 4, 15, 10));
     }
 
     [Fact]
@@ -38,7 +37,7 @@ public class TrainingTests
         Assert.Throws<DomainException>(() => TrainingSession.Create(" ", DateTime.Today, 3, 0));
         Assert.Throws<DomainException>(() => TrainingSession.Create("x", DateTime.Today, 2, 2));
         var s = Session();
-        s.AddMatch(1, 2, 3, 4, 15, 15, 10).WithId(7);
+        s.AddMatch(1, 2, 3, 4, 15, 10).WithId(7);
         Assert.Throws<NotFoundException>(() => s.RemoveMatch(99));
         s.RemoveMatch(7);
         Assert.Empty(s.Matches);

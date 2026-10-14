@@ -43,18 +43,17 @@ public sealed class TrainingSession
 
     /// <summary>Añade un partido 2 contra 2 a la sesión.</summary>
     /// <exception cref="DomainException">Jugadores repetidos, marcador no válido, empate o límite de partidos alcanzado.</exception>
-    public TrainingMatch AddMatch(int home1, int home2, int away1, int away2, int target, int homeScore, int awayScore)
+    public TrainingMatch AddMatch(int home1, int home2, int away1, int away2, int homeScore, int awayScore)
     {
         var players = new[] { home1, home2, away1, away2 };
         if (players.Any(p => p <= 0)) throw new DomainException("Selecciona los cuatro jugadores.");
         if (players.Distinct().Count() != 4) throw new DomainException("Los cuatro jugadores deben ser distintos.");
-        if (target < 1 || target > 999) throw new DomainException("Los tantos del partido deben estar entre 1 y 999.");
         if (homeScore < 0 || awayScore < 0 || homeScore > 999 || awayScore > 999)
             throw new DomainException("Marcador no válido.");
         if (homeScore == awayScore) throw new DomainException("No puede haber empate.");
         if (_matches.Count >= MaxMatches) throw new DomainException($"La sesión ya tiene el máximo de {MaxMatches} partidos.");
         var order = _matches.Count == 0 ? 1 : _matches.Max(m => m.Order) + 1;
-        var match = new TrainingMatch(order, home1, home2, away1, away2, target, homeScore, awayScore);
+        var match = new TrainingMatch(order, home1, home2, away1, away2, homeScore, awayScore);
         _matches.Add(match);
         return match;
     }

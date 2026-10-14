@@ -6,7 +6,7 @@ public sealed record RenameTrainingRequest(string Name);
 public sealed record CreateTrainingRequest(string Name, DateTime Date, int PointsPerWin = 3, int PointsPerLoss = 0);
 
 public sealed record AddTrainingMatchRequest(
-    int Home1Id, int Home2Id, int Away1Id, int Away2Id, int TargetPoints, int HomeScore, int AwayScore);
+    int Home1Id, int Home2Id, int Away1Id, int Away2Id, int HomeScore, int AwayScore);
 
 public sealed record TrainingSuggestRequest(IReadOnlyList<int> PlayerIds, int Count = 5);
 
