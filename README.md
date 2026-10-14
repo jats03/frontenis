@@ -66,3 +66,16 @@ web             PWA React
 
 Cada pieza depende de abstracciones (DIP), cada servicio tiene una única responsabilidad (SRP) y
 añadir un nuevo criterio de desempate o sistema de calendario solo requiere una nueva implementación (OCP).
+
+## Estructura del backend
+
+Arquitectura por capas (las dependencias apuntan siempre hacia el dominio). Cada carpeta tiene su propio namespace.
+
+| Capa | Carpetas | Responsabilidad |
+|---|---|---|
+| `Frontenis.Domain` | `Entities`, `Enums`, `Exceptions`, `Interfaces`, `Models`, `Services` | Reglas de negocio puras: entidades, cálculo de clasificaciones, sorteos, estadísticas. Sin dependencias externas. |
+| `Frontenis.Application` | `Interfaces/{Repositories,Services,Security,Caching}`, `Services`, `Caching`, `Dtos`, `Mapping`, `Security`, `Models`, `Exceptions`, `Extensions` | Casos de uso. Cada funcionalidad separa **consultas** (`I…Queries`) y **comandos** (`I…Commands`); las consultas públicas se decoran con la caché de lecturas (`Caching/Cached…`). |
+| `Frontenis.Infrastructure` | `Persistence`, `Repositories`, `Security`, `Extensions` | EF Core / SQL Server, actualización del esquema (`SchemaScripts`), JWT, hash de contraseñas y registro de dependencias. |
+| `Frontenis.Api` | `Controllers`, `Middleware`, `Extensions`, `Authorization`, `RateLimiting`, `HostedServices` | HTTP: controladores finos, autenticación, límites de peticiones, CORS y arranque. |
+
+Normas del proyecto: un tipo por archivo (los DTO se agrupan por funcionalidad), cada interfaz en su carpeta `Interfaces`, y namespace igual a la carpeta.
