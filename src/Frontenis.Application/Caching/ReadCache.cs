@@ -1,17 +1,7 @@
 using System.Collections.Concurrent;
+using Frontenis.Application.Interfaces.Caching;
 
-namespace Frontenis.Application.Abstractions;
-
-/// <summary>
-/// Caché en memoria de lecturas públicas. No caduca por poco tiempo: se vacía entera cuando alguien escribe
-/// (así las lecturas no tocan la base de datos, ni siquiera si está pausada) y tiene una caducidad larga de seguridad.
-/// </summary>
-public interface IReadCache
-{
-    Task<T> GetOrAddAsync<T>(string key, Func<Task<T>> factory);
-    /// <summary>Descarta todo lo cacheado (se llama tras cualquier escritura).</summary>
-    void Clear();
-}
+namespace Frontenis.Application.Caching;
 
 public sealed class ReadCache : IReadCache
 {
@@ -75,18 +65,4 @@ public sealed class ReadCache : IReadCache
 
     private void Remove(string key, Entry entry) =>
         _entries.TryRemove(new KeyValuePair<string, Entry>(key, entry));
-}
-
-/// <summary>Cada guardado correcto vacía la caché de lecturas.</summary>
-public sealed class CachingUnitOfWork : IUnitOfWork
-{
-    private readonly IUnitOfWork _inner;
-    private readonly IReadCache _cache;
-    public CachingUnitOfWork(IUnitOfWork inner, IReadCache cache) { _inner = inner; _cache = cache; }
-
-    public async Task SaveChangesAsync(CancellationToken ct = default)
-    {
-        await _inner.SaveChangesAsync(ct);
-        _cache.Clear();
-    }
 }

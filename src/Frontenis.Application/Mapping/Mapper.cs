@@ -1,6 +1,7 @@
+using Frontenis.Application.Dtos;
 using Frontenis.Domain.Entities;
 
-namespace Frontenis.Application.Dtos;
+namespace Frontenis.Application.Mapping;
 
 internal static class Mapper
 {
@@ -21,4 +22,11 @@ internal static class Mapper
         m.HomeScore, m.AwayScore, m.IsPlayed, m.Winner?.Id,
         m.IsPlayed ? m.Sets.Select(s => new SetScoreDto(s.Home, s.Away)).ToList() : null,
         m.IsPlayed ? m.HomeSets : null, m.IsPlayed ? m.AwaySets : null);
+
+    public static CompetitionDetailDto ToDetailDto(this Competition c) => new(
+        c.ToSummary(),
+        c.Groups.OrderBy(g => g.Id).Select(g => new GroupDto(g.Id, g.Name)).ToList(),
+        c.Entries.OrderBy(e => e.Id).Select(e => e.ToDto()).ToList(),
+        c.Matches.OrderBy(m => m.Phase).ThenBy(m => m.GroupId).ThenBy(m => m.Round).ThenBy(m => m.Order)
+            .Select(m => m.ToDto()).ToList());
 }

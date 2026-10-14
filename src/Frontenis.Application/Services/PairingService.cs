@@ -1,19 +1,13 @@
-using Frontenis.Application.Abstractions;
 using Frontenis.Application.Dtos;
+using Frontenis.Application.Extensions;
+using Frontenis.Application.Interfaces.Repositories;
+using Frontenis.Application.Interfaces.Services;
+using Frontenis.Application.Mapping;
 using Frontenis.Domain.Entities;
 using Frontenis.Domain.Exceptions;
-using Frontenis.Domain.Services;
+using Frontenis.Domain.Interfaces;
 
 namespace Frontenis.Application.Services;
-
-public interface IPairingService
-{
-    /// <summary>Calcula un emparejamiento aleatorio sin guardar nada.</summary>
-    Task<PairingPreviewDto> PreviewAsync(PlayersSelection selection, CancellationToken ct = default);
-    /// <summary>Genera el emparejamiento aleatorio y lo inscribe en la competición.</summary>
-    Task<IReadOnlyList<PairDto>> RegisterRandomAsync(int competitionId, PlayersSelection selection, CancellationToken ct = default);
-    Task<PairDto> RegisterManualAsync(int competitionId, ManualPairRequest request, CancellationToken ct = default);
-}
 
 public sealed class PairingService : IPairingService
 {
@@ -45,7 +39,7 @@ public sealed class PairingService : IPairingService
     public async Task<IReadOnlyList<PairDto>> RegisterRandomAsync(
         int competitionId, PlayersSelection selection, CancellationToken ct = default)
     {
-        var competition = await GetCompetitionAsync(competitionId, ct);
+        var competition = await _competitions.GetDetailedOrThrowAsync(competitionId, ct);
         var players = await LoadPlayersAsync(selection.PlayerIds, ct);
         var result = _strategy.Generate(players);
 
@@ -62,7 +56,7 @@ public sealed class PairingService : IPairingService
 
     public async Task<PairDto> RegisterManualAsync(int competitionId, ManualPairRequest request, CancellationToken ct = default)
     {
-        var competition = await GetCompetitionAsync(competitionId, ct);
+        var competition = await _competitions.GetDetailedOrThrowAsync(competitionId, ct);
         var players = await LoadPlayersAsync(new[] { request.Player1Id, request.Player2Id }, ct);
         var pair = new Pair(players[0], players[1]);
         await _pairs.AddAsync(pair, ct);
@@ -70,9 +64,6 @@ public sealed class PairingService : IPairingService
         await _uow.SaveChangesAsync(ct);
         return entry.ToDto();
     }
-
-    private async Task<Competition> GetCompetitionAsync(int id, CancellationToken ct) =>
-        await _competitions.GetDetailedAsync(id, ct) ?? throw new NotFoundException("Competición no encontrada.");
 
     private async Task<IReadOnlyList<Player>> LoadPlayersAsync(IReadOnlyCollection<int> ids, CancellationToken ct)
     {

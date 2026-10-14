@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
-using Frontenis.Application.Abstractions;
+using Frontenis.Application.Interfaces.Security;
 
-namespace Frontenis.Application.Services;
+namespace Frontenis.Application.Security;
 
 /// <summary>
 /// Bloqueo temporal tras demasiados intentos fallidos. En memoria: la API corre en una sola instancia;

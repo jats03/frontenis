@@ -1,34 +1,23 @@
-using Frontenis.Application.Abstractions;
 using Frontenis.Application.Dtos;
+using Frontenis.Application.Extensions;
+using Frontenis.Application.Interfaces.Repositories;
+using Frontenis.Application.Interfaces.Services;
+using Frontenis.Application.Mapping;
 using Frontenis.Domain.Entities;
 using Frontenis.Domain.Exceptions;
 
 namespace Frontenis.Application.Services;
 
-public interface IPlayerService
-{
-    Task<IReadOnlyList<PlayerDto>> ListAsync(CancellationToken ct = default);
-    Task<PlayerDto> CreateAsync(PlayerRequest request, CancellationToken ct = default);
-    Task<PlayerDto> UpdateAsync(int id, PlayerRequest request, CancellationToken ct = default);
-    Task DeleteAsync(int id, CancellationToken ct = default);
-}
-
-public sealed class PlayerService : IPlayerService
+public sealed class PlayerCommands : IPlayerCommands
 {
     private readonly IPlayerRepository _players;
     private readonly IUnitOfWork _uow;
-    private readonly IReadCache _cache;
 
-    public PlayerService(IPlayerRepository players, IUnitOfWork uow, IReadCache cache)
+    public PlayerCommands(IPlayerRepository players, IUnitOfWork uow)
     {
-        _cache = cache;
         _players = players;
         _uow = uow;
     }
-
-    public async Task<IReadOnlyList<PlayerDto>> ListAsync(CancellationToken ct = default) =>
-        await _cache.GetOrAddAsync<IReadOnlyList<PlayerDto>>("players:list",
-            async () => (await _players.ListAsync(CancellationToken.None)).Select(p => p.ToDto()).ToList());
 
     public async Task<PlayerDto> CreateAsync(PlayerRequest request, CancellationToken ct = default)
     {
@@ -40,7 +29,7 @@ public sealed class PlayerService : IPlayerService
 
     public async Task<PlayerDto> UpdateAsync(int id, PlayerRequest request, CancellationToken ct = default)
     {
-        var player = await _players.GetByIdAsync(id, ct) ?? throw new NotFoundException("Jugador no encontrado.");
+        var player = await _players.GetOrThrowAsync(id, ct);
         player.Update(request.Name, request.Position, request.GroupNumber);
         await _uow.SaveChangesAsync(ct);
         return player.ToDto();
@@ -48,7 +37,7 @@ public sealed class PlayerService : IPlayerService
 
     public async Task DeleteAsync(int id, CancellationToken ct = default)
     {
-        var player = await _players.GetByIdAsync(id, ct) ?? throw new NotFoundException("Jugador no encontrado.");
+        var player = await _players.GetOrThrowAsync(id, ct);
         if (await _players.IsInUseAsync(id, ct))
             throw new DomainException("El jugador pertenece a una pareja de alguna competición y no se puede borrar.");
         _players.Remove(player);

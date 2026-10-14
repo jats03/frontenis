@@ -1,58 +1,12 @@
-using Frontenis.Application.Abstractions;
 using Frontenis.Application.Dtos;
+using Frontenis.Application.Exceptions;
+using Frontenis.Application.Interfaces.Repositories;
+using Frontenis.Application.Interfaces.Security;
+using Frontenis.Application.Interfaces.Services;
+using Frontenis.Application.Security;
 using Frontenis.Domain.Exceptions;
 
 namespace Frontenis.Application.Services;
-
-public interface IAuthService
-{
-    Task<LoginResponse> LoginAsync(LoginRequest request, string clientIp, CancellationToken ct = default);
-    Task ChangePasswordAsync(int userId, ChangePasswordRequest request, string clientIp, CancellationToken ct = default);
-}
-
-public sealed class UnauthorizedAppException : Exception
-{
-    public UnauthorizedAppException(string message) : base(message) { }
-}
-
-/// <summary>Demasiados intentos fallidos: hay que esperar <see cref="RetryAfter"/>.</summary>
-public sealed class TooManyAttemptsException : Exception
-{
-    public TimeSpan RetryAfter { get; }
-    public TooManyAttemptsException(TimeSpan retryAfter)
-        : base($"Demasiados intentos. Inténtalo de nuevo en {Math.Max(1, (int)Math.Ceiling(retryAfter.TotalMinutes))} minuto(s).")
-    {
-        RetryAfter = retryAfter;
-    }
-}
-
-/// <summary>Requisitos mínimos de contraseña de administrador.</summary>
-public static class PasswordPolicy
-{
-    public const int MinLength = 12;
-    public const int MaxLength = 128;
-
-    private static readonly HashSet<string> Common = new(StringComparer.OrdinalIgnoreCase)
-    {
-        "password1234", "contraseña123", "123456789012", "admin1234567", "qwertyuiop12", "frontenis1234", "administrador",
-    };
-
-    /// <summary>Devuelve el motivo del rechazo, o null si la contraseña es aceptable.</summary>
-    public static string? Validate(string? password, string username)
-    {
-        if (string.IsNullOrEmpty(password) || password.Length < MinLength)
-            return $"La contraseña debe tener al menos {MinLength} caracteres.";
-        if (password.Length > MaxLength) return $"La contraseña no puede superar los {MaxLength} caracteres.";
-        if (password.Distinct().Count() < 5) return "La contraseña es demasiado repetitiva.";
-        if (!string.IsNullOrWhiteSpace(username) && password.Contains(username, StringComparison.OrdinalIgnoreCase))
-            return "La contraseña no puede contener el nombre de usuario.";
-        if (Common.Contains(password)) return "Esa contraseña es demasiado común.";
-        var kinds = new[] { password.Any(char.IsLower), password.Any(char.IsUpper), password.Any(char.IsDigit), password.Any(c => !char.IsLetterOrDigit(c)) };
-        if (kinds.Count(k => k) < 2 && password.Length < 16)
-            return "Combina mayúsculas, minúsculas, números o símbolos (o usa una frase de 16 caracteres o más).";
-        return null;
-    }
-}
 
 public sealed class AuthService : IAuthService
 {

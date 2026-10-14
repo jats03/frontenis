@@ -1,16 +1,12 @@
-using Frontenis.Application.Abstractions;
 using Frontenis.Application.Dtos;
-using Frontenis.Domain.Exceptions;
-using Frontenis.Domain.Services;
+using Frontenis.Application.Extensions;
+using Frontenis.Application.Interfaces.Repositories;
+using Frontenis.Application.Interfaces.Services;
+using Frontenis.Application.Models;
+using Frontenis.Domain.Interfaces;
+using Frontenis.Domain.Models;
 
 namespace Frontenis.Application.Services;
-
-public interface IPlayerHistoryService
-{
-    /// <summary>Ranking histórico de todos los jugadores (opcionalmente de una sola competición).</summary>
-    Task<IReadOnlyList<PlayerHistoryRowDto>> RankingAsync(HistoryFilter filter, CancellationToken ct = default);
-    Task<PlayerHistoryDto> PlayerAsync(int playerId, HistoryFilter filter, CancellationToken ct = default);
-}
 
 public sealed class PlayerHistoryService : IPlayerHistoryService
 {
@@ -19,26 +15,15 @@ public sealed class PlayerHistoryService : IPlayerHistoryService
     private readonly IMatchHistoryRepository _history;
     private readonly IPlayerRepository _players;
     private readonly IPlayerStatsCalculator _calculator;
-    private readonly IReadCache _cache;
 
-    public PlayerHistoryService(IMatchHistoryRepository history, IPlayerRepository players, IPlayerStatsCalculator calculator, IReadCache cache)
+    public PlayerHistoryService(IMatchHistoryRepository history, IPlayerRepository players, IPlayerStatsCalculator calculator)
     {
-        _cache = cache;
         _history = history;
         _players = players;
         _calculator = calculator;
     }
 
-    private static string Key(HistoryFilter f) =>
-        $"c={string.Join(',', f.CompetitionIds.OrderBy(x => x))};t={string.Join(',', f.TrainingIds.OrderBy(x => x))}";
-
-    public Task<IReadOnlyList<PlayerHistoryRowDto>> RankingAsync(HistoryFilter filter, CancellationToken ct = default) =>
-        _cache.GetOrAddAsync($"history:ranking:{Key(filter)}", () => ComputeRankingAsync(filter, CancellationToken.None));
-
-    public Task<PlayerHistoryDto> PlayerAsync(int playerId, HistoryFilter filter, CancellationToken ct = default) =>
-        _cache.GetOrAddAsync($"history:player:{playerId}:{Key(filter)}", () => ComputePlayerAsync(playerId, filter, CancellationToken.None));
-
-    private async Task<IReadOnlyList<PlayerHistoryRowDto>> ComputeRankingAsync(HistoryFilter filter, CancellationToken ct)
+    public async Task<IReadOnlyList<PlayerHistoryRowDto>> RankingAsync(HistoryFilter filter, CancellationToken ct = default)
     {
         var players = await _players.ListAsync(ct);
         var stats = _calculator.CalculateAll(await _history.ListPlayedAsync(filter, null, ct))
@@ -50,9 +35,9 @@ public sealed class PlayerHistoryService : IPlayerHistoryService
             .ToList();
     }
 
-    private async Task<PlayerHistoryDto> ComputePlayerAsync(int playerId, HistoryFilter filter, CancellationToken ct)
+    public async Task<PlayerHistoryDto> PlayerAsync(int playerId, HistoryFilter filter, CancellationToken ct = default)
     {
-        var player = await _players.GetByIdAsync(playerId, ct) ?? throw new NotFoundException("Jugador no encontrado.");
+        var player = await _players.GetOrThrowAsync(playerId, ct);
         var names = (await _players.ListAsync(ct)).ToDictionary(p => p.Id, p => p.Name);
         var matches = await _history.ListPlayedAsync(filter, playerId, ct);
         var stats = _calculator.Calculate(playerId, matches);

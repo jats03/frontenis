@@ -1,15 +1,11 @@
-using Frontenis.Application.Abstractions;
 using Frontenis.Application.Dtos;
+using Frontenis.Application.Extensions;
+using Frontenis.Application.Interfaces.Repositories;
+using Frontenis.Application.Interfaces.Services;
+using Frontenis.Application.Mapping;
 using Frontenis.Domain.Entities;
-using Frontenis.Domain.Exceptions;
 
 namespace Frontenis.Application.Services;
-
-public interface IMatchService
-{
-    Task<MatchDto> SetResultAsync(int matchId, SetResultRequest request, CancellationToken ct = default);
-    Task<MatchDto> ClearResultAsync(int matchId, CancellationToken ct = default);
-}
 
 public sealed class MatchService : IMatchService
 {
@@ -24,8 +20,7 @@ public sealed class MatchService : IMatchService
 
     public async Task<MatchDto> SetResultAsync(int matchId, SetResultRequest request, CancellationToken ct = default)
     {
-        var competition = await _competitions.GetDetailedByMatchIdAsync(matchId, ct)
-            ?? throw new NotFoundException("Partido no encontrado.");
+        var competition = await _competitions.GetDetailedByMatchOrThrowAsync(matchId, ct);
         var match = request.Sets is { Count: > 0 }
             ? competition.RecordResult(matchId, request.Sets.Select(s => new SetScore(s.Home, s.Away)).ToList())
             : competition.RecordResult(matchId, request.HomeScore, request.AwayScore);
@@ -35,8 +30,7 @@ public sealed class MatchService : IMatchService
 
     public async Task<MatchDto> ClearResultAsync(int matchId, CancellationToken ct = default)
     {
-        var competition = await _competitions.GetDetailedByMatchIdAsync(matchId, ct)
-            ?? throw new NotFoundException("Partido no encontrado.");
+        var competition = await _competitions.GetDetailedByMatchOrThrowAsync(matchId, ct);
         var match = competition.ClearResult(matchId);
         await _uow.SaveChangesAsync(ct);
         return match.ToDto();
