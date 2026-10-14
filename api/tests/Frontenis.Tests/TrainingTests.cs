@@ -9,7 +9,7 @@ namespace Frontenis.Tests;
 public class TrainingTests
 {
     private static TrainingSession Session() => TrainingSession.Create("Martes", new DateTime(2026, 10, 13), 3, 1);
-    private static TrainingGame G(int h1, int h2, int a1, int a2, int hs, int a) => new(h1, h2, a1, a2, hs, a, 15);
+    private static TrainingGame G(int h1, int h2, int a1, int a2, int hs, int a) => new(h1, h2, a1, a2, hs, a);
 
     [Fact]
     public void Match_validations()

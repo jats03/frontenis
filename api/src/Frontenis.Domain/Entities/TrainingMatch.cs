@@ -20,8 +20,6 @@ public sealed class TrainingMatch
     public int Home2Id { get; private set; }
     public int Away1Id { get; private set; }
     public int Away2Id { get; private set; }
-    /// <summary>Obsoleto: en los entrenamientos ya no se indica a cuántos tantos se juega. Se conserva (a 0) por compatibilidad con la BD.</summary>
-    public int TargetPoints { get; private set; }
     public int HomeScore { get; private set; }
     public int AwayScore { get; private set; }
     public DateTime PlayedAtUtc { get; private set; }

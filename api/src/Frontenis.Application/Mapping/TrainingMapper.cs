@@ -13,6 +13,6 @@ internal static class TrainingMapper
     /// <summary>Partidos de la sesión en el formato que consumen las clasificaciones del dominio.</summary>
     public static List<TrainingGame> ToGames(this TrainingSession s) =>
         s.Matches.OrderBy(m => m.Order).ThenBy(m => m.Id)
-            .Select(m => new TrainingGame(m.Home1Id, m.Home2Id, m.Away1Id, m.Away2Id, m.HomeScore, m.AwayScore, m.TargetPoints))
+            .Select(m => new TrainingGame(m.Home1Id, m.Home2Id, m.Away1Id, m.Away2Id, m.HomeScore, m.AwayScore))
             .ToList();
 }

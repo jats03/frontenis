@@ -76,7 +76,7 @@ export interface TrainingSummary {
 export interface TrainingMatch {
   id: number; order: number; homeName: string; awayName: string
   homePlayerIds: number[]; awayPlayerIds: number[]
-  targetPoints: number; homeScore: number; awayScore: number; homeWon: boolean
+  homeScore: number; awayScore: number; homeWon: boolean
 }
 export interface TrainingRow {
   rank: number; name: string; playerIds: number[]; played: number; won: number; lost: number

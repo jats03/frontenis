@@ -94,7 +94,17 @@ static async Task<int> CopyTableAsync(SqlConnection source, NpgsqlConnection tar
 {
     await using var read = new SqlCommand($"SELECT * FROM [{table}]", source);
     await using var reader = await read.ExecuteReaderAsync();
-    var columns = Enumerable.Range(0, reader.FieldCount).Select(reader.GetName).ToArray();
+    // Solo se copian las columnas que existen en el destino (p. ej. TrainingMatches.TargetPoints ya no existe).
+    var targetColumns = new HashSet<string>();
+    await using (var info = new NpgsqlCommand(
+        "SELECT column_name FROM information_schema.columns WHERE table_schema = current_schema() AND table_name = $1", target, tx))
+    {
+        info.Parameters.Add(new NpgsqlParameter { Value = table });
+        await using var names = await info.ExecuteReaderAsync();
+        while (await names.ReadAsync()) targetColumns.Add(names.GetString(0));
+    }
+    var keep = Enumerable.Range(0, reader.FieldCount).Where(i => targetColumns.Contains(reader.GetName(i))).ToArray();
+    var columns = keep.Select(reader.GetName).ToArray();
     var idIndex = Array.IndexOf(columns, "Id");
     // Matches apunta a otra fila de la misma tabla: se inserta sin NextMatchId y se enlaza al final.
     var nextIndex = table == "Matches" ? Array.IndexOf(columns, "NextMatchId") : -1;
@@ -106,8 +116,9 @@ static async Task<int> CopyTableAsync(SqlConnection source, NpgsqlConnection tar
     var batch = new NpgsqlBatch(target, tx);
     while (await reader.ReadAsync())
     {
-        var values = new object[columns.Length];
-        reader.GetValues(values);
+        var all = new object[reader.FieldCount];
+        reader.GetValues(all);
+        var values = keep.Select(i => all[i]).ToArray();
         if (nextIndex >= 0 && values[nextIndex] is not DBNull)
         {
             links.Add((Convert.ToInt32(values[idIndex]), Convert.ToInt32(values[nextIndex])));

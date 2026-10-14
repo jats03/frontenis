@@ -11,5 +11,9 @@ namespace Frontenis.Infrastructure.Persistence;
 /// </remarks>
 internal static class SchemaScripts
 {
-    public static IReadOnlyList<string> All { get; } = Array.Empty<string>();
+    public static IReadOnlyList<string> All { get; } = new[]
+    {
+        // Los entrenamientos ya no indican a cuántos tantos se juega.
+        "ALTER TABLE \"TrainingMatches\" DROP COLUMN IF EXISTS \"TargetPoints\";",
+    };
 }

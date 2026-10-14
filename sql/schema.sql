@@ -96,7 +96,6 @@ CREATE TABLE IF NOT EXISTS "TrainingMatches" (
     "Home2Id" integer NOT NULL REFERENCES "Players"("Id"),
     "Away1Id" integer NOT NULL REFERENCES "Players"("Id"),
     "Away2Id" integer NOT NULL REFERENCES "Players"("Id"),
-    "TargetPoints" integer NOT NULL,
     "HomeScore" integer NOT NULL,
     "AwayScore" integer NOT NULL,
     "PlayedAtUtc" timestamptz NOT NULL
