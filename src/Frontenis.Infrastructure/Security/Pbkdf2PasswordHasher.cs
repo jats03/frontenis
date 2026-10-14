@@ -1,21 +1,7 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 using System.Security.Cryptography;
-using System.Text;
-using Frontenis.Application.Abstractions;
-using Frontenis.Domain.Entities;
-using Microsoft.IdentityModel.Tokens;
+using Frontenis.Application.Interfaces.Security;
 
 namespace Frontenis.Infrastructure.Security;
-
-public sealed class JwtOptions
-{
-    public const string Section = "Jwt";
-    public string Issuer { get; set; } = "frontenis";
-    public string Audience { get; set; } = "frontenis-clients";
-    public string Key { get; set; } = string.Empty;   // mínimo 32 caracteres
-    public int ExpiresMinutes { get; set; } = 240;
-}
 
 /// <summary>PBKDF2-SHA256 con sal aleatoria. Formato: iteraciones.sal.hash (base64).</summary>
 public sealed class Pbkdf2PasswordHasher : IPasswordHasher
@@ -50,26 +36,5 @@ public sealed class Pbkdf2PasswordHasher : IPasswordHasher
     {
         var parts = hash.Split('.');
         return parts.Length != 3 || !int.TryParse(parts[0], out var iterations) || iterations < Iterations;
-    }
-}
-
-public sealed class JwtTokenService : ITokenService
-{
-    private readonly JwtOptions _options;
-    public JwtTokenService(Microsoft.Extensions.Options.IOptions<JwtOptions> options) { _options = options.Value; }
-
-    public (string Token, DateTime ExpiresAtUtc) Create(User user)
-    {
-        var expires = DateTime.UtcNow.AddMinutes(_options.ExpiresMinutes);
-        var credentials = new SigningCredentials(
-            new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.Key)), SecurityAlgorithms.HmacSha256);
-        var claims = new[]
-        {
-            new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-            new Claim(ClaimTypes.Name, user.Username),
-            new Claim(ClaimTypes.Role, user.Role)
-        };
-        var token = new JwtSecurityToken(_options.Issuer, _options.Audience, claims, expires: expires, signingCredentials: credentials);
-        return (new JwtSecurityTokenHandler().WriteToken(token), expires);
     }
 }

@@ -1,4 +1,4 @@
-using Frontenis.Application.Abstractions;
+using Frontenis.Application.Interfaces.Repositories;
 using Frontenis.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
