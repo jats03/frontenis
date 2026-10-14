@@ -2,13 +2,13 @@
 
 Aplicación web/móvil (PWA) para gestionar **ligas y torneos de frontenis** con clasificación.
 
-- **Backend**: .NET 8 Web API · EF Core · **SQL Server** · JWT
+- **Backend**: .NET 8 Web API · EF Core · **PostgreSQL (Neon)** · JWT
 - **Frontend**: React + TypeScript (PWA instalable en móvil, diseño responsive)
 
 ## Arrancar
 
 ```bash
-# 1) Base de datos (o usa tu SQL Server y cambia ConnectionStrings:Default)
+# 1) Base de datos (PostgreSQL; o usa tu propia BD y cambia ConnectionStrings:Default)
 docker compose up -d
 
 # 2) API  -> http://localhost:5080  (Swagger en /swagger)
@@ -21,7 +21,7 @@ cd ..
 cd web && cp .env.example .env && npm install && npm run dev
 ```
 
-La API crea la base de datos al arrancar (`EnsureCreated`; el esquema equivalente está en `sql/schema.sql`)
+La API crea la base de datos al arrancar (`EnsureCreated`; el esquema equivalente está en `sql/schema.sql`; el antiguo de SQL Server, en `sql/sqlserver/schema.sql`)
 y siembra el administrador definido en `appsettings.json` (`Admin:Username` / `Admin:Password`,
 por defecto `admin` / `Cambia-Esta-Clave-2026!`). **Cámbialos y cambia `Jwt:Key` antes de publicar:** en producción
 la API se niega a arrancar con la clave JWT de ejemplo, y la contraseña inicial debe tener al menos 12 caracteres.
@@ -59,7 +59,7 @@ Si sobran de un tipo, se emparejan entre sí (caso extremo); si el total es impa
 ```
 api/   backend .NET: Frontenis.sln, src/ (Domain, Application, Infrastructure, Api) y tests/
 web/   PWA React (Cloudflare Workers)
-sql/   script de esquema de referencia
+sql/   esquema de PostgreSQL (y el antiguo de SQL Server en sql/sqlserver)
 Dockerfile, docker-compose.yml   en la raíz (Render construye desde aquí)
 ```
 
@@ -69,7 +69,7 @@ Dockerfile, docker-compose.yml   en la raíz (Render construye desde aquí)
 Domain          entidades y reglas puras (Competition es el aggregate root); estrategias intercambiables:
                 IPairingStrategy, IGroupDistributor, IScheduleGenerator, IStandingsCalculator, IBracketGenerator
 Application     casos de uso (servicios), DTOs y puertos (repositorios, hasher, tokens)
-Infrastructure  EF Core/SQL Server, repositorios, JWT, PBKDF2
+Infrastructure  EF Core/PostgreSQL (Npgsql), repositorios, JWT, PBKDF2
 Api             controladores finos + middleware de errores
 api/tests       xUnit sobre la lógica de dominio
 web             PWA React
@@ -86,7 +86,23 @@ Arquitectura por capas (las dependencias apuntan siempre hacia el dominio). Cada
 |---|---|---|
 | `Frontenis.Domain` | `Entities`, `Enums`, `Exceptions`, `Interfaces`, `Models`, `Services` | Reglas de negocio puras: entidades, cálculo de clasificaciones, sorteos, estadísticas. Sin dependencias externas. |
 | `Frontenis.Application` | `Interfaces/{Repositories,Services,Security,Caching}`, `Services`, `Caching`, `Dtos`, `Mapping`, `Security`, `Models`, `Exceptions`, `Extensions` | Casos de uso. Cada funcionalidad separa **consultas** (`I…Queries`) y **comandos** (`I…Commands`); las consultas públicas se decoran con la caché de lecturas (`Caching/Cached…`). |
-| `Frontenis.Infrastructure` | `Persistence`, `Repositories`, `Security`, `Extensions` | EF Core / SQL Server, actualización del esquema (`SchemaScripts`), JWT, hash de contraseñas y registro de dependencias. |
+| `Frontenis.Infrastructure` | `Persistence`, `Repositories`, `Security`, `Extensions` | EF Core / PostgreSQL, actualización del esquema (`SchemaScripts`), JWT, hash de contraseñas y registro de dependencias. |
 | `Frontenis.Api` | `Controllers`, `Middleware`, `Extensions`, `Authorization`, `RateLimiting`, `HostedServices` | HTTP: controladores finos, autenticación, límites de peticiones, CORS y arranque. |
 
 Normas del proyecto: un tipo por archivo (los DTO se agrupan por funcionalidad), cada interfaz en su carpeta `Interfaces`, y namespace igual a la carpeta.
+
+## Traspaso de Azure SQL a Neon (PostgreSQL)
+
+1. Crea el proyecto en Neon y copia su cadena de conexión (formato `postgresql://usuario:clave@host/bd?sslmode=require`).
+2. Copia los datos. Es **reejecutable**: cada ejecución vacía el destino y lo vuelve a llenar, así que puedes ensayarlo cuantas veces quieras
+   mientras Azure sigue en producción. Sin `--yes` solo muestra los recuentos.
+
+```powershell
+$env:SOURCE_SQLSERVER = "<cadena de conexión de Azure SQL>"
+$env:TARGET_POSTGRES  = "<URL de Neon>"
+dotnet run --project api/tools/Frontenis.DataMigration           # ensayo: solo recuentos
+dotnet run --project api/tools/Frontenis.DataMigration -- --yes  # vacía el destino y copia
+```
+
+3. El día del cambio: repite el paso 2 con `--yes` (copia final), pon `ConnectionStrings__Default` en Render con la URL de Neon
+   y despliega. Conserva Azure unos días como respaldo.
