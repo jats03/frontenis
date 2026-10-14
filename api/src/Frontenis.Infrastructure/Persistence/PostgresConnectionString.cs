@@ -12,12 +12,18 @@ public static class PostgresConnectionString
     /// <summary>Segundos mínimos de espera al conectar: Neon puede tardar unos segundos en reanudar el cómputo.</summary>
     private const int MinConnectTimeoutSeconds = 30;
 
+    /// <summary>Segundos que una conexión libre permanece abierta en el pool antes de cerrarse.</summary>
+    private const int IdleConnectionSeconds = 30;
+
     /// <summary>Devuelve una cadena de conexión de Npgsql lista para usar.</summary>
     public static string Build(string? raw)
     {
         raw = raw?.Trim() ?? string.Empty;
         var builder = IsUrl(raw) ? FromUrl(raw) : new NpgsqlConnectionStringBuilder(raw);
         if (builder.Timeout < MinConnectTimeoutSeconds) builder.Timeout = MinConnectTimeoutSeconds;
+        // Npgsql conserva las conexiones libres 300 s por defecto; con Neon eso puede retrasar la suspensión
+        // del cómputo. Las cerramos antes (salvo que la cadena indique otro valor).
+        if (!raw.Contains("Idle Lifetime", StringComparison.OrdinalIgnoreCase)) builder.ConnectionIdleLifetime = IdleConnectionSeconds;
         return builder.ConnectionString;
     }
 
