@@ -165,3 +165,35 @@ public class BookingDomainTests
         Assert.Throws<DomainException>(() => s.Reschedule(Monday, T18, T20, Monday.ToDateTime(T20)));
     }
 }
+
+public class DeviceDomainTests
+{
+    [Fact]
+    public void Device_link_requires_a_hash_and_a_player()
+    {
+        var link = DeviceLink.Create("abc", 3);
+        Assert.Equal("abc", link.DeviceHash);
+        Assert.Equal(3, link.PlayerId);
+        Assert.Throws<DomainException>(() => DeviceLink.Create(" ", 3));
+        Assert.Throws<DomainException>(() => DeviceLink.Create("abc", 0));
+    }
+
+    [Fact]
+    public void Delegate_needs_two_different_players()
+    {
+        var d = PlayerDelegate.Create(1, 2);
+        Assert.Equal(1, d.OwnerPlayerId);
+        Assert.Equal(2, d.DelegatePlayerId);
+        Assert.Throws<DomainException>(() => PlayerDelegate.Create(1, 1));
+        Assert.Throws<DomainException>(() => PlayerDelegate.Create(0, 2));
+    }
+
+    [Fact]
+    public void Attendance_remembers_who_signed_the_player_up()
+    {
+        var slot = TrainingSlot.Create(new DateOnly(2026, 10, 19), new TimeOnly(18, 0), new TimeOnly(20, 0), new DateTime(2026, 10, 16, 19, 0, 0));
+        var now = new DateTime(2026, 10, 17, 12, 0, 0);
+        Assert.Equal(7, slot.SignUp(2, now, registeredByPlayerId: 7).RegisteredByPlayerId);
+        Assert.Null(slot.SignUp(3, now).RegisteredByPlayerId);
+    }
+}

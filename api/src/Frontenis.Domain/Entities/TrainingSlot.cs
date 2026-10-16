@@ -79,15 +79,15 @@ public sealed class TrainingSlot
     /// <summary>Hay menos jugadores del mínimo recomendado. Solo avisa mientras la franja está abierta.</summary>
     public bool HasFewPlayers(int minPlayers, DateTime now) => IsOpen(now) && _attendees.Count < minPlayers;
 
-    /// <summary>Apunta a un jugador.</summary>
+    /// <summary>Apunta a un jugador. <paramref name="registeredByPlayerId"/> es quien lo hace (<c>null</c> si es el administrador).</summary>
     /// <exception cref="DomainException">Cancelada, aún sin abrir, ya empezada, jugador repetido o franja llena.</exception>
-    public SlotAttendance SignUp(int playerId, DateTime now)
+    public SlotAttendance SignUp(int playerId, DateTime now, int? registeredByPlayerId = null)
     {
         if (playerId <= 0) throw new DomainException("Jugador no válido.");
         EnsureOpen(now);
         if (_attendees.Any(a => a.PlayerId == playerId)) throw new DomainException("El jugador ya está apuntado.");
         if (_attendees.Count >= MaxAttendees) throw new DomainException("La franja ha alcanzado el máximo de apuntados.");
-        var attendance = new SlotAttendance(playerId, DateTime.UtcNow);
+        var attendance = new SlotAttendance(playerId, DateTime.UtcNow, registeredByPlayerId);
         _attendees.Add(attendance);
         return attendance;
     }
