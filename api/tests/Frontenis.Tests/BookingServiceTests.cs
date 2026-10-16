@@ -167,7 +167,7 @@ public class BookingServiceTests
         for (var p = 1; p <= 3; p++) await w.Attendance().SignUpAsync(slotId, p);
 
         var dto = Assert.Single(await w.Queries().ListAsync(NextMonday, NextMonday));
-        Assert.True(dto.IsOpen);
+        Assert.Equal(SlotStatus.Open, dto.Status);
         Assert.True(dto.FewPlayers);
         Assert.Equal(3, dto.AttendeeCount);
         Assert.Equal("Jugador 1", dto.Attendees[0].Name);
@@ -188,7 +188,7 @@ public class BookingServiceTests
 
         await Assert.ThrowsAsync<DomainException>(() => w.Attendance().SignUpAsync(slotId, 1));
         var dto = (await w.Queries().ListAsync(NextMonday, NextMonday.AddDays(6))).First();
-        Assert.False(dto.IsOpen);
+        Assert.Equal(SlotStatus.Pending, dto.Status);
         Assert.False(dto.FewPlayers);
     }
 
@@ -217,12 +217,12 @@ public class BookingServiceTests
         Assert.Equal(new DateTime(2026, 10, 16, 19, 0, 0), dto.OpensAt);   // regla de apertura por defecto
         Assert.Null(dto.TemplateId);
 
-        Assert.True((await w.Admin().CancelAsync(dto.Id)).IsCancelled);
-        Assert.False((await w.Admin().RestoreAsync(dto.Id)).IsCancelled);
+        Assert.Equal(SlotStatus.Cancelled, (await w.Admin().CancelAsync(dto.Id)).Status);
+        Assert.Equal(SlotStatus.Pending, (await w.Admin().RestoreAsync(dto.Id)).Status);
 
         var opened = await w.Admin().OpenNowAsync(dto.Id);
         Assert.Equal(w.Clock.Now, opened.OpensAt);
-        Assert.True(opened.IsOpen);
+        Assert.Equal(SlotStatus.Open, opened.Status);
 
         await w.Admin().DeleteAsync(dto.Id);
         Assert.Empty(w.Slots.Items);

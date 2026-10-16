@@ -1,3 +1,4 @@
+using Frontenis.Domain.Enums;
 using Frontenis.Domain.Exceptions;
 
 namespace Frontenis.Domain.Entities;
@@ -64,8 +65,16 @@ public sealed class TrainingSlot
         return true;
     }
 
+    /// <summary>Estado de la franja en el instante <paramref name="now"/> (hora local).</summary>
+    public SlotStatus StatusAt(DateTime now)
+    {
+        if (IsCancelled) return SlotStatus.Cancelled;
+        if (now >= StartsAt) return SlotStatus.Closed;
+        return now >= OpensAt ? SlotStatus.Open : SlotStatus.Pending;
+    }
+
     /// <summary>Se puede apuntar: no cancelada, ya abierta y todavía no empezada.</summary>
-    public bool IsOpen(DateTime now) => !IsCancelled && now >= OpensAt && now < StartsAt;
+    public bool IsOpen(DateTime now) => StatusAt(now) == SlotStatus.Open;
 
     /// <summary>Hay menos jugadores del mínimo recomendado. Solo avisa mientras la franja está abierta.</summary>
     public bool HasFewPlayers(int minPlayers, DateTime now) => IsOpen(now) && _attendees.Count < minPlayers;

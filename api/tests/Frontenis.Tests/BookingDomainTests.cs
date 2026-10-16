@@ -1,4 +1,5 @@
 using Frontenis.Domain.Entities;
+using Frontenis.Domain.Enums;
 using Frontenis.Domain.Exceptions;
 using Frontenis.Domain.Services;
 using Xunit;
@@ -76,6 +77,17 @@ public class BookingDomainTests
         Assert.True(s.IsOpen(Opens));
         Assert.True(s.IsOpen(new DateTime(2026, 10, 19, 17, 59, 0)));
         Assert.False(s.IsOpen(new DateTime(2026, 10, 19, 18, 0, 0)));
+    }
+
+    [Fact]
+    public void Status_goes_from_pending_to_open_to_closed_and_cancelled_wins()
+    {
+        var s = Slot();
+        Assert.Equal(SlotStatus.Pending, s.StatusAt(Opens.AddMinutes(-1)));
+        Assert.Equal(SlotStatus.Open, s.StatusAt(Opens));
+        Assert.Equal(SlotStatus.Closed, s.StatusAt(new DateTime(2026, 10, 19, 18, 0, 0)));
+        s.Cancel();
+        Assert.Equal(SlotStatus.Cancelled, s.StatusAt(Opens));
     }
 
     [Fact]

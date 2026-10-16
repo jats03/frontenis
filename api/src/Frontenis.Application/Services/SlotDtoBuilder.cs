@@ -43,7 +43,7 @@ public sealed class SlotDtoBuilder : ISlotDtoBuilder
             .OrderBy(a => a.RegisteredAtUtc).ThenBy(a => a.Id)
             .Select(a => new SlotAttendeeDto(a.PlayerId, names.GetValueOrDefault(a.PlayerId, "—")))
             .ToList();
-        return new SlotDto(s.Id, s.Date, s.Start, s.End, s.OpensAt, s.IsCancelled, s.IsOpen(now),
+        return new SlotDto(s.Id, s.Date, s.Start, s.End, s.OpensAt, s.StatusAt(now),
             s.HasFewPlayers(_options.MinPlayers, now), _options.MinPlayers, s.TemplateId, attendees.Count, attendees);
     }
 }

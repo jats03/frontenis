@@ -1,3 +1,5 @@
+using Frontenis.Domain.Enums;
+
 namespace Frontenis.Application.Dtos;
 
 // ---------- Plantillas semanales ----------
@@ -7,10 +9,10 @@ public sealed record SaveSlotTemplateRequest(DayOfWeek Day, TimeOnly Start, Time
 // ---------- Franjas ----------
 public sealed record SlotAttendeeDto(int PlayerId, string Name);
 
-/// <param name="IsOpen">Ahora mismo se puede apuntar (no cancelada, ya abierta y sin empezar).</param>
+/// <param name="Status">Estado ahora mismo: pendiente de abrir, abierta, cerrada (ya empezada) o cancelada.</param>
 /// <param name="FewPlayers">Hay menos jugadores del mínimo recomendado (solo con la franja abierta).</param>
 public sealed record SlotDto(
-    int Id, DateOnly Date, TimeOnly Start, TimeOnly End, DateTime OpensAt, bool IsCancelled, bool IsOpen,
+    int Id, DateOnly Date, TimeOnly Start, TimeOnly End, DateTime OpensAt, SlotStatus Status,
     bool FewPlayers, int MinPlayers, int? TemplateId, int AttendeeCount, IReadOnlyList<SlotAttendeeDto> Attendees);
 
 /// <param name="OpensAt">Si no se indica, se calcula con la regla de apertura del club.</param>
