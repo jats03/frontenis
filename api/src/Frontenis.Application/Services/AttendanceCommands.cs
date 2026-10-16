@@ -25,11 +25,11 @@ public sealed class AttendanceCommands : IAttendanceCommands
         _uow = uow;
     }
 
-    public async Task<SlotDto> SignUpAsync(int slotId, int playerId, CancellationToken ct = default)
+    public async Task<SlotDto> SignUpAsync(int slotId, int playerId, int? registeredByPlayerId = null, CancellationToken ct = default)
     {
         var slot = await _slots.GetOrThrowAsync(slotId, ct);
         await _players.GetOrThrowAsync(playerId, ct);
-        slot.SignUp(playerId, _clock.Now);
+        slot.SignUp(playerId, _clock.Now, registeredByPlayerId);
         await _uow.SaveChangesAsync(ct);
         return await _builder.BuildAsync(slot, ct);
     }
