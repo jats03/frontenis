@@ -21,6 +21,8 @@ public sealed class FrontenisDbContext : DbContext, IUnitOfWork
     public DbSet<SlotTemplate> SlotTemplates => Set<SlotTemplate>();
     public DbSet<TrainingSlot> TrainingSlots => Set<TrainingSlot>();
     public DbSet<SlotAttendance> SlotAttendances => Set<SlotAttendance>();
+    public DbSet<DeviceLink> DeviceLinks => Set<DeviceLink>();
+    public DbSet<PlayerDelegate> PlayerDelegates => Set<PlayerDelegate>();
 
     Task IUnitOfWork.SaveChangesAsync(CancellationToken ct) => SaveChangesAsync(ct);
 
@@ -140,6 +142,26 @@ public sealed class FrontenisDbContext : DbContext, IUnitOfWork
             e.HasKey(x => x.Id);
             e.HasIndex(x => new { x.SlotId, x.PlayerId }).IsUnique();
             e.HasOne<Player>().WithMany().HasForeignKey(x => x.PlayerId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne<Player>().WithMany().HasForeignKey(x => x.RegisteredByPlayerId).OnDelete(DeleteBehavior.SetNull);
+        });
+
+        b.Entity<DeviceLink>(e =>
+        {
+            e.ToTable("DeviceLinks");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.DeviceHash).HasMaxLength(64).IsRequired();
+            e.HasIndex(x => x.DeviceHash).IsUnique();   // un dispositivo, un jugador
+            e.HasIndex(x => x.PlayerId).IsUnique();     // un jugador, un dispositivo (el administrador lo libera)
+            e.HasOne<Player>().WithMany().HasForeignKey(x => x.PlayerId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        b.Entity<PlayerDelegate>(e =>
+        {
+            e.ToTable("PlayerDelegates");
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => new { x.OwnerPlayerId, x.DelegatePlayerId }).IsUnique();
+            e.HasOne<Player>().WithMany().HasForeignKey(x => x.OwnerPlayerId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne<Player>().WithMany().HasForeignKey(x => x.DelegatePlayerId).OnDelete(DeleteBehavior.Cascade);
         });
 
         b.Entity<User>(e =>

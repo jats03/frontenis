@@ -62,6 +62,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ITrainingRepository, TrainingRepository>();
         services.AddScoped<ISlotRepository, SlotRepository>();
         services.AddScoped<ISlotTemplateRepository, SlotTemplateRepository>();
+        services.AddScoped<IDeviceLinkRepository, DeviceLinkRepository>();
+        services.AddScoped<IPlayerDelegateRepository, PlayerDelegateRepository>();
 
         services.AddScoped<SchemaUpdater>();
         services.AddScoped<AdminUserSeeder>();
@@ -76,6 +78,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton(TimeProvider.System);
         services.AddSingleton<ILoginThrottle, LoginThrottle>();
         services.AddSingleton<ITokenService, JwtTokenService>();
+        services.AddSingleton<IDeviceTokenHasher, Sha256DeviceTokenHasher>();
         return services;
     }
 
@@ -116,6 +119,14 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAttendanceCommands, AttendanceCommands>();
         services.AddScoped<ISlotTemplateQueries, SlotTemplateQueries>();
         services.AddScoped<ISlotTemplateCommands, SlotTemplateCommands>();
+
+        services.AddScoped<IDeviceAccessResolver, DeviceAccessResolver>();
+        services.AddScoped<IDeviceLinkService, DeviceLinkService>();
+        services.AddScoped<IDeviceLinkAdminCommands, DeviceLinkAdminCommands>();
+        services.AddScoped<IDeviceAttendanceCommands, DeviceAttendanceCommands>();
+        services.AddScoped<PlayerDelegateService>();
+        services.AddScoped<IPlayerDelegateQueries>(sp => sp.GetRequiredService<PlayerDelegateService>());
+        services.AddScoped<IPlayerDelegateCommands>(sp => sp.GetRequiredService<PlayerDelegateService>());
         return services;
     }
 
