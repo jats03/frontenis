@@ -34,7 +34,7 @@ input, select, button, .button { font: inherit; border-radius: 8px; border: 1px 
 input[type=checkbox] { min-height: auto; width: 1.1rem; height: 1.1rem; }
 button, .button { touch-action: manipulation; background: var(--primary); color: var(--primary-ink); border-color: var(--primary); cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; }
 button:disabled { opacity: .5; cursor: not-allowed; }
-button.secondary { background: transparent; color: var(--text); border-color: var(--border); }
+button.secondary, .button.secondary { background: transparent; color: var(--text); border-color: var(--border); }
 .muted { color: var(--muted); font-size: .92rem; }
 .error { color: var(--danger); }
 ul.plain { list-style: none; padding: 0; margin: 0; display: grid; gap: .3rem; }
@@ -347,3 +347,4 @@ details.how > summary { font-weight: 500; color: var(--link); }
 .grow { flex: 1 1 12rem; }
 li.card.inactive { opacity: .65; }
 .device-bar { padding: .4rem 0; }
+.share-reminder { margin: .5rem 0; align-self: flex-start; }

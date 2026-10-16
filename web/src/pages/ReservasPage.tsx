@@ -9,9 +9,11 @@ import PageHeader from '../components/PageHeader'
 import DeviceLinkPanel from '../components/DeviceLinkPanel'
 import SlotAdminActions from '../components/SlotAdminActions'
 import SlotCard from '../components/SlotCard'
+import ShareReminderButton from '../components/ShareReminderButton'
 import SlotSignUp from '../components/SlotSignUp'
 import { addDaysIso, formatDate, mondayOfIso, todayIso } from '../dates'
 import { useAsync, useDocumentTitle } from '../hooks'
+import { isRemindable, reservasLink, slotReminder, weekReminder } from '../reminders'
 import { useDevice } from '../useDevice'
 
 /** Franjas de entrenamiento de esta semana y la siguiente. El administrador puede gestionarlas desde aquí. */
@@ -27,11 +29,18 @@ export default function ReservasPage() {
   // El administrador gestiona desde aquí; el resto de personas se identifican con su dispositivo.
   const device = useDevice(!isAdmin)
 
-  const byDay = useMemo(() => {
-    const days = new Map<string, Slot[]>()
-    for (const s of slots.data ?? []) days.set(s.date, [...(days.get(s.date) ?? []), s])
-    return [...days.entries()]
+  // Franjas agrupadas por semana (lunes a domingo) y, dentro de cada una, por día.
+  const weeks = useMemo(() => {
+    const byWeek = new Map<string, Map<string, Slot[]>>()
+    for (const s of slots.data ?? []) {
+      const monday = mondayOfIso(s.date)
+      const days = byWeek.get(monday) ?? new Map<string, Slot[]>()
+      days.set(s.date, [...(days.get(s.date) ?? []), s])
+      byWeek.set(monday, days)
+    }
+    return [...byWeek.entries()].map(([monday, days]) => ({ monday, days: [...days.entries()] }))
   }, [slots.data])
+  const link = reservasLink()
 
   /** Ejecuta una acción del administrador y sustituye la franja devuelta; si falla, muestra el motivo. */
   async function run(action: () => Promise<Slot>, done?: string) {
@@ -72,27 +81,43 @@ export default function ReservasPage() {
         </EmptyState>
       )}
 
-      {byDay.map(([date, daySlots]) => (
-        <section key={date} aria-labelledby={`dia-${date}`}>
-          <h2 id={`dia-${date}`} className="section-title slot-day">{formatDate(date)}</h2>
-          {daySlots.map(slot => (
-            <SlotCard key={slot.id} slot={slot}
-              onRemoveAttendee={isAdmin ? id => void run(() => api.slots.withdraw(slot.id, id)) : undefined}>
-              {isAdmin && (
-                <SlotAdminActions slot={slot} players={players.data ?? []}
-                  onOpenNow={() => void run(() => api.slots.openNow(slot.id), 'Franja abierta')}
-                  onCancel={() => void run(() => api.slots.cancel(slot.id), 'Franja cancelada')}
-                  onRestore={() => void run(() => api.slots.restore(slot.id), 'Franja restaurada')}
-                  onDelete={() => void remove(slot)}
-                  onSignUp={id => void run(() => api.slots.signUp(slot.id, id))} />
-              )}
-              {!isAdmin && device.me && (
-                <SlotSignUp slot={slot} me={device.me} onToggle={(id, attending) => void toggle(slot, id, attending)} />
-              )}
-            </SlotCard>
-          ))}
-        </section>
-      ))}
+      {weeks.map(({ monday, days }) => {
+        const weekSlots = days.flatMap(([, list]) => list)
+        return (
+          <div key={monday}>
+            {weekSlots.some(isRemindable) && (
+              <ShareReminderButton label="Recordar la semana por WhatsApp"
+                message={weekReminder(weekSlots, monday, link)} />
+            )}
+            {days.map(([date, daySlots]) => (
+              <section key={date} aria-labelledby={`dia-${date}`}>
+                <h2 id={`dia-${date}`} className="section-title slot-day">{formatDate(date)}</h2>
+                {daySlots.map(slot => (
+                  <SlotCard key={slot.id} slot={slot}
+                    onRemoveAttendee={isAdmin ? id => void run(() => api.slots.withdraw(slot.id, id)) : undefined}>
+                    {isAdmin && (
+                      <SlotAdminActions slot={slot} players={players.data ?? []}
+                        onOpenNow={() => void run(() => api.slots.openNow(slot.id), 'Franja abierta')}
+                        onCancel={() => void run(() => api.slots.cancel(slot.id), 'Franja cancelada')}
+                        onRestore={() => void run(() => api.slots.restore(slot.id), 'Franja restaurada')}
+                        onDelete={() => void remove(slot)}
+                        onSignUp={id => void run(() => api.slots.signUp(slot.id, id))} />
+                    )}
+                    {!isAdmin && device.me && (
+                      <SlotSignUp slot={slot} me={device.me} onToggle={(id, attending) => void toggle(slot, id, attending)} />
+                    )}
+                    {isRemindable(slot) && (
+                      <ShareReminderButton label="Avisar por WhatsApp"
+                        ariaLabel={`Avisar por WhatsApp del entreno de ${formatDate(slot.date)}`}
+                        message={slotReminder(slot, link)} />
+                    )}
+                  </SlotCard>
+                ))}
+              </section>
+            ))}
+          </div>
+        )
+      })}
     </>
   )
 }
