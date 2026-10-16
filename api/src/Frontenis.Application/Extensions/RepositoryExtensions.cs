@@ -18,4 +18,10 @@ internal static class RepositoryExtensions
 
     public static async Task<TrainingSession> GetOrThrowAsync(this ITrainingRepository repository, int id, CancellationToken ct) =>
         await repository.GetAsync(id, ct) ?? throw new NotFoundException("Entrenamiento no encontrado.");
+
+    public static async Task<TrainingSlot> GetOrThrowAsync(this ISlotRepository repository, int id, CancellationToken ct) =>
+        await repository.GetAsync(id, ct) ?? throw new NotFoundException("Franja no encontrada.");
+
+    public static async Task<SlotTemplate> GetOrThrowAsync(this ISlotTemplateRepository repository, int id, CancellationToken ct) =>
+        await repository.GetAsync(id, ct) ?? throw new NotFoundException("Plantilla no encontrada.");
 }
