@@ -2,6 +2,7 @@ import type {
   CompetitionDetail, CompetitionSummary, CreateCompetition, GroupStandings, MatchDto,
   PairDto, PairingPreview, Player, PlayerHistory, PlayerHistoryRow, Position, SetScore,
   HistoryFilter, NewTrainingMatch, TrainingDetail, TrainingSuggestion, TrainingSummary,
+  SaveSlot, SaveSlotTemplate, Slot, SlotTemplate,
 } from './types'
 
 export const BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:5080'
@@ -179,6 +180,34 @@ export const api = {
     },
     suggest: (id: number, playerIds: number[], count = 5) =>
       request<TrainingSuggestion[]>('POST', `/api/trainings/${id}/suggestions`, { playerIds, count }),
+  },
+
+  slots: {
+    /** Sin fechas: esta semana y la siguiente. */
+    list: (from?: string, to?: string) => {
+      const q = [from && `from=${from}`, to && `to=${to}`].filter(Boolean).join('&')
+      return request<Slot[]>('GET', `/api/slots${q ? `?${q}` : ''}`)
+    },
+    create: (s: SaveSlot) => request<Slot>('POST', '/api/slots', s),
+    update: (id: number, s: SaveSlot) => request<Slot>('PUT', `/api/slots/${id}`, s),
+    cancel: (id: number) => request<Slot>('POST', `/api/slots/${id}/cancel`),
+    restore: (id: number) => request<Slot>('POST', `/api/slots/${id}/restore`),
+    openNow: (id: number) => request<Slot>('POST', `/api/slots/${id}/open`),
+    remove: (id: number) => request<void>('DELETE', `/api/slots/${id}`),
+    generate: (from: string, weeks: number) =>
+      request<{ created: number }>('POST', '/api/slots/generate', { from, weeks }),
+    openWeek: (weekStart: string) => request<{ opened: number }>('POST', '/api/slots/open-week', { weekStart }),
+    signUp: (slotId: number, playerId: number) =>
+      request<Slot>('POST', `/api/slots/${slotId}/attendees`, { playerId }),
+    withdraw: (slotId: number, playerId: number) =>
+      request<Slot>('DELETE', `/api/slots/${slotId}/attendees/${playerId}`),
+  },
+
+  slotTemplates: {
+    list: () => request<SlotTemplate[]>('GET', '/api/slot-templates'),
+    create: (t: SaveSlotTemplate) => request<SlotTemplate>('POST', '/api/slot-templates', t),
+    update: (id: number, t: SaveSlotTemplate) => request<SlotTemplate>('PUT', `/api/slot-templates/${id}`, t),
+    remove: (id: number) => request<void>('DELETE', `/api/slot-templates/${id}`),
   },
 
   matches: {

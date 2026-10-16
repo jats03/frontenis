@@ -11,6 +11,10 @@ export default function MorePage() {
       <PageHeader title="Más" subtitle="Herramientas y cuenta" />
       <h2 className="section-title">Herramientas</h2>
       <div className="menu-cards">
+        <Link className="card link-card" to="/reservas">
+          <strong>Reservas de entrenos</strong>
+          <span className="muted">Mira las franjas de la semana y quién se ha apuntado.</span>
+        </Link>
         <Link className="card link-card" to="/cronometro">
           <strong>Cronómetro</strong>
           <span className="muted">Cuenta atrás para los partidos y los turnos.</span>

@@ -12,6 +12,8 @@ import MorePage from './pages/MorePage'
 import PlayerDetailPage from './pages/PlayerDetailPage'
 import PlayerHistoryPage from './pages/PlayerHistoryPage'
 import PlayersPage from './pages/PlayersPage'
+import ReservasGestionPage from './pages/ReservasGestionPage'
+import ReservasPage from './pages/ReservasPage'
 import AccountPage from './pages/AccountPage'
 import TrainingDetailPage from './pages/TrainingDetailPage'
 import TrainingsPage from './pages/TrainingsPage'
@@ -45,6 +47,8 @@ export default function App() {
           <Route path="/jugadores/:id" element={<PlayerDetailPage />} />
           <Route path="/entrenamientos" element={<TrainingsPage />} />
           <Route path="/entrenamientos/:id" element={<TrainingDetailPage />} />
+          <Route path="/reservas" element={<ReservasPage />} />
+          <Route path="/reservas/gestion" element={<ReservasGestionPage />} />
           <Route path="/cronometro" element={<TimerPage />} />
           <Route path="/plantillas" element={<WhatsappPage />} />
           <Route path="/cuenta" element={<AccountPage />} />

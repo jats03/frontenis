@@ -94,3 +94,29 @@ export interface NewTrainingMatch {
   home1Id: number; home2Id: number; away1Id: number; away2Id: number
   homeScore: number; awayScore: number
 }
+
+// ---------- Reservas de entrenamientos ----------
+export type WeekDay = 'Monday' | 'Tuesday' | 'Wednesday' | 'Thursday' | 'Friday' | 'Saturday' | 'Sunday'
+/** Pendiente de abrir, abierta, ya empezada o cancelada (lo calcula el servidor con la hora de Madrid). */
+export type SlotStatus = 'Pending' | 'Open' | 'Closed' | 'Cancelled'
+export interface SlotAttendee { playerId: number; name: string }
+export interface Slot {
+  id: number
+  /** «2026-10-19» */
+  date: string
+  /** «18:00:00» */
+  start: string
+  end: string
+  /** Hora local de Madrid a partir de la cual se puede apuntar, sin zona horaria. */
+  opensAt: string
+  status: SlotStatus
+  /** Menos jugadores que el mínimo recomendado (solo con la franja abierta). */
+  fewPlayers: boolean
+  minPlayers: number
+  templateId: number | null
+  attendeeCount: number
+  attendees: SlotAttendee[]
+}
+export interface SlotTemplate { id: number; day: WeekDay; start: string; end: string; active: boolean }
+export interface SaveSlotTemplate { day: WeekDay; start: string; end: string; active: boolean }
+export interface SaveSlot { date: string; start: string; end: string; opensAt?: string | null }

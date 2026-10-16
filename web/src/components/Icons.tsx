@@ -7,3 +7,4 @@ export const TrophyIcon = () => <svg {...base}><path d="M8 4h8v5a4 4 0 0 1-8 0V4
 export const CalendarIcon = () => <svg {...base}><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M3 10h18M8 3v4M16 3v4" /></svg>
 export const UsersIcon = () => <svg {...base}><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20a6.5 6.5 0 0 1 13 0" /><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5a6.5 6.5 0 0 1 3.5 5.5" /></svg>
 export const MoreIcon = () => <svg {...base}><circle cx="5" cy="12" r="1.2" /><circle cx="12" cy="12" r="1.2" /><circle cx="19" cy="12" r="1.2" /></svg>
+export const WarningIcon = () => <svg {...base}><path d="M12 3.5 2.5 20h19L12 3.5z" /><path d="M12 10v4.5M12 17.5v.01" /></svg>

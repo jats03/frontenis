@@ -1,10 +1,11 @@
 :root {
   --bg: #f4f7f6; --card: #fff; --text: #14211f; --muted: #5b6b68; --primary: #0f766e;
   --link: #0b5d56; --primary-ink: #fff; --border: #d9e2e0; --danger: #b42318; --win: #e6f4ea; --accent: #fde047;
+  --warn: #b45309; --warn-bg: #fff4e0;
   color-scheme: light dark;
 }
 @media (prefers-color-scheme: dark) {
-  :root { --bg: #0e1615; --card: #16211f; --text: #e8f1ef; --muted: #93a6a2; --border: #2a3a37; --win: #14352a; --danger: #ff8a80; --link: #7dd3c8; }
+  :root { --bg: #0e1615; --card: #16211f; --text: #e8f1ef; --muted: #93a6a2; --border: #2a3a37; --win: #14352a; --danger: #ff8a80; --link: #7dd3c8; --warn: #fbbf24; --warn-bg: #2b2310; }
 }
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
@@ -321,3 +322,27 @@ details[open] > summary { margin-bottom: .6rem; }
 details.card { padding: .5rem; }
 details.card > summary, details.present > summary, details.how > summary { min-height: 44px; display: flex; color: inherit; }
 details.how > summary { font-weight: 500; color: var(--link); }
+
+/* ---------- Reservas de entrenos ---------- */
+.slot-day::first-letter { text-transform: uppercase; }
+.slot-card { border-left: 6px solid var(--border); }
+.slot-card.status-open { border-left-color: var(--primary); }
+.slot-card.status-pending { border-left-style: dashed; }
+.slot-card.status-closed, .slot-card.status-cancelled { opacity: .7; }
+.slot-card.status-cancelled .slot-time { text-decoration: line-through; }
+.slot-card.few { border-left-color: var(--warn); background: var(--warn-bg); }
+.slot-head { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; }
+.slot-time { font-size: 1.25rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.badge.slot-open { background: var(--primary); color: #fff; }
+.badge.slot-cancelled { background: var(--danger); color: #fff; }
+.slot-warn { min-width: 44px; justify-content: center; padding: .4rem; border-radius: 99px; background: transparent;
+  color: var(--warn); border-color: var(--warn); animation: slot-pulse 2.4s ease-in-out infinite; }
+.slot-hint { margin: .3rem 0; color: var(--warn); font-weight: 600; }
+@keyframes slot-pulse { 0%, 100% { box-shadow: 0 0 0 0 transparent; } 50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--warn) 25%, transparent); } }
+@media (prefers-reduced-motion: reduce) { .slot-warn { animation: none; } }
+.chips { display: flex; flex-wrap: wrap; gap: .4rem; margin: .5rem 0; padding: 0; list-style: none; }
+.chip { display: inline-flex; align-items: center; gap: .2rem; padding: .2rem .65rem; border-radius: 99px; background: var(--border); font-size: .92rem; }
+.chip button { min-height: 28px; padding: 0 .3rem; background: transparent; color: inherit; border: 0; }
+.slot-actions { margin-top: .4rem; border-top: 1px solid var(--border); padding-top: .4rem; }
+.grow { flex: 1 1 12rem; }
+li.card.inactive { opacity: .65; }
