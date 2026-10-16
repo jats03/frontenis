@@ -54,6 +54,17 @@ Si sobran de un tipo, se emparejan entre sí (caso extremo); si el total es impa
 **Flujo**: crear competición → inscribir parejas (aleatorias o manuales) → sorteo de grupos y calendario
 (todos contra todos, método del círculo) → introducir resultados → (torneo) generar cuadro final con byes y cabezas de serie.
 
+## Reservas de entrenos
+
+Los jugadores ven las franjas de entrenamiento de la semana y la siguiente (`/reservas`); el administrador las gestiona en `/reservas/gestion`.
+
+- **Plantilla semanal** (`SlotTemplate`): el horario que se repite (p. ej. lunes 17-18, 18-20 y 20-22; viernes 19-22). Editarla no cambia las franjas ya generadas.
+- **Franja** (`TrainingSlot`): una fecha y un horario concretos. Se generan desde la plantilla (acción idempotente) y se pueden mover, cancelar o crear sueltas.
+- **Apertura**: cada franja guarda `OpensAt`. Por defecto toda la semana (lunes a domingo) se abre el viernes anterior a las 19:00 (hora de Madrid); el administrador puede abrir antes una franja o una semana entera. Se configura en `Bookings` (`MinPlayers`, `OpenDay`, `OpenTime`; variables de entorno `Bookings__MinPlayers`, etc.).
+- **Estado calculado** (`Pending`, `Open`, `Closed`, `Cancelled`) y **aviso de pocos jugadores** (menos de `MinPlayers` con la franja abierta): los calcula el dominio con la hora de Madrid (`IClock`), por eso las consultas de franjas no se cachean.
+- Por ahora solo el administrador apunta y quita jugadores; el acceso de los jugadores (vínculo por dispositivo y apadrinados) es la siguiente fase.
+- La API necesita datos de zona horaria (`Europe/Madrid`); la imagen `mcr.microsoft.com/dotnet/aspnet` los incluye.
+
 ## Estructura del repositorio
 
 ```
