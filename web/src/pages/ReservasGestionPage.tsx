@@ -2,8 +2,10 @@ import { useMemo, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { confirmDelete, notify } from '../alerts'
 import { api } from '../api/client'
-import type { SlotTemplate, WeekDay } from '../api/types'
+import type { Player, SlotTemplate, WeekDay } from '../api/types'
 import { useAuth } from '../auth/AuthContext'
+import DelegatesPanel from '../components/DelegatesPanel'
+import DeviceLinksPanel from '../components/DeviceLinksPanel'
 import PageHeader from '../components/PageHeader'
 import SlotTemplateRow from '../components/SlotTemplateRow'
 import { addDaysIso, mondayOfIso, toApiTime, todayIso } from '../dates'
@@ -15,6 +17,7 @@ export default function ReservasGestionPage() {
   useDocumentTitle('Gestionar reservas')
   const { isAdmin } = useAuth()
   const templates = useAsync(() => (isAdmin ? api.slotTemplates.list() : Promise.resolve([] as SlotTemplate[])), [isAdmin])
+  const players = useAsync(() => (isAdmin ? api.players.list() : Promise.resolve([] as Player[])), [isAdmin])
   const nextMonday = useMemo(() => addDaysIso(mondayOfIso(todayIso()), 7), [])
 
   const [error, setError] = useState<string | null>(null)
@@ -135,6 +138,9 @@ export default function ReservasGestionPage() {
         </div>
         <div className="row"><button type="submit">Añadir franja</button></div>
       </form>
+
+      <DeviceLinksPanel onError={setError} />
+      <DelegatesPanel players={players.data ?? []} onError={setError} />
     </>
   )
 }

@@ -6,10 +6,13 @@ import type { Player, Slot } from '../api/types'
 import { useAuth } from '../auth/AuthContext'
 import EmptyState from '../components/EmptyState'
 import PageHeader from '../components/PageHeader'
+import DeviceLinkPanel from '../components/DeviceLinkPanel'
 import SlotAdminActions from '../components/SlotAdminActions'
 import SlotCard from '../components/SlotCard'
+import SlotSignUp from '../components/SlotSignUp'
 import { addDaysIso, formatDate, mondayOfIso, todayIso } from '../dates'
 import { useAsync, useDocumentTitle } from '../hooks'
+import { useDevice } from '../useDevice'
 
 /** Franjas de entrenamiento de esta semana y la siguiente. El administrador puede gestionarlas desde aquí. */
 export default function ReservasPage() {
@@ -21,6 +24,8 @@ export default function ReservasPage() {
   // Solo el administrador necesita la lista de jugadores (para apuntar a mano): al resto no se le pide.
   const players = useAsync(() => (isAdmin ? api.players.list() : Promise.resolve([] as Player[])), [isAdmin])
   const [error, setError] = useState<string | null>(null)
+  // El administrador gestiona desde aquí; el resto de personas se identifican con su dispositivo.
+  const device = useDevice(!isAdmin)
 
   const byDay = useMemo(() => {
     const days = new Map<string, Slot[]>()
@@ -38,6 +43,10 @@ export default function ReservasPage() {
     } catch (e) { setError(e instanceof Error ? e.message : 'Error') }
   }
 
+  const toggle = (slot: Slot, playerId: number, attending: boolean) =>
+    run(() => (attending ? api.slots.unattend(slot.id, playerId) : api.slots.attend(slot.id, playerId)),
+      attending ? 'Te has quitado' : '¡Apuntado!')
+
   async function remove(slot: Slot) {
     setError(null)
     try {
@@ -51,6 +60,7 @@ export default function ReservasPage() {
     <>
       <PageHeader title="Reservas de entrenos" subtitle="Franjas de esta semana y de la siguiente"
         actions={isAdmin && <Link className="button" to="/reservas/gestion">Gestionar</Link>} />
+      {!isAdmin && <DeviceLinkPanel device={device} />}
       {error && <p className="error" role="alert">{error}</p>}
       {slots.error && !slots.data && <p className="error">{slots.error}</p>}
       {slots.loading && !slots.data && <p className="muted">Cargando…</p>}
@@ -75,6 +85,9 @@ export default function ReservasPage() {
                   onRestore={() => void run(() => api.slots.restore(slot.id), 'Franja restaurada')}
                   onDelete={() => void remove(slot)}
                   onSignUp={id => void run(() => api.slots.signUp(slot.id, id))} />
+              )}
+              {!isAdmin && device.me && (
+                <SlotSignUp slot={slot} me={device.me} onToggle={(id, attending) => void toggle(slot, id, attending)} />
               )}
             </SlotCard>
           ))}

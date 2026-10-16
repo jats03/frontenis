@@ -2,8 +2,9 @@ import type {
   CompetitionDetail, CompetitionSummary, CreateCompetition, GroupStandings, MatchDto,
   PairDto, PairingPreview, Player, PlayerHistory, PlayerHistoryRow, Position, SetScore,
   HistoryFilter, NewTrainingMatch, TrainingDetail, TrainingSuggestion, TrainingSummary,
-  SaveSlot, SaveSlotTemplate, Slot, SlotTemplate,
+  DeviceLink, DeviceMe, PlayerDelegateRow, PlayerRef, SaveSlot, SaveSlotTemplate, Slot, SlotTemplate,
 } from './types'
+import { deviceHeaders } from '../device'
 
 export const BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:5080'
 const TOKEN_KEY = 'frontenis.token'
@@ -54,8 +55,8 @@ function historyQuery(f: HistoryFilter): string {
   return q.length ? `?${q.join('&')}` : ''
 }
 
-async function request<T>(method: string, path: string, body?: unknown): Promise<T> {
-  const headers: Record<string, string> = {}
+async function request<T>(method: string, path: string, body?: unknown, extraHeaders?: Record<string, string>): Promise<T> {
+  const headers: Record<string, string> = { ...extraHeaders }
   if (body !== undefined) headers['Content-Type'] = 'application/json'
   const token = tokenStore.get()
   if (token) headers.Authorization = `Bearer ${token}`
@@ -87,7 +88,8 @@ async function request<T>(method: string, path: string, body?: unknown): Promise
     let data: { detail?: string; title?: string } | undefined
     try { data = text ? JSON.parse(text) : undefined } catch { data = undefined }
     if (!res.ok) {
-      if (res.status === 401 && token) window.dispatchEvent(new Event('frontenis:unauthorized'))
+      // Un 401 por un dispositivo sin vincular no significa que la sesión del administrador haya caducado.
+      if (res.status === 401 && token && !extraHeaders) window.dispatchEvent(new Event('frontenis:unauthorized'))
       if (res.status === 429) throw new ApiError(429, 'Demasiadas peticiones seguidas. Espera un minuto e inténtalo de nuevo.')
       throw new ApiError(res.status, data?.detail ?? data?.title ?? `Error ${res.status}`)
     }
@@ -197,10 +199,36 @@ export const api = {
     generate: (from: string, weeks: number) =>
       request<{ created: number }>('POST', '/api/slots/generate', { from, weeks }),
     openWeek: (weekStart: string) => request<{ opened: number }>('POST', '/api/slots/open-week', { weekStart }),
+    /** Administrador: apunta y quita a cualquier jugador. */
     signUp: (slotId: number, playerId: number) =>
       request<Slot>('POST', `/api/slots/${slotId}/attendees`, { playerId }),
     withdraw: (slotId: number, playerId: number) =>
       request<Slot>('DELETE', `/api/slots/${slotId}/attendees/${playerId}`),
+    /** Jugador desde su dispositivo vinculado: solo a sí mismo y a sus apadrinados. */
+    attend: (slotId: number, playerId: number) =>
+      request<Slot>('POST', `/api/slots/${slotId}/attend`, { playerId }, deviceHeaders()),
+    unattend: (slotId: number, playerId: number) =>
+      request<Slot>('DELETE', `/api/slots/${slotId}/attend/${playerId}`, undefined, deviceHeaders()),
+  },
+
+  device: {
+    /** `undefined` (204) si este dispositivo aún no está vinculado a ningún jugador. */
+    me: () => request<DeviceMe | undefined>('GET', '/api/device/me', undefined, deviceHeaders()),
+    availablePlayers: () => request<PlayerRef[]>('GET', '/api/device/available-players'),
+    link: (playerId: number) => request<DeviceMe>('POST', '/api/device/link', { playerId }, deviceHeaders()),
+    unlink: () => request<void>('DELETE', '/api/device/link', undefined, deviceHeaders()),
+  },
+
+  deviceLinks: {
+    list: () => request<DeviceLink[]>('GET', '/api/device-links'),
+    release: (playerId: number) => request<void>('DELETE', `/api/device-links/${playerId}`),
+  },
+
+  playerDelegates: {
+    list: () => request<PlayerDelegateRow[]>('GET', '/api/player-delegates'),
+    add: (ownerPlayerId: number, delegatePlayerId: number) =>
+      request<PlayerDelegateRow>('POST', '/api/player-delegates', { ownerPlayerId, delegatePlayerId }),
+    remove: (ownerId: number, delegateId: number) => request<void>('DELETE', `/api/player-delegates/${ownerId}/${delegateId}`),
   },
 
   slotTemplates: {

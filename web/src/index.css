@@ -346,3 +346,4 @@ details.how > summary { font-weight: 500; color: var(--link); }
 .slot-actions { margin-top: .4rem; border-top: 1px solid var(--border); padding-top: .4rem; }
 .grow { flex: 1 1 12rem; }
 li.card.inactive { opacity: .65; }
+.device-bar { padding: .4rem 0; }

@@ -62,7 +62,9 @@ Los jugadores ven las franjas de entrenamiento de la semana y la siguiente (`/re
 - **Franja** (`TrainingSlot`): una fecha y un horario concretos. Se generan desde la plantilla (acción idempotente) y se pueden mover, cancelar o crear sueltas.
 - **Apertura**: cada franja guarda `OpensAt`. Por defecto toda la semana (lunes a domingo) se abre el viernes anterior a las 19:00 (hora de Madrid); el administrador puede abrir antes una franja o una semana entera. Se configura en `Bookings` (`MinPlayers`, `OpenDay`, `OpenTime`; variables de entorno `Bookings__MinPlayers`, etc.).
 - **Estado calculado** (`Pending`, `Open`, `Closed`, `Cancelled`) y **aviso de pocos jugadores** (menos de `MinPlayers` con la franja abierta): los calcula el dominio con la hora de Madrid (`IClock`), por eso las consultas de franjas no se cachean.
-- Por ahora solo el administrador apunta y quita jugadores; el acceso de los jugadores (vínculo por dispositivo y apadrinados) es la siguiente fase.
+- **Vínculo por dispositivo**: sin cuentas. Cada móvil genera un identificador aleatorio (se guarda en `localStorage` y viaja en la cabecera `X-Device-Token`); el servidor solo guarda su hash SHA-256 (`DeviceLink`). El jugador se elige una vez ("Soy X"); un móvil pertenece a un solo jugador y viceversa. Si cambia de móvil, el administrador lo libera en `/reservas/gestion`. Endpoints: `api/device` (`me`, `available-players`, `link`).
+- **Apuntarse**: con la franja abierta, el jugador vinculado se apunta o se quita con un toque (`POST/DELETE api/slots/{id}/attend`, con límite de peticiones). `SlotAttendance.RegisteredByPlayerId` guarda quién apuntó (vacío = administrador).
+- **Apadrinados** (`PlayerDelegate`): el administrador define qué jugadores puede apuntar además de sí mismo un titular (`api/player-delegates`); hay jugadores que apuntan a varios y otros solo a sí mismos.
 - La API necesita datos de zona horaria (`Europe/Madrid`); la imagen `mcr.microsoft.com/dotnet/aspnet` los incluye.
 
 ## Estructura del repositorio
