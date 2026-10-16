@@ -16,7 +16,7 @@ public sealed class SlotAttendanceController : ControllerBase
     /// <summary>Apunta a un jugador y devuelve la franja actualizada.</summary>
     [HttpPost]
     public async Task<ActionResult<SlotDto>> SignUp(int slotId, AttendanceRequest request, CancellationToken ct) =>
-        Ok(await _commands.SignUpAsync(slotId, request.PlayerId, ct));
+        Ok(await _commands.SignUpAsync(slotId, request.PlayerId, ct: ct));
 
     /// <summary>Quita a un jugador y devuelve la franja actualizada.</summary>
     [HttpDelete("{playerId:int}")]
