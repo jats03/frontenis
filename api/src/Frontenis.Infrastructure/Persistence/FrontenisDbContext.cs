@@ -18,6 +18,9 @@ public sealed class FrontenisDbContext : DbContext, IUnitOfWork
     public DbSet<User> Users => Set<User>();
     public DbSet<TrainingSession> TrainingSessions => Set<TrainingSession>();
     public DbSet<TrainingMatch> TrainingMatches => Set<TrainingMatch>();
+    public DbSet<SlotTemplate> SlotTemplates => Set<SlotTemplate>();
+    public DbSet<TrainingSlot> TrainingSlots => Set<TrainingSlot>();
+    public DbSet<SlotAttendance> SlotAttendances => Set<SlotAttendance>();
 
     Task IUnitOfWork.SaveChangesAsync(CancellationToken ct) => SaveChangesAsync(ct);
 
@@ -110,6 +113,33 @@ public sealed class FrontenisDbContext : DbContext, IUnitOfWork
             e.HasKey(x => x.Id);
             e.Ignore(x => x.HomeWon);
             e.HasIndex(x => new { x.SessionId, x.Order });
+        });
+
+        b.Entity<SlotTemplate>(e =>
+        {
+            e.ToTable("SlotTemplates");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Day).HasConversion<byte>();
+        });
+
+        // Fecha, horas y apertura son hora local de Madrid: se guardan tal cual, sin convertir zonas horarias.
+        b.Entity<TrainingSlot>(e =>
+        {
+            e.ToTable("TrainingSlots");
+            e.HasKey(x => x.Id);
+            e.Ignore(x => x.StartsAt);
+            e.HasIndex(x => new { x.Date, x.Start });
+            e.HasOne<SlotTemplate>().WithMany().HasForeignKey(x => x.TemplateId).OnDelete(DeleteBehavior.SetNull);
+            e.HasMany(x => x.Attendees).WithOne().HasForeignKey(x => x.SlotId).OnDelete(DeleteBehavior.Cascade);
+            e.Navigation(x => x.Attendees).UsePropertyAccessMode(PropertyAccessMode.Field);
+        });
+
+        b.Entity<SlotAttendance>(e =>
+        {
+            e.ToTable("SlotAttendances");
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => new { x.SlotId, x.PlayerId }).IsUnique();
+            e.HasOne<Player>().WithMany().HasForeignKey(x => x.PlayerId).OnDelete(DeleteBehavior.Cascade);
         });
 
         b.Entity<User>(e =>

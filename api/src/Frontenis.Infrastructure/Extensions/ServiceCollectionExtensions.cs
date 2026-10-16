@@ -3,6 +3,7 @@ using Frontenis.Application.Interfaces.Caching;
 using Frontenis.Application.Interfaces.Repositories;
 using Frontenis.Application.Interfaces.Security;
 using Frontenis.Application.Interfaces.Services;
+using Frontenis.Application.Models;
 using Frontenis.Application.Security;
 using Frontenis.Application.Services;
 using Frontenis.Domain.Interfaces;
@@ -10,6 +11,7 @@ using Frontenis.Domain.Services;
 using Frontenis.Infrastructure.Persistence;
 using Frontenis.Infrastructure.Repositories;
 using Frontenis.Infrastructure.Security;
+using Frontenis.Infrastructure.Time;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,6 +25,7 @@ public static class ServiceCollectionExtensions
         .AddPersistence(config)
         .AddSecurity(config)
         .AddDomainServices()
+        .AddBookings(config)
         .AddApplicationServices();
 
     /// <summary>Crea el esquema y siembra el administrador (se llama al arrancar, con reintentos).</summary>
@@ -57,6 +60,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IMatchHistoryRepository, MatchHistoryRepository>();
         services.AddScoped<ITrainingRepository, TrainingRepository>();
+        services.AddScoped<ISlotRepository, SlotRepository>();
+        services.AddScoped<ISlotTemplateRepository, SlotTemplateRepository>();
 
         services.AddScoped<SchemaUpdater>();
         services.AddScoped<AdminUserSeeder>();
@@ -87,6 +92,30 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IIndividualStandingsCalculator, IndividualStandingsCalculator>();
         services.AddSingleton<IPlayerStatsCalculator, PlayerStatsCalculator>();
         services.AddSingleton<ITrainingPlanner, TrainingPlanner>();
+        return services;
+    }
+
+    /// <summary>
+    /// Reservas de entrenamientos: reloj de Madrid, regla de apertura y casos de uso. Las consultas de franjas no se
+    /// cachean porque su estado (abierta, pocos jugadores) depende de la hora actual.
+    /// </summary>
+    private static IServiceCollection AddBookings(this IServiceCollection services, IConfiguration config)
+    {
+        var options = config.GetSection(BookingOptions.Section).Get<BookingOptions>() ?? new BookingOptions();
+        if (options.MinPlayers < 1) throw new InvalidOperationException("Bookings:MinPlayers debe ser al menos 1.");
+
+        services.AddSingleton(options);
+        services.AddSingleton<IClock, MadridClock>();
+        services.AddSingleton<IOpeningPolicy>(new WeeklyOpeningPolicy(options.OpenDay, options.OpenTime));
+        services.AddSingleton<ISlotGenerator, WeeklySlotGenerator>();
+
+        services.AddScoped<ISlotDtoBuilder, SlotDtoBuilder>();
+        services.AddScoped<ISlotQueries, SlotQueries>();
+        services.AddScoped<ISlotAdminCommands, SlotAdminCommands>();
+        services.AddScoped<ISlotScheduleService, SlotScheduleService>();
+        services.AddScoped<IAttendanceCommands, AttendanceCommands>();
+        services.AddScoped<ISlotTemplateQueries, SlotTemplateQueries>();
+        services.AddScoped<ISlotTemplateCommands, SlotTemplateCommands>();
         return services;
     }
 
