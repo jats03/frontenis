@@ -1,29 +1,57 @@
 import type { Slot } from './api/types'
-import { formatTime, mondayOfIso, parseDate, todayIso } from './dates'
+import { formatTime, mondayOfIso, parseDate } from './dates'
+import { buildTemplate, loadTemplateStyle, weekOfMonth, WEEKDAYS, type DayPlan } from './whatsapp'
 
 /** Solo se puede pedir que se apunten a franjas con las inscripciones abiertas. */
 export const isRemindable = (slot: Slot) => slot.status === 'Open'
 
-const capitalize = (t: string) => t.charAt(0).toUpperCase() + t.slice(1)
-const dayLabel = (iso: string) => capitalize(parseDate(iso).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }))
-const dayShort = (iso: string) => capitalize(parseDate(iso).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric' }))
-const range = (s: Slot) => `${formatTime(s.start)}–${formatTime(s.end)}`
-const people = (n: number) => (n === 1 ? '1 apuntado' : `${n} apuntados`)
+/** Líneas numeradas mínimas por franja, como en la plantilla de WhatsApp. */
+const MIN_SPOTS = 6
 
-/** Mensaje para recordar al grupo que se apunten a un entreno concreto. */
-export function slotReminder(slot: Slot, link: string): string {
-  return `Entreno del ${dayLabel(slot.date).toLowerCase()}, ${range(slot)}: ${people(slot.attendeeCount)}.\n\n` +
-    `¡Apuntaros!\n${link}`
+/** «18:00:00» → «18h»; «18:30:00» → «18:30h». */
+const hour = (time: string) => {
+  const t = formatTime(time)
+  return t.endsWith(':00') ? `${Number(t.slice(0, 2))}h` : `${t}h`
+}
+const label = (s: Slot) => `${hour(s.start)} a ${hour(s.end)}`
+const byTime = (a: Slot, b: Slot) => a.date.localeCompare(b.date) || a.start.localeCompare(b.start)
+
+/** Día de la semana de una fecha: 0 = lunes … 6 = domingo. */
+const weekdayOf = (iso: string) => (parseDate(iso).getDay() + 6) % 7
+
+/** Agrupa las franjas por día con el formato de la plantilla de WhatsApp (apuntados en las líneas numeradas). */
+function toDays(slots: Slot[]): DayPlan[] {
+  const days = new Map<number, DayPlan>()
+  for (const s of [...slots].sort(byTime)) {
+    const weekday = weekdayOf(s.date)
+    const day = days.get(weekday) ?? { name: WEEKDAYS[weekday], weekday, enabled: true, slots: [] }
+    day.slots.push({ label: label(s), spots: Math.max(MIN_SPOTS, s.attendeeCount), names: s.attendees.map(a => a.name) })
+    days.set(weekday, day)
+  }
+  return [...days.values()]
 }
 
-/** Mensaje para recordar al grupo que se apunten a los entrenos abiertos de una semana (lunes a domingo). */
+/** Año, mes y semana del mes (la 1.ª es la que contiene el día 1) de la semana que empieza el lunes dado. */
+function weekPosition(mondayIso: string) {
+  const sunday = parseDate(mondayIso)
+  sunday.setDate(sunday.getDate() + 6)
+  return { year: sunday.getFullYear(), month: sunday.getMonth(), week: weekOfMonth(sunday) }
+}
+
+function build(slots: Slot[], mondayIso: string, link: string, showWeek: boolean): string {
+  const { year, month, week } = weekPosition(mondayIso)
+  return buildTemplate({
+    ...loadTemplateStyle(), year, month, week, days: toDays(slots), showWeek,
+    closing: ['¡Apuntaros!', link],
+  })
+}
+
+/** Mensaje con el mismo formato que la plantilla de WhatsApp para recordar que se apunten a un entreno concreto. */
+export const slotReminder = (slot: Slot, link: string): string => build([slot], mondayOfIso(slot.date), link, false)
+
+/** Igual que la plantilla semanal de WhatsApp, con los entrenos abiertos de esa semana (lunes a domingo). */
 export function weekReminder(slots: Slot[], mondayIso: string, link: string): string {
-  const open = slots.filter(isRemindable).sort((a, b) => a.date.localeCompare(b.date) || a.start.localeCompare(b.start))
-  const current = mondayOfIso(todayIso()) === mondayIso
-  const title = current ? 'Recordatorio: apúntate a los entrenos de esta semana'
-    : `Recordatorio: apúntate a los entrenos de la semana del ${parseDate(mondayIso).toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })}`
-  const lines = open.map(s => `- ${dayShort(s.date)}, ${range(s)} (${people(s.attendeeCount)})`)
-  return [title, '', ...lines, '', '¡Apuntaros!', link].join('\n')
+  return build(slots.filter(isRemindable), mondayIso, link, true)
 }
 
 /** Enlace que abre WhatsApp con el texto ya escrito; la persona elige el grupo y pulsa enviar. */

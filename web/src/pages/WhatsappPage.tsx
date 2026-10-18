@@ -2,11 +2,9 @@ import { useMemo, useState } from 'react'
 import { notify } from '../alerts'
 import { useDocumentTitle } from '../hooks'
 import {
-  buildTemplate, MONTHS, weekOfMonth, weeksInMonth, WEEKDAYS, mondayOfWeek,
+  buildTemplate, MONTHS, STORAGE_KEY, weekOfMonth, weeksInMonth, WEEKDAYS, mondayOfWeek,
   type DayPlan, type Slot,
 } from '../whatsapp'
-
-const STORAGE_KEY = 'frontenis.whatsapp'
 
 const defaultDays = (): DayPlan[] => {
   const one = (): Slot[] => [{ label: '', spots: 6 }]

@@ -1,4 +1,5 @@
-export interface Slot { label: string; spots: number }
+/** `names`: jugadores ya apuntados, que se escriben en las primeras líneas numeradas. */
+export interface Slot { label: string; spots: number; names?: string[] }
 export interface DayPlan { name: string; weekday: number /* 0 = lunes … 6 = domingo */; enabled: boolean; slots: Slot[] }
 export interface TemplateOptions {
   title: string
@@ -8,6 +9,22 @@ export interface TemplateOptions {
   days: DayPlan[]
   footer: string
   bold: boolean
+  /** Por defecto se muestra «N° SEMANA»; los avisos de un solo entreno lo ocultan. */
+  showWeek?: boolean
+  /** Líneas que se añaden justo antes del pie (por ejemplo, la llamada a apuntarse y el enlace). */
+  closing?: string[]
+}
+
+export const STORAGE_KEY = 'frontenis.whatsapp'
+
+/** Título, pie y negrita de la plantilla guardada en este navegador (o los valores por defecto). */
+export function loadTemplateStyle(): Pick<TemplateOptions, 'title' | 'footer' | 'bold'> {
+  const fallback = { title: 'ENTRENAMIENTOS', footer: '#SOMOSFR🟡NTENIS', bold: false }
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    const saved = raw ? (JSON.parse(raw) as Partial<typeof fallback>) : null
+    return { title: saved?.title ?? fallback.title, footer: saved?.footer ?? fallback.footer, bold: saved?.bold ?? fallback.bold }
+  } catch { return fallback }
 }
 
 export const MONTHS = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE']
@@ -37,19 +54,20 @@ export function buildTemplate(o: TemplateOptions): string {
   const monday = mondayOfWeek(o.year, o.month, o.week)
   const out: string[] = []
   out.push(b(`${o.title} ${MONTHS[o.month]} ${o.year}`.trim()), '')
-  out.push(b(` ${o.week}° SEMANA `), '')
+  if (o.showWeek !== false) out.push(b(` ${o.week}° SEMANA `), '')
 
   for (const day of o.days.filter(d => d.enabled).sort((a, b2) => a.weekday - b2.weekday)) {
     const date = new Date(monday); date.setDate(monday.getDate() + day.weekday)
     out.push(b(` ${day.name} DÍA ${date.getDate()}`), '')
     day.slots.forEach((slot, i) => {
       if (slot.label.trim()) out.push(b(` ${slot.label.trim()} `))
-      for (let n = 1; n <= Math.max(0, slot.spots); n++) out.push(`${n}-`)
+      for (let n = 1; n <= Math.max(0, slot.spots); n++) out.push(`${n}-${slot.names?.[n - 1] ? ` ${slot.names[n - 1]}` : ''}`)
       out.push('')
       if (i < day.slots.length - 1) out.push('')
     })
     out.push('')
   }
+  if (o.closing?.length) out.push(...o.closing, '')
   if (o.footer.trim()) out.push(o.footer.trim())
   return out.join('\n').replace(/\n{4,}/g, '\n\n\n').trimEnd() + '\n'
 }
