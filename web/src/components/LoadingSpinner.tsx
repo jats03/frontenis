@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { MIN_LOADER_MS } from '../hooks'
 import RacketLoader from './RacketLoader'
 
 const DELAY_MS = 150 // evita parpadeos en peticiones muy rápidas
@@ -7,6 +8,8 @@ const DELAY_MS = 150 // evita parpadeos en peticiones muy rápidas
 export default function LoadingSpinner() {
   const [pending, setPending] = useState(0)
   const [visible, setVisible] = useState(false)
+  const shownAt = useRef(0)
+  const isVisible = useRef(false)
 
   useEffect(() => {
     const start = () => setPending(n => n + 1)
@@ -19,9 +22,15 @@ export default function LoadingSpinner() {
     }
   }, [])
 
+  // Una vez visible, el aviso se mantiene al menos MIN_LOADER_MS aunque la petición acabe antes.
   useEffect(() => {
-    if (pending === 0) { const t = setTimeout(() => setVisible(false), 0); return () => clearTimeout(t) }
-    const t = setTimeout(() => setVisible(true), DELAY_MS)
+    if (pending === 0) {
+      const left = isVisible.current ? Math.max(0, MIN_LOADER_MS - (Date.now() - shownAt.current)) : 0
+      const t = setTimeout(() => { isVisible.current = false; setVisible(false) }, left)
+      return () => clearTimeout(t)
+    }
+    if (isVisible.current) return undefined
+    const t = setTimeout(() => { isVisible.current = true; shownAt.current = Date.now(); setVisible(true) }, DELAY_MS)
     return () => clearTimeout(t)
   }, [pending])
 

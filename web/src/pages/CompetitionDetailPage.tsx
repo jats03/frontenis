@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { confirmDelete, notify, promptText } from '../alerts'
 import { api, responseCache } from '../api/client'
@@ -14,7 +14,7 @@ import StaleNotice from '../components/StaleNotice'
 import SubTabs from '../components/SubTabs'
 import StandingsTable from '../components/StandingsTable'
 import { statusLabel, typeLabel } from '../labels'
-import { useDocumentTitle } from '../hooks'
+import { holdLoader, useDocumentTitle } from '../hooks'
 import { exportStandingsPdf } from '../pdf'
 import LoadingBlock from '../components/LoadingBlock'
 
@@ -41,14 +41,23 @@ function CompetitionDetailView({ id }: { id: number }) {
   const [matchSel, setMatchSel] = useState('all')                    // 'all', id de grupo o nº de jornada
   const [error, setError] = useState<string | null>(null)
 
+  const hadDetail = useRef(detail !== null)
   const load = useCallback(async () => {
+    const showsLoader = !hadDetail.current
+    const startedAt = Date.now()
     try {
       const d = await api.competitions.get(id)
+      const st = d.summary.status === 'Draft' ? [] : await api.competitions.standings(id)
+      if (showsLoader) await holdLoader(startedAt)
       setDetail(d)
-      setStandings(d.summary.status === 'Draft' ? [] : await api.competitions.standings(id))
+      setStandings(st)
       setError(null)
       setSavedAt(null)
-    } catch (e) { setError(e instanceof Error ? e.message : 'Error') }
+      hadDetail.current = true
+    } catch (e) {
+      if (showsLoader) await holdLoader(startedAt)
+      setError(e instanceof Error ? e.message : 'Error')
+    }
   }, [id])
 
   useEffect(() => { void load() }, [load])
