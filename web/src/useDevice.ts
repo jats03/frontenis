@@ -1,31 +1,22 @@
-import { useCallback, useEffect, useState } from 'react'
-import { api } from './api/client'
+import { createContext, useContext } from 'react'
 import type { DeviceMe } from './api/types'
 
 /**
- * Estado del vínculo de este dispositivo con su jugador.
+ * Estado del vínculo de este dispositivo con su jugador (compartido por toda la app).
  * `me`: `undefined` mientras carga, `null` si no está vinculado.
  */
-export function useDevice(enabled = true) {
-  const [me, setMe] = useState<DeviceMe | null | undefined>(undefined)
-  const [error, setError] = useState<string | null>(null)
+export interface DeviceState {
+  me: DeviceMe | null | undefined
+  error: string | null
+  reload: () => Promise<void>
+  link: (playerId: number) => Promise<void>
+  unlink: () => Promise<void>
+}
 
-  const reload = useCallback(async () => {
-    if (!enabled) { setMe(null); return }
-    try { setMe((await api.device.me()) ?? null); setError(null) }
-    catch (e) { setError(e instanceof Error ? e.message : 'Error'); setMe(null) }
-  }, [enabled])
+export const DeviceContext = createContext<DeviceState | null>(null)
 
-  useEffect(() => { void reload() }, [reload])
-
-  const link = useCallback(async (playerId: number) => {
-    setMe(await api.device.link(playerId))
-  }, [])
-
-  const unlink = useCallback(async () => {
-    await api.device.unlink()
-    setMe(null)
-  }, [])
-
-  return { me, error, reload, link, unlink }
+export function useDevice(): DeviceState {
+  const ctx = useContext(DeviceContext)
+  if (!ctx) throw new Error('useDevice debe usarse dentro de <DeviceProvider>')
+  return ctx
 }

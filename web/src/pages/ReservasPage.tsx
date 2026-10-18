@@ -30,7 +30,7 @@ export default function ReservasPage() {
   const players = useAsync(() => (isAdmin ? api.players.list() : Promise.resolve([] as Player[])), [isAdmin])
   const [error, setError] = useState<string | null>(null)
   // El administrador gestiona desde aquí; el resto de personas se identifican con su dispositivo.
-  const device = useDevice(!isAdmin)
+  const device = useDevice()
 
   // Franjas agrupadas por semana (lunes a domingo) y, dentro de cada una, por día.
   const weeks = useMemo(() => {

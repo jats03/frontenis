@@ -7,6 +7,11 @@ function newToken(): string {
   return Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('')
 }
 
+/** ¿Este navegador ya tiene identificador? (no lo crea). Sin él, el dispositivo no puede estar vinculado. */
+export function hasDeviceToken(): boolean {
+  try { return !!localStorage.getItem(KEY) } catch { return memoryToken !== null }
+}
+
 /**
  * Identificador aleatorio de este dispositivo (se genera la primera vez y se conserva en el navegador).
  * Sin almacenamiento (modo privado), vale solo mientras la pestaña esté abierta.

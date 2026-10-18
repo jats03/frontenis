@@ -2,9 +2,9 @@ import { useState } from 'react'
 import { notify } from '../alerts'
 import { api } from '../api/client'
 import { useAsync } from '../hooks'
-import type { useDevice } from '../useDevice'
+import type { DeviceState } from '../useDevice'
 
-type Device = ReturnType<typeof useDevice>
+type Device = DeviceState
 
 /** Indica quién eres en este dispositivo (sin cuenta ni contraseña) o permite elegirlo la primera vez. */
 export default function DeviceLinkPanel({ device }: { device: Device }) {

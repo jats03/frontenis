@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { NavLink } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
+import { useDevice } from '../useDevice'
 import { CalendarIcon, HomeIcon, MoreIcon, TrophyIcon, UsersIcon } from './Icons'
 
 const items: { to: string; label: string; short?: string; icon: ReactNode; end?: boolean }[] = [
@@ -11,15 +12,18 @@ const items: { to: string; label: string; short?: string; icon: ReactNode; end?:
   { to: '/mas', label: 'Más', icon: <MoreIcon /> },
 ]
 
-/** Navegación única: barra inferior en móvil/tablet y barra lateral en ordenador. Cabecera solo con el logo. */
+/** Navegación única: barra inferior en móvil/tablet y barra lateral en ordenador. Cabecera con el logo y, si el dispositivo está vinculado, un saludo. */
 export default function AppNav() {
   const { isAdmin, logout, username } = useAuth()
+  const { me } = useDevice()
+  const firstName = me?.owner.name.trim().split(/\s+/)[0]
   return (
     <>
     <header className="topbar">
       <NavLink to="/" className="brand" aria-label="Club Frontenis Ciudad de Jaén, inicio">
         <img src="/logo.png" alt="" className="logo" />
       </NavLink>
+      {firstName && <NavLink to="/reservas" className="greeting" title={`Eres ${me!.owner.name}`}>Hola, {firstName}</NavLink>}
     </header>
     <nav aria-label="Principal" className="main-nav">
       {items.map(i => (
