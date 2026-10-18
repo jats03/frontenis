@@ -1,6 +1,8 @@
 using Frontenis.Api.Authorization;
 using Frontenis.Application.Dtos;
 using Frontenis.Application.Interfaces.Services;
+using Frontenis.Application.Models;
+using Frontenis.Application.Security;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Frontenis.Api.Controllers;
@@ -21,10 +23,13 @@ public sealed class SlotsController : ControllerBase
         _schedule = schedule;
     }
 
-    /// <summary>Franjas entre dos fechas (público). Sin fechas: esta semana y la siguiente.</summary>
+    /// <summary>
+    /// Franjas entre dos fechas. Sin fechas: esta semana y la siguiente. El público solo ve la semana en curso y las
+    /// franjas abiertas; el administrador (con su sesión) las ve todas.
+    /// </summary>
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<SlotDto>>> List([FromQuery] DateOnly? from, [FromQuery] DateOnly? to, CancellationToken ct) =>
-        Ok(await _queries.ListAsync(from, to, ct));
+        Ok(await _queries.ListAsync(from, to, User.IsInRole(Roles.Admin) ? SlotAudience.Admin : SlotAudience.Public, ct));
 
     /// <summary>Crea una franja suelta, por ejemplo un día extra (administrador).</summary>
     [HttpPost, AdminOnly]

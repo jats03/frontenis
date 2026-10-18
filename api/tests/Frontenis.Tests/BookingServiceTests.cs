@@ -104,7 +104,7 @@ public class BookingServiceTests
         var slotId = w.Slots.Items.First().Id;
 
         await Assert.ThrowsAsync<DomainException>(() => w.Attendance().SignUpAsync(slotId, 1));
-        var dto = (await w.Queries().ListAsync(NextMonday, NextMonday.AddDays(6))).First();
+        var dto = (await w.Queries().ListAsync(NextMonday, NextMonday.AddDays(6), SlotAudience.Admin)).First();
         Assert.Equal(SlotStatus.Pending, dto.Status);
         Assert.False(dto.FewPlayers);
     }
@@ -117,11 +117,35 @@ public class BookingServiceTests
         w.Slots.Items.Add(TrainingSlot.Create(new DateOnly(2026, 10, 22), new TimeOnly(18, 0), new TimeOnly(20, 0), new DateTime(2026, 10, 16, 19, 0, 0)).WithId(2));
         w.Slots.Items.Add(TrainingSlot.Create(new DateOnly(2026, 10, 26), new TimeOnly(18, 0), new TimeOnly(20, 0), new DateTime(2026, 10, 23, 19, 0, 0)).WithId(3));
 
-        var list = await w.Queries().ListAsync(null, null);
+        var list = await w.Queries().ListAsync(null, null, SlotAudience.Admin);
 
         Assert.Equal(new[] { 1, 2 }, list.Select(s => s.Id));
-        await Assert.ThrowsAsync<DomainException>(() => w.Queries().ListAsync(NextMonday, NextMonday.AddDays(-1)));
-        await Assert.ThrowsAsync<DomainException>(() => w.Queries().ListAsync(NextMonday, NextMonday.AddDays(93)));
+        await Assert.ThrowsAsync<DomainException>(() => w.Queries().ListAsync(NextMonday, NextMonday.AddDays(-1), SlotAudience.Admin));
+        await Assert.ThrowsAsync<DomainException>(() => w.Queries().ListAsync(NextMonday, NextMonday.AddDays(93), SlotAudience.Admin));
+    }
+
+    [Fact]
+    public async Task Public_listing_shows_this_week_and_open_slots_but_the_admin_sees_everything()
+    {
+        var w = new BookingWorld();
+        w.Clock.Now = new DateTime(2026, 10, 14, 12, 0, 0); // miércoles; la semana del 19 abre el viernes 16
+        TrainingSlot Slot(int id, DateOnly date, DateTime opens) =>
+            TrainingSlot.Create(date, new TimeOnly(18, 0), new TimeOnly(20, 0), opens).WithId(id);
+        w.Slots.Items.Add(Slot(1, new DateOnly(2026, 10, 12), new DateTime(2026, 10, 9, 19, 0, 0)));  // esta semana, pasada
+        w.Slots.Items.Add(Slot(2, new DateOnly(2026, 10, 15), new DateTime(2026, 10, 9, 19, 0, 0)));  // esta semana
+        w.Slots.Items.Add(Slot(3, new DateOnly(2026, 10, 19), new DateTime(2026, 10, 16, 19, 0, 0))); // próxima, sin abrir
+        w.Slots.Items.Add(Slot(4, new DateOnly(2026, 10, 26), new DateTime(2026, 10, 12, 8, 0, 0)));  // otra semana, ya abierta
+        w.Slots.Items.Add(Slot(5, new DateOnly(2026, 11, 2), new DateTime(2026, 10, 30, 19, 0, 0)));  // lejana, sin abrir
+
+        var range = (new DateOnly(2026, 10, 12), new DateOnly(2026, 11, 8));
+        var publicIds = (await w.Queries().ListAsync(range.Item1, range.Item2)).Select(s => s.Id);
+        var adminIds = (await w.Queries().ListAsync(range.Item1, range.Item2, SlotAudience.Admin)).Select(s => s.Id);
+
+        Assert.Equal(new[] { 1, 2, 4 }, publicIds);
+        Assert.Equal(new[] { 1, 2, 3, 4, 5 }, adminIds);
+
+        w.Clock.Now = new DateTime(2026, 10, 16, 19, 0, 0); // se abre la semana del 19
+        Assert.Equal(new[] { 1, 2, 3, 4 }, (await w.Queries().ListAsync(range.Item1, range.Item2)).Select(s => s.Id));
     }
 
     // ---------- Administración ----------
