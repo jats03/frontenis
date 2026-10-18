@@ -4,7 +4,6 @@ import { useAuth } from '../auth/AuthContext'
 import EmptyState from '../components/EmptyState'
 import PageHeader from '../components/PageHeader'
 import ReservasButton from '../components/ReservasButton'
-import StaleNotice from '../components/StaleNotice'
 import { useAsync, useDocumentTitle } from '../hooks'
 import { statusLabel, typeLabel } from '../labels'
 import { formatDate } from '../dates'
@@ -19,12 +18,10 @@ export default function HomePage() {
   const active = (comps.data ?? []).filter(c => c.status !== 'Finished' && c.status !== 'Draft')
   const drafts = (comps.data ?? []).filter(c => c.status === 'Draft')
   const lastTraining = trainings.data?.[0]
-  const error = comps.error ?? trainings.error
 
   return (
     <>
       <PageHeader title="Club Frontenis Ciudad de Jaén" subtitle="Ligas, torneos y entrenamientos" />
-      <StaleNotice savedAt={comps.savedAt ?? trainings.savedAt} error={error} />
 
       <ReservasButton label="Ver todas las reservas" />
 

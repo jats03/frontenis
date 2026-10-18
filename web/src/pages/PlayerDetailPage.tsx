@@ -3,7 +3,6 @@ import PageHeader from '../components/PageHeader'
 import SourceFilter, { useHistoryFilter } from '../components/SourceFilter'
 import { api } from '../api/client'
 import type { Relation } from '../api/types'
-import StaleNotice from '../components/StaleNotice'
 import { useAsync, useDocumentTitle } from '../hooks'
 import LoadingBlock from '../components/LoadingBlock'
 
@@ -40,7 +39,7 @@ function RelationTable({ title, caption, rows, query }: { title: string; caption
 export default function PlayerDetailPage() {
   const id = Number(useParams().id)
   const [filter, setFilter, query] = useHistoryFilter()
-  const { data, error, loading, savedAt } = useAsync(() => api.players.playerHistory(id, filter), [id, query])
+  const { data, error, loading } = useAsync(() => api.players.playerHistory(id, filter), [id, query])
   useDocumentTitle(data?.summary.name ?? 'Jugador')
 
   if (error && !data) return <p className="error">{error}</p>
@@ -61,7 +60,6 @@ export default function PlayerDetailPage() {
     <>
       <PageHeader title={s.name} subtitle={<Link to={`/jugadores/historico${query}`}>← Volver al histórico</Link>} />
       <SourceFilter value={filter} onChange={setFilter} />
-      <StaleNotice savedAt={savedAt} error={error} />
       <section className="card stats">
         {stat('Partidos', s.played)}{stat('Victorias', s.won)}{stat('Derrotas', s.lost)}
         {stat('% victorias', s.played ? `${s.winRate}%` : '—')}

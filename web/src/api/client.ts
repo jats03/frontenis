@@ -62,14 +62,11 @@ async function request<T>(method: string, path: string, body?: unknown, extraHea
   if (token) headers.Authorization = `Bearer ${token}`
 
   // Si el servidor está dormido (Render) o la BD se está reanudando, las lecturas se reintentan
-  // y, si tardan, se avisa al usuario (ver ApiStatus).
+  // y mientras tanto se muestra el aviso «Cargando…» (ver LoadingSpinner y ApiStatus).
   // Una lectura con copia local es "silenciosa": no tapa la pantalla con el spinner porque ya hay datos que mostrar.
   const silent = method === 'GET' && responseCache.peek(path) !== null
   if (!silent) window.dispatchEvent(new Event('frontenis:request-start'))
-  const SLOW_MS = 4000
   const attempts = method === 'GET' ? 4 : 1
-  let slowFired = false
-  const slowTimer = setTimeout(() => { slowFired = true; window.dispatchEvent(new Event('frontenis:slow-start')) }, SLOW_MS)
   try {
     let res: Response | undefined
     for (let i = 0; i < attempts; i++) {
@@ -96,9 +93,7 @@ async function request<T>(method: string, path: string, body?: unknown, extraHea
     if (method === 'GET' && data !== undefined) responseCache.save(path, data)
     return data as T
   } finally {
-    clearTimeout(slowTimer)
     if (!silent) window.dispatchEvent(new Event('frontenis:request-end'))
-    if (slowFired) window.dispatchEvent(new Event('frontenis:slow-end'))
   }
 }
 

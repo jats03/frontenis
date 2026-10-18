@@ -5,7 +5,6 @@ import PlayersTabs from '../components/PlayersTabs'
 import SourceFilter, { useHistoryFilter } from '../components/SourceFilter'
 import { api } from '../api/client'
 import type { PlayerHistoryRow } from '../api/types'
-import StaleNotice from '../components/StaleNotice'
 import { useAsync, useDocumentTitle } from '../hooks'
 import LoadingBlock from '../components/LoadingBlock'
 
@@ -26,7 +25,7 @@ export default function PlayerHistoryPage() {
   const [filter, setFilter, query] = useHistoryFilter()
   const [sort, setSort] = useState<SortKey>('classificationPoints')
   const [desc, setDesc] = useState(true)
-  const { data, error, loading, savedAt } = useAsync(() => api.players.history(filter), [query])
+  const { data, error, loading } = useAsync(() => api.players.history(filter), [query])
 
   const rows = useMemo(() => {
     const list = [...(data ?? [])]
@@ -48,7 +47,6 @@ export default function PlayerHistoryPage() {
       <PageHeader title="Jugadores" subtitle="Histórico: partidos, puntos, compañeros y rivales" />
       <PlayersTabs current="historico" />
       <SourceFilter value={filter} onChange={setFilter} />
-      <StaleNotice savedAt={savedAt} error={error} />
       {error && !data && <p className="error">{error}</p>}
       {loading && !data && <LoadingBlock />}
       {data && (

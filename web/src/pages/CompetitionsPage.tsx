@@ -4,7 +4,6 @@ import type { CompetitionSummary } from '../api/types'
 import { useAuth } from '../auth/AuthContext'
 import EmptyState from '../components/EmptyState'
 import PageHeader from '../components/PageHeader'
-import StaleNotice from '../components/StaleNotice'
 import { useAsync, useDocumentTitle } from '../hooks'
 import { statusLabel, typeLabel } from '../labels'
 import LoadingBlock from '../components/LoadingBlock'
@@ -26,7 +25,7 @@ function Card({ c }: { c: CompetitionSummary }) {
 export default function CompetitionsPage() {
   useDocumentTitle('Competiciones')
   const { isAdmin } = useAuth()
-  const { data, error, loading, savedAt } = useAsync(() => api.competitions.list(), [], '/api/competitions')
+  const { data, error, loading } = useAsync(() => api.competitions.list(), [], '/api/competitions')
 
   const inProgress = (data ?? []).filter(c => c.status === 'GroupStage' || c.status === 'Playoffs')
   const signup = (data ?? []).filter(c => c.status === 'Draft')
@@ -42,7 +41,6 @@ export default function CompetitionsPage() {
     <>
       <PageHeader title="Competiciones" subtitle="Ligas, torneos y ligas rotatorias"
         actions={isAdmin && <Link className="button" to="/competiciones/nueva">+ Nueva</Link>} />
-      <StaleNotice savedAt={savedAt} error={error} />
       {loading && !data && <LoadingBlock />}
       {error && !data && <p className="error">{error}</p>}
       {data?.length === 0 && (

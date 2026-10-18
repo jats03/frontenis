@@ -9,7 +9,6 @@ import { api } from '../api/client'
 import type { Player, TrainingDetail, TrainingRow, TrainingSuggestion } from '../api/types'
 import { useAuth } from '../auth/AuthContext'
 import PlayerPicker from '../components/PlayerPicker'
-import StaleNotice from '../components/StaleNotice'
 import SubTabs from '../components/SubTabs'
 import { useAsync, useDocumentTitle } from '../hooks'
 import LoadingBlock from '../components/LoadingBlock'
@@ -51,7 +50,7 @@ export default function TrainingDetailPage() {
   const id = Number(useParams().id)
   const navigate = useNavigate()
   const { isAdmin } = useAuth()
-  const { data, setData, error, loading, savedAt } = useAsync(() => api.trainings.get(id), [id], `/api/trainings/${id}`)
+  const { data, setData, error, loading } = useAsync(() => api.trainings.get(id), [id], `/api/trainings/${id}`)
   const players = useAsync(() => api.players.list(), [], '/api/players')
   useDocumentTitle(data?.summary.name ?? 'Entrenamiento')
 
@@ -157,7 +156,6 @@ export default function TrainingDetailPage() {
             { label: 'Eliminar sesión', danger: true, hidden: !isAdmin, onSelect: () => void removeSession() },
           ]} />
         </>} />
-      <StaleNotice savedAt={savedAt} error={error} />
       {!formOpen && formError && <p className="error" role="alert">{formError}</p>}
 
       <div className="training-layout">

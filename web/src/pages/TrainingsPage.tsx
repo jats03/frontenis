@@ -6,7 +6,6 @@ import { useAuth } from '../auth/AuthContext'
 import EmptyState from '../components/EmptyState'
 import PageHeader from '../components/PageHeader'
 import ReservasButton from '../components/ReservasButton'
-import StaleNotice from '../components/StaleNotice'
 import { formatDate, todayIso } from '../dates'
 import { useAsync, useDocumentTitle } from '../hooks'
 import LoadingBlock from '../components/LoadingBlock'
@@ -15,7 +14,7 @@ export default function TrainingsPage() {
   useDocumentTitle('Entrenamientos')
   const { isAdmin } = useAuth()
   const navigate = useNavigate()
-  const { data, error, loading, savedAt } = useAsync(() => api.trainings.list(), [], '/api/trainings')
+  const { data, error, loading } = useAsync(() => api.trainings.list(), [], '/api/trainings')
   const [creating, setCreating] = useState(false)
   const [name, setName] = useState('')
   const [date, setDate] = useState(todayIso())
@@ -58,7 +57,6 @@ export default function TrainingsPage() {
         </form>
       )}
 
-      <StaleNotice savedAt={savedAt} error={error} />
       {loading && !data && <LoadingBlock />}
       {error && !data && <p className="error">{error}</p>}
       {data?.length === 0 && (
