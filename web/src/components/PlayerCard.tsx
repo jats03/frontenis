@@ -40,15 +40,17 @@ export default function PlayerCard({ playerId, onClose }: Props) {
       ) : (
         <div className={`fut-card ${card.tier}`}>
           <div className="fut-top">
-            <div className="fut-rating">
-              <strong>{card.overall ?? '–'}</strong>
-              <span title={summary.position}>{positionCode(summary.position)}</span>
-            </div>
+            {card.played > 0 && (
+              <div className="fut-rating">
+                <strong>{card.overall}</strong>
+                <span title={summary.position}>{positionCode(summary.position)}</span>
+              </div>
+            )}
             <PlayerAvatar playerId={playerId} size={150} className="fut-avatar" />
           </div>
           <h2 className="fut-name">{summary.name}</h2>
           <p className="fut-position">{summary.position}</p>
-          {card.played === 0 && <p className="fut-empty">Aún sin partidos: la carta se irá llenando al jugar.</p>}
+          {card.played > 0 && <>
           <ul className="fut-stats" aria-label="Estadísticas">
             {counts.map(([label, title, value]) => (
               <li key={label}>
@@ -65,6 +67,7 @@ export default function PlayerCard({ playerId, onClose }: Props) {
           <p className="fut-hint" aria-live="polite">
             {hinted ? <span><strong>{hinted[0]}</strong> · {hinted[1]}</span> : 'Toca una sigla para ver qué significa'}
           </p>
+          </>}
         </div>
       )}
       {summary && <button type="button" className="secondary fut-close" onClick={() => ref.current?.close()}>Cerrar</button>}

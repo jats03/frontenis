@@ -40,7 +40,7 @@ public sealed class AuditController : ControllerBase
     public async Task<IActionResult> Page(PageViewRequest request, CancellationToken ct)
     {
         if (!AuditText.IsValidPage(request.Path)) return BadRequest();
-        var actor = await _actors.ResolveAsync(HttpContext, ct);
+        var actor = await _actors.ResolveAsync(HttpContext, lookup: false, ct);
         _logger.LogInformation("AUDIT {Kind} {Actor} VISTA {Path}", actor.Kind, actor.Name, AuditText.Clean(request.Path, 200));
         return NoContent();
     }

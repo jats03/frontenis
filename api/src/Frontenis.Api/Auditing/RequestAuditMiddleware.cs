@@ -50,13 +50,15 @@ public sealed class RequestAuditMiddleware
         try
         {
             var request = context.Request;
-            var actor = await context.RequestServices.GetRequiredService<IActorResolver>().ResolveAsync(context);
+            var isWrite = Writes.Contains(request.Method);
+            // Las lecturas no consultan la BD para saber quién es: así no despiertan Neon cuando está suspendida.
+            var actor = await context.RequestServices.GetRequiredService<IActorResolver>().ResolveAsync(context, lookup: isWrite);
             var path = AuditText.Clean(request.Path.Value + request.QueryString.Value, AuditEntry.MaxPath);
             var status = context.Response.StatusCode;
             _logger.LogInformation("AUDIT {Kind} {Actor} {Method} {Path} -> {Status} ({Ms} ms)",
                 actor.Kind, actor.Name, request.Method, path, status, ms);
 
-            if (!Writes.Contains(request.Method)) return;
+            if (!isWrite) return;
             // Alcance propio: la BD de la petición pudo quedar a medias si algo falló.
             using var scope = context.RequestServices.GetRequiredService<IServiceScopeFactory>().CreateScope();
             var entry = AuditEntry.Create(DateTime.UtcNow, actor.Kind, actor.Name, actor.PlayerId, request.Method, path, status, ms);
