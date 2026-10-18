@@ -413,7 +413,7 @@ body:has(.loading-block) .spinner-overlay { display: none; }
 .greeting-avatar-btn:hover .greeting-avatar { transform: scale(1.06); }
 .greeting-avatar { transition: transform .15s; }
 .card-dialog { border: 0; padding: 1rem; background: transparent; color: var(--text); max-width: 100vw; max-height: 100dvh; overflow: visible; margin: auto; text-align: center; }
-.card-dialog::backdrop { background: rgba(5, 12, 11, .72); }
+.card-dialog::backdrop { background: rgba(5, 12, 11, .85); }
 .card-dialog[open] .fut-card { animation: fut-in .35s cubic-bezier(.2, 1.2, .4, 1); }
 @keyframes fut-in { from { transform: scale(.7) rotateY(70deg); opacity: 0; } to { transform: none; opacity: 1; } }
 .fut-card { --fut-a: #f6e27a; --fut-b: #c79a2b; --fut-ink: #3a2a05;
@@ -437,6 +437,7 @@ body:has(.loading-block) .spinner-overlay { display: none; }
 
 button.secondary.fut-close { background: var(--card); }
 @media (prefers-reduced-motion: reduce) { .card-dialog[open] .fut-card { animation: none; } .greeting-avatar { transition: none; } }
-/* El «Cargando…» sobre el fondo oscurecido lleva su propia tarjeta para que el texto se lea en claro y oscuro */
-.card-dialog .loading-block { background: var(--card); color: var(--text); border: 1px solid var(--border); border-radius: 16px; padding: .9rem 1.6rem .8rem; box-shadow: 0 8px 24px rgba(0, 0, 0, .4); }
-.card-dialog .loading-text { color: var(--text); font-weight: 600; }
+/* El «Cargando…» sobre el fondo oscurecido va en claro (el fondo es oscuro en modo claro y oscuro) */
+.card-dialog .loading-block { color: #fff; }
+.card-dialog .loading-text { color: #fff; font-weight: 600; text-shadow: 0 1px 3px rgba(0, 0, 0, .6); }
+.card-dialog .rally { --loader-ink: #9be3d9; }
