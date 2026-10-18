@@ -29,6 +29,7 @@ export default function ReservasPage() {
   // Solo el administrador necesita la lista de jugadores (para apuntar a mano): al resto no se le pide.
   const players = useAsync(() => (isAdmin ? api.players.list() : Promise.resolve([] as Player[])), [isAdmin])
   const [error, setError] = useState<string | null>(null)
+  const [announcement, setAnnouncement] = useState('')
   // El administrador gestiona desde aquí; el resto de personas se identifican con su dispositivo.
   const device = useDevice()
 
@@ -51,7 +52,7 @@ export default function ReservasPage() {
     try {
       const updated = await action()
       slots.setData(list => (list ?? []).map(s => (s.id === updated.id ? updated : s)))
-      if (done) notify(done)
+      if (done) { notify(done); setAnnouncement(done) }
     } catch (e) { setError(e instanceof Error ? e.message : 'Error') }
   }
 
@@ -74,6 +75,7 @@ export default function ReservasPage() {
         actions={isAdmin && <Link className="button" to="/reservas/gestion">Gestionar</Link>} />
       {!isAdmin && <DeviceLinkPanel device={device} />}
       {error && <p className="error" role="alert">{error}</p>}
+      <p className="sr-only" role="status" aria-live="polite">{announcement}</p>
       {slots.error && !slots.data && <p className="error">{slots.error}</p>}
       {slots.loading && !slots.data && <p className="muted">Cargando…</p>}
 
@@ -95,7 +97,7 @@ export default function ReservasPage() {
             )}
             {days.map(([date, daySlots]) => (
               <section key={date} aria-labelledby={`dia-${date}`}>
-                <h2 id={`dia-${date}`} className="section-title slot-day">{formatDate(date)}</h2>
+                <h3 id={`dia-${date}`} className="section-title slot-day">{formatDate(date)}</h3>
                 {daySlots.map(slot => (
                   <SlotCard key={slot.id} slot={slot}
                     onRemoveAttendee={isAdmin ? id => void run(() => api.slots.withdraw(slot.id, id)) : undefined}>

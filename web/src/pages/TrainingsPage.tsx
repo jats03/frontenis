@@ -5,6 +5,7 @@ import { api } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
 import EmptyState from '../components/EmptyState'
 import PageHeader from '../components/PageHeader'
+import ReservasButton from '../components/ReservasButton'
 import StaleNotice from '../components/StaleNotice'
 import { formatDate, todayIso } from '../dates'
 import { useAsync, useDocumentTitle } from '../hooks'
@@ -33,6 +34,7 @@ export default function TrainingsPage() {
 
   return (
     <>
+      <ReservasButton />
       <PageHeader title="Entrenamientos" subtitle="Partidos sueltos «a X tantos» con clasificación por parejas e individual"
         actions={isAdmin && !creating && <button onClick={() => setCreating(true)}>+ Nueva sesión</button>} />
 

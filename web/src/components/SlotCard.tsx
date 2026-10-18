@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react'
 import type { Slot } from '../api/types'
-import { formatOpening, formatTime } from '../dates'
+import { formatDate, formatOpening, formatTime } from '../dates'
 import { slotStatusLabel } from '../slots'
 import { WarningIcon } from './Icons'
 
@@ -21,7 +21,8 @@ export default function SlotCard({ slot, onRemoveAttendee, children }: Props) {
   const status = slot.status.toLowerCase()
   const warning = 'Pocos jugadores para el entreno'
   return (
-    <article className={`card slot-card status-${status}${slot.fewPlayers ? ' few' : ''}`}>
+    <article className={`card slot-card status-${status}${slot.fewPlayers ? ' few' : ''}`}
+      aria-label={`Entreno del ${formatDate(slot.date)}, ${formatTime(slot.start)} a ${formatTime(slot.end)}`}>
       <div className="slot-head">
         <span className="slot-time">{formatTime(slot.start)}–{formatTime(slot.end)}</span>
         <span className={`badge slot-${status}`}>{slotStatusLabel[slot.status]}</span>

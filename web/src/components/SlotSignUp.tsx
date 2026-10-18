@@ -1,4 +1,5 @@
 import type { DeviceMe, Slot } from '../api/types'
+import { formatDate, formatTime } from '../dates'
 
 interface Props {
   slot: Slot
@@ -11,6 +12,7 @@ interface Props {
 export default function SlotSignUp({ slot, me, onToggle }: Props) {
   if (slot.status !== 'Open') return null
   const attending = new Set(slot.attendees.map(a => a.playerId))
+  const where = `entreno del ${formatDate(slot.date)}, ${formatTime(slot.start)}–${formatTime(slot.end)}`
   const people = [{ ...me.owner, self: true }, ...me.delegates.map(d => ({ ...d, self: false }))]
   return (
     <div className="slot-actions row">
@@ -19,7 +21,7 @@ export default function SlotSignUp({ slot, me, onToggle }: Props) {
         const label = p.self ? (yes ? 'Quitarme' : 'Apuntarme') : `${yes ? 'Quitar a' : 'Apuntar a'} ${p.name}`
         return (
           <button key={p.id} type="button" className={yes ? 'secondary' : undefined}
-            aria-pressed={yes} onClick={() => onToggle(p.id, yes)}>{label}</button>
+            aria-pressed={yes} aria-label={`${label} (${where})`} onClick={() => onToggle(p.id, yes)}>{label}</button>
         )
       })}
     </div>
