@@ -28,7 +28,7 @@ export default function AppNav() {
       {firstName && (
         <span className="greeting" title={`Eres ${me!.owner.name}`}>
           <span className="greeting-text">
-            <span className="greeting-hello">{greetingFor(new Date())}</span>
+            <span className="greeting-hello">{greetingFor(new Date())}<span className="greeting-comma">,</span></span>
             <strong className="greeting-name">{firstName}</strong>
           </span>
           <PlayerAvatar playerId={me!.owner.id} size={40} className="greeting-avatar" />

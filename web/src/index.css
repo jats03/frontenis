@@ -357,6 +357,12 @@ li.card.inactive { opacity: .65; }
 .greeting-name { font-size: 1rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .greeting-hello { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .greeting-avatar { flex: none; border-radius: 50%; box-shadow: 0 0 0 2px #fff; }
-@media (min-width: 900px) { .topbar .greeting { margin-left: 1rem; } .greeting-text { text-align: left; order: 2; } }
+.greeting-comma { display: none; }
+/* En pantallas grandes el saludo va en una sola línea, a la derecha de la cabecera. */
+@media (min-width: 900px) {
+  .greeting-text { display: flex; align-items: baseline; gap: .3rem; }
+  .greeting-hello { font-size: 1rem; opacity: 1; }
+  .greeting-comma { display: inline; }
+}
 .device-who { display: inline-flex; align-items: center; gap: .6rem; min-width: 0; }
 .device-who svg { flex: none; border-radius: 50%; }
