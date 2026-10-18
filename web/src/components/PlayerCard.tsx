@@ -13,6 +13,15 @@ const ALL: HistoryFilter = { competitionIds: [], trainingIds: [] }
 const TIER_RANK: Record<CardTier, number> = { bronze: 0, silver: 1, gold: 2 }
 const TIER_NAME: Record<CardTier, string> = { bronze: 'bronce', silver: 'plata', gold: 'oro' }
 const CONFETTI_COLORS = ['#f6e27a', '#ffffff', '#9be3d9', '#f28c6b', '#c79a2b']
+/** En iOS el giroscopio pide permiso, y solo se puede pedir desde un toque del usuario (p. ej. al abrir la carta). */
+export function askMotionPermission() {
+  try {
+    const ctor = (typeof DeviceOrientationEvent !== 'undefined' ? DeviceOrientationEvent : undefined) as
+      (typeof DeviceOrientationEvent & { requestPermission?: () => Promise<string> }) | undefined
+    void ctor?.requestPermission?.().catch(() => undefined)
+  } catch { /* sin giroscopio */ }
+}
+const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n))
 const calm = () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
 /** Compara con el último nivel que este dispositivo vio de ese jugador; devuelve el nivel nuevo solo si ha subido. */
@@ -41,6 +50,7 @@ export default function PlayerCard({ playerId, onClose }: Props) {
   const card = summary ? cardFromHistory(summary) : null
   const name = summary?.name ?? ''
   const [hint, setHint] = useState<string | null>(null)
+  const tiltRef = useRef<HTMLDivElement>(null)
   const [rise, setRise] = useState<CardTier | null>(null)
   const confetti = useMemo(() => Array.from({ length: 36 }, (_, i) => ({
     left: Math.random() * 100, delay: Math.random() * .6, dur: 1.8 + Math.random() * 1.4,
@@ -49,6 +59,26 @@ export default function PlayerCard({ playerId, onClose }: Props) {
   })), [])
   const tier = card?.played ? card.tier : null
   useEffect(() => { if (tier) setRise(tierRise(playerId, tier)) }, [playerId, tier])
+
+  // En el móvil la carta también sigue al giro del teléfono (la posición inicial es la «plana»).
+  const hasCard = card !== null
+  useEffect(() => {
+    if (!hasCard || calm()) return
+    let base: { b: number; g: number } | null = null
+    const onTurn = (e: DeviceOrientationEvent) => {
+      const el = tiltRef.current
+      if (!el || el.classList.contains('tilting') || e.beta === null || e.gamma === null) return
+      base ??= { b: e.beta, g: e.gamma }
+      const ry = clamp(e.gamma - base.g, -15, 15)
+      const rx = clamp(base.b - e.beta, -15, 15)
+      el.style.setProperty('--ry', `${ry.toFixed(1)}deg`)
+      el.style.setProperty('--rx', `${rx.toFixed(1)}deg`)
+      el.style.setProperty('--mx', `${(50 + ry * 3).toFixed(0)}%`)
+      el.style.setProperty('--my', `${(40 - rx * 3).toFixed(0)}%`)
+    }
+    window.addEventListener('deviceorientation', onTurn)
+    return () => window.removeEventListener('deviceorientation', onTurn)
+  }, [hasCard])
 
   /** Inclina la carta hacia el puntero y mueve el reflejo; se desactiva con «reducir movimiento». */
   function tilt(e: PointerEvent<HTMLDivElement>) {
@@ -82,7 +112,7 @@ export default function PlayerCard({ playerId, onClose }: Props) {
       {!summary || !card ? (
         error ? <p role="alert">{error}</p> : <LoadingBlock />
       ) : (
-        <div className="fut-tilt" onPointerMove={tilt} onPointerLeave={untilt} onPointerCancel={untilt}>
+        <div className="fut-tilt" ref={tiltRef} onPointerDown={tilt} onPointerMove={tilt} onPointerLeave={untilt} onPointerCancel={untilt}>
         <div className={`fut-card ${card.tier}`}>
           <div className="fut-top">
             {card.played > 0 && (

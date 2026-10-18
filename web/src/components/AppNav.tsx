@@ -4,7 +4,7 @@ import { useAuth } from '../auth/AuthContext'
 import { greetingFor } from '../avatar'
 import { useDevice } from '../useDevice'
 import PlayerAvatar from './PlayerAvatar'
-import PlayerCard from './PlayerCard'
+import PlayerCard, { askMotionPermission } from './PlayerCard'
 import { CalendarIcon, HomeIcon, MoreIcon, TrophyIcon, UsersIcon } from './Icons'
 
 const items: { to: string; label: string; short?: string; icon: ReactNode; end?: boolean }[] = [
@@ -33,7 +33,7 @@ export default function AppNav() {
             <span className="greeting-hello">{greetingFor(new Date())}<span className="greeting-comma">,</span></span>
             <strong className="greeting-name">{firstName}</strong>
           </span>
-          <button type="button" className="greeting-avatar-btn" aria-label="Ver mi carta de jugador" onClick={() => setShowCard(true)}>
+          <button type="button" className="greeting-avatar-btn" aria-label="Ver mi carta de jugador" onClick={() => { askMotionPermission(); setShowCard(true) }}>
             <PlayerAvatar playerId={me!.owner.id} size={40} className="greeting-avatar" />
           </button>
         </span>

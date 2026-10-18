@@ -441,7 +441,7 @@ body:has(.loading-block) .spinner-overlay { display: none; }
 
 button.secondary.fut-close { background: var(--card); }
 /* Inclinación 3D hacia el puntero y reflejo que lo sigue; las de oro llevan además un brillo holográfico. */
-.fut-tilt { perspective: 700px; width: min(300px, 86vw); margin: 0 auto; --rx: 0deg; --ry: 0deg; --mx: 50%; --my: 30%; }
+.fut-tilt { touch-action: none; perspective: 700px; width: min(300px, 86vw); margin: 0 auto; --rx: 0deg; --ry: 0deg; --mx: 50%; --my: 30%; }
 .fut-tilt .fut-card { position: relative; overflow: hidden; margin-bottom: 1rem; transform: rotateX(var(--rx)) rotateY(var(--ry)); transition: transform .35s ease-out; }
 .fut-tilt.tilting .fut-card { transition: transform .06s linear; }
 .fut-card::after { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: .0;
