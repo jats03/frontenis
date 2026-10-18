@@ -15,6 +15,7 @@ import { addDaysIso, formatDate, mondayOfIso, todayIso, weekTitle } from '../dat
 import { useAsync, useDocumentTitle } from '../hooks'
 import { isRemindable, reservasLink, slotReminder, weekReminder } from '../reminders'
 import { useDevice } from '../useDevice'
+import LoadingBlock from '../components/LoadingBlock'
 
 /** Cuántas semanas (desde la actual) se muestran: todas las que el administrador haya generado. */
 const WEEKS_SHOWN = 8
@@ -77,7 +78,7 @@ export default function ReservasPage() {
       {error && <p className="error" role="alert">{error}</p>}
       <p className="sr-only" role="status" aria-live="polite">{announcement}</p>
       {slots.error && !slots.data && <p className="error">{slots.error}</p>}
-      {slots.loading && !slots.data && <p className="muted">Cargando…</p>}
+      {slots.loading && !slots.data && <LoadingBlock />}
 
       {slots.data?.length === 0 && (
         <EmptyState title="Aún no hay franjas publicadas"

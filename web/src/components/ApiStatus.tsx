@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { BASE } from '../api/client'
+import RacketLoader from './RacketLoader'
 
 const WAKE_NOTICE_MS = 2500
 const POLL_MS = 5000
@@ -44,7 +45,7 @@ export default function ApiStatus() {
   if (!warming && slow === 0) return null
   return (
     <div className="banner" role="status">
-      <span className="spinner" aria-hidden="true" />
+      <RacketLoader size={72} />
       Despertando el servidor… puede tardar hasta un minuto la primera vez. Gracias por la paciencia.
     </div>
   )

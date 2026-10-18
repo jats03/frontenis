@@ -7,6 +7,7 @@ import { api } from '../api/client'
 import type { PlayerHistoryRow } from '../api/types'
 import StaleNotice from '../components/StaleNotice'
 import { useAsync, useDocumentTitle } from '../hooks'
+import LoadingBlock from '../components/LoadingBlock'
 
 type SortKey = 'classificationPoints' | 'won' | 'lost' | 'played' | 'winRate' | 'tantosDiff' | 'tantosFor' | 'name'
 
@@ -49,7 +50,7 @@ export default function PlayerHistoryPage() {
       <SourceFilter value={filter} onChange={setFilter} />
       <StaleNotice savedAt={savedAt} error={error} />
       {error && !data && <p className="error">{error}</p>}
-      {loading && !data && <p className="muted">Cargando…</p>}
+      {loading && !data && <LoadingBlock />}
       {data && (
         <section className="card">
           <div className="table-wrap">

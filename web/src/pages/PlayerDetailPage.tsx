@@ -5,6 +5,7 @@ import { api } from '../api/client'
 import type { Relation } from '../api/types'
 import StaleNotice from '../components/StaleNotice'
 import { useAsync, useDocumentTitle } from '../hooks'
+import LoadingBlock from '../components/LoadingBlock'
 
 function RelationTable({ title, caption, rows, query }: { title: string; caption: string; rows: Relation[]; query: string }) {
   return (
@@ -43,7 +44,7 @@ export default function PlayerDetailPage() {
   useDocumentTitle(data?.summary.name ?? 'Jugador')
 
   if (error && !data) return <p className="error">{error}</p>
-  if (!data) return loading ? <p className="muted">Cargando…</p> : null
+  if (!data) return loading ? <LoadingBlock /> : null
 
   const s = data.summary
   // «Con quién gana más»: compañeros con victorias, ordenados por victorias y luego porcentaje.

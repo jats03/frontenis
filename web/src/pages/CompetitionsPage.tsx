@@ -7,6 +7,7 @@ import PageHeader from '../components/PageHeader'
 import StaleNotice from '../components/StaleNotice'
 import { useAsync, useDocumentTitle } from '../hooks'
 import { statusLabel, typeLabel } from '../labels'
+import LoadingBlock from '../components/LoadingBlock'
 
 function Card({ c }: { c: CompetitionSummary }) {
   return (
@@ -42,7 +43,7 @@ export default function CompetitionsPage() {
       <PageHeader title="Competiciones" subtitle="Ligas, torneos y ligas rotatorias"
         actions={isAdmin && <Link className="button" to="/competiciones/nueva">+ Nueva</Link>} />
       <StaleNotice savedAt={savedAt} error={error} />
-      {loading && !data && <p className="muted">Cargando…</p>}
+      {loading && !data && <LoadingBlock />}
       {error && !data && <p className="error">{error}</p>}
       {data?.length === 0 && (
         <EmptyState title="Aún no hay competiciones"

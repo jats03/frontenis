@@ -16,6 +16,7 @@ import StandingsTable from '../components/StandingsTable'
 import { statusLabel, typeLabel } from '../labels'
 import { useDocumentTitle } from '../hooks'
 import { exportStandingsPdf } from '../pdf'
+import LoadingBlock from '../components/LoadingBlock'
 
 type Tab = 'standings' | 'matches' | 'playoffs' | 'pairs'
 
@@ -55,7 +56,7 @@ function CompetitionDetailView({ id }: { id: number }) {
 
   useDocumentTitle(detail?.summary.name ?? 'Competición')
   if (error && !detail) return <p className="error">{error}</p>
-  if (!detail) return <p className="muted">Cargando…</p>
+  if (!detail) return <LoadingBlock />
 
   const { summary } = detail
   const isTournament = summary.type === 'Tournament'

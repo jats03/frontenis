@@ -9,6 +9,7 @@ import ReservasButton from '../components/ReservasButton'
 import StaleNotice from '../components/StaleNotice'
 import { formatDate, todayIso } from '../dates'
 import { useAsync, useDocumentTitle } from '../hooks'
+import LoadingBlock from '../components/LoadingBlock'
 
 export default function TrainingsPage() {
   useDocumentTitle('Entrenamientos')
@@ -58,7 +59,7 @@ export default function TrainingsPage() {
       )}
 
       <StaleNotice savedAt={savedAt} error={error} />
-      {loading && !data && <p className="muted">Cargando…</p>}
+      {loading && !data && <LoadingBlock />}
       {error && !data && <p className="error">{error}</p>}
       {data?.length === 0 && (
         <EmptyState title="Aún no hay sesiones de entrenamiento"

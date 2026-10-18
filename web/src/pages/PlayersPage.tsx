@@ -10,6 +10,7 @@ import PlayersTabs from '../components/PlayersTabs'
 import { useAuth } from '../auth/AuthContext'
 import StaleNotice from '../components/StaleNotice'
 import { useAsync, useDocumentTitle } from '../hooks'
+import LoadingBlock from '../components/LoadingBlock'
 
 export default function PlayersPage() {
   useDocumentTitle('Jugadores')
@@ -114,7 +115,7 @@ export default function PlayersPage() {
       <PageHeader title="Jugadores" subtitle={`${players?.length ?? 0} jugadores`} />
       <PlayersTabs current={vista} />
       <StaleNotice savedAt={savedAt} error={error} />
-      {loading && !players && <p className="muted">Cargando…</p>}
+      {loading && !players && <LoadingBlock />}
       {((error && !players) || message) && <p className="error">{(error && !players ? error : null) ?? message}</p>}
 
       {vista === 'lista' && (

@@ -11,6 +11,7 @@ import SlotTemplateRow from '../components/SlotTemplateRow'
 import { addDaysIso, mondayOfIso, toApiTime, todayIso } from '../dates'
 import { useAsync, useDocumentTitle } from '../hooks'
 import { WEEK_DAYS } from '../slots'
+import LoadingBlock from '../components/LoadingBlock'
 
 /** Administración de reservas: plantilla semanal, generación de franjas, apertura de semanas y franjas extra. */
 export default function ReservasGestionPage() {
@@ -91,7 +92,7 @@ export default function ReservasGestionPage() {
 
       <h2 className="section-title">Plantilla semanal</h2>
       <p className="muted">Lo que suele haber cada semana. Cambiarla no modifica las franjas ya generadas.</p>
-      {templates.loading && !templates.data && <p className="muted">Cargando…</p>}
+      {templates.loading && !templates.data && <LoadingBlock />}
       {templates.error && <p className="error">{templates.error}</p>}
       <ul className="plain">
         {templates.data?.map(t => (

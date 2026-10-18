@@ -403,3 +403,8 @@ li.card.inactive { opacity: .65; }
 }
 .rally { --loader-ink: var(--primary); }
 @media (prefers-color-scheme: dark) { .rally { --loader-ink: var(--link); } }
+.loading-block { display: grid; justify-items: center; gap: .2rem; padding: 1.2rem 0; }
+.loading-text { font-size: .9rem; font-weight: 600; color: var(--muted); }
+.banner .rally { --loader-ink: #3b3200; flex: none; }
+/* Si la propia página ya muestra su «Cargando…», no se repite el aviso global encima. */
+body:has(.loading-block) .spinner-overlay { display: none; }

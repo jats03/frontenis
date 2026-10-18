@@ -3,7 +3,7 @@ import { api } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
 import EmptyState from '../components/EmptyState'
 import PageHeader from '../components/PageHeader'
-import NextTrainingCard from '../components/NextTrainingCard'
+import ReservasButton from '../components/ReservasButton'
 import StaleNotice from '../components/StaleNotice'
 import { useAsync, useDocumentTitle } from '../hooks'
 import { statusLabel, typeLabel } from '../labels'
@@ -26,7 +26,7 @@ export default function HomePage() {
       <PageHeader title="Club Frontenis Ciudad de Jaén" subtitle="Ligas, torneos y entrenamientos" />
       <StaleNotice savedAt={comps.savedAt ?? trainings.savedAt} error={error} />
 
-      <NextTrainingCard />
+      <ReservasButton label="Ver todas las reservas" />
 
       <section aria-labelledby="h-entreno">
         <h2 id="h-entreno" className="section-title">Entrenamiento</h2>

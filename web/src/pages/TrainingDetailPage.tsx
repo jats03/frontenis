@@ -12,6 +12,7 @@ import PlayerPicker from '../components/PlayerPicker'
 import StaleNotice from '../components/StaleNotice'
 import SubTabs from '../components/SubTabs'
 import { useAsync, useDocumentTitle } from '../hooks'
+import LoadingBlock from '../components/LoadingBlock'
 
 type Slots = [string, string, string, string]
 const EMPTY: Slots = ['', '', '', '']
@@ -132,7 +133,7 @@ export default function TrainingDetailPage() {
   }
 
   if (error && !data) return <p className="error">{error}</p>
-  if (!data) return loading ? <p className="muted">Cargando…</p> : null
+  if (!data) return loading ? <LoadingBlock /> : null
 
   const s = data.summary
   const slotSelect = (i: number, label: string) => (

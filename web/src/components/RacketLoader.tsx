@@ -21,9 +21,9 @@ function Racket({ className }: { className: string }) {
  * Animación de carga: dos raquetas se pasan una pelota. La pelota sube y baja en arco mientras viaja de una
  * raqueta a la otra, que golpean justo al llegar. Es decorativa (el aviso accesible lo da el componente que la usa).
  */
-export default function RacketLoader() {
+export default function RacketLoader({ size = 160 }: { size?: number }) {
   return (
-    <svg className="rally" style={{ color: 'var(--loader-ink)' }} viewBox="0 0 160 84" width="160" height="84" aria-hidden="true" focusable="false">
+    <svg className="rally" style={{ color: 'var(--loader-ink)' }} viewBox="0 0 160 84" width={size} height={Math.round((size * 84) / 160)} aria-hidden="true" focusable="false">
       <ellipse className="rally-shadow" cx="80" cy="78" rx="6" ry="1.6" fill="#000" />
       <Racket className="racket-left" />
       <g transform="translate(160 0) scale(-1 1)"><Racket className="racket-right" /></g>
