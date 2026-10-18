@@ -19,13 +19,16 @@ export default function RotatingAddPlayer({ detail, players, onChanged }: Props)
   const available = players.filter(p => !taken.has(p.id)).sort((a, b) => a.name.localeCompare(b.name, 'es'))
   const lastGroup = [...detail.groups].sort((a, b) => a.id - b.id).at(-1)
 
+  const locked = lastGroup !== undefined &&
+    detail.matches.some(m => m.groupId === lastGroup.id && m.isPlayed)
+
   async function add() {
     if (!playerId) return
     setBusy(true)
     setError(null)
     try {
       await api.competitions.addRotatingPlayer(detail.summary.id, Number(playerId))
-      notify('Jugador añadido; partidos pendientes recalculados')
+      notify('Jugador añadido; partidos del grupo recalculados')
       setPlayerId('')
       await onChanged()
     } catch (e) {
@@ -39,11 +42,13 @@ export default function RotatingAddPlayer({ detail, players, onChanged }: Props)
     <section className="card">
       <h2>Añadir jugador</h2>
       <p className="muted">
-        Entra en {lastGroup ? lastGroup.name : 'el último grupo'}. Los partidos ya jugados se conservan y los pendientes
-        de ese grupo se vuelven a calcular.
+        Entra en {lastGroup ? lastGroup.name : 'el último grupo'} y se vuelven a calcular todos sus partidos.
+        Solo es posible mientras en ese grupo no se haya jugado ninguno.
       </p>
       {error && <p className="error" role="alert">{error}</p>}
-      {available.length === 0
+      {locked
+        ? <p className="muted">Ya se ha jugado algún partido en {lastGroup?.name}: no se pueden añadir más jugadores.</p>
+        : available.length === 0
         ? <p className="muted">No quedan jugadores fuera de esta liga.</p>
         : (
           <div className="row">

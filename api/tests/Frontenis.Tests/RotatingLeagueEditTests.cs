@@ -54,29 +54,25 @@ public class RotatingLeagueEditTests
     }
 
     [Fact]
-    public void Played_matches_are_kept_and_new_rounds_continue_after_them()
+    public void Cannot_add_a_player_once_a_match_of_the_last_group_was_played()
     {
         var c = Started();
         var last = Last(c);
-        var first = InGroup(c, last).First(m => m.Round == 1);
-        Play(c, first);
-        var keptId = first.Id;
-        var keptHome = first.HomeEntry!.Pair.Player1Id;
+        Play(c, InGroup(c, last).First());
+        var before = InGroup(c, last).Select(m => m.Id).ToList();
 
+        Assert.Throws<DomainException>(() => c.AddPlayerToLastGroup(TestHelpers.Player(99, "Nuevo", PlayerPosition.Zaguero), Planner()));
+        Assert.Equal(before, InGroup(c, last).Select(m => m.Id).ToList());
+        Assert.Equal(4, c.GroupPlayers(last).Count);
+    }
+
+    [Fact]
+    public void A_played_match_in_another_group_does_not_block_adding()
+    {
+        var c = Started();
+        Play(c, InGroup(c, c.Groups.First()).First());
         c.AddPlayerToLastGroup(TestHelpers.Player(99, "Nuevo", PlayerPosition.Zaguero), Planner());
-
-        var after = InGroup(c, last);
-        var kept = after.Single(m => m.Id == keptId);
-        Assert.True(kept.IsPlayed);
-        Assert.Equal(1, kept.Round);
-        Assert.Equal(keptHome, kept.HomeEntry!.Pair.Player1Id);
-        Assert.All(after.Where(m => m.Id != keptId), m => { Assert.False(m.IsPlayed); Assert.True(m.Round >= 2); });
-        // en cada jornada nadie juega dos veces
-        foreach (var round in after.GroupBy(m => m.Round))
-        {
-            var ids = round.SelectMany(m => new[] { m.HomeEntry!.Pair.Player1Id, m.HomeEntry.Pair.Player2Id, m.AwayEntry!.Pair.Player1Id, m.AwayEntry.Pair.Player2Id }).ToList();
-            Assert.Equal(ids.Count, ids.Distinct().Count());
-        }
+        Assert.Equal(5, c.GroupPlayers(Last(c)).Count);
     }
 
     [Fact]

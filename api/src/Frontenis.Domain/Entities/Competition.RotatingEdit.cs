@@ -10,25 +10,26 @@ namespace Frontenis.Domain.Entities;
 public sealed partial class Competition
 {
     /// <summary>
-    /// Añade un jugador al último grupo (el de menos nivel) y recalcula las jornadas que faltan de ese grupo:
-    /// los partidos ya jugados se conservan y los pendientes se vuelven a planificar con el jugador nuevo.
-    /// Devuelve las parejas que han quedado sin partido, para que quien persiste las elimine.
+    /// Añade un jugador al último grupo (el de menos nivel) y vuelve a planificar por completo las jornadas de ese grupo.
+    /// Solo se permite si en ese grupo no se ha jugado ningún partido: así el reparto de compañeros y rivales sigue
+    /// siendo equilibrado. Devuelve las parejas que han quedado sin partido, para que quien persiste las elimine.
     /// </summary>
-    /// <exception cref="DomainException">Liga no sorteada o terminada, o jugador que ya participa.</exception>
+    /// <exception cref="DomainException">Liga no sorteada o terminada, jugador que ya participa o grupo con partidos jugados.</exception>
     public IReadOnlyList<Pair> AddPlayerToLastGroup(Player player, IRotationPlanner planner)
     {
         EnsureRotatingInProgress();
         if (_entries.Any(e => e.Pair.Contains(player.Id))) throw new DomainException("Ese jugador ya participa en la liga.");
 
         var group = _groups.OrderBy(g => g.Id).Last();
+        if (GroupMatches(group).Any(m => m.IsPlayed))
+            throw new DomainException("Solo se puede añadir un jugador si en el último grupo no se ha jugado ningún partido.");
+
         var players = GroupPlayers(group).Append(player).ToList();
-        var lastPlayedRound = GroupMatches(group).Where(m => m.IsPlayed).Select(m => m.Round).DefaultIfEmpty(0).Max();
-        var removed = RemoveGroupMatches(group, m => !m.IsPlayed);
+        var removed = RemoveGroupMatches(group, _ => true);
 
         // Jornadas totales: las fijadas en la liga o, si no, las necesarias para que todos jueguen con todos.
         var total = Rounds > 0 ? Rounds : RotationMath.FullRounds(players.Count);
-        var remaining = Math.Max(1, total - lastPlayedRound);
-        AppendRounds(group, planner.Plan(players, remaining), lastPlayedRound);
+        AppendRounds(group, planner.Plan(players, total), 0);
 
         PairCount++;
         RefreshStatus();
