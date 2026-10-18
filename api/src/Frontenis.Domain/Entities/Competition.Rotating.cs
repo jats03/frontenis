@@ -67,22 +67,28 @@ public sealed partial class Competition
         {
             var group = new Group(GroupName(g));
             _groups.Add(group);
-            var order = 0;
-            foreach (var round in planner.Plan(groups[g], Rounds > 0 ? Rounds : RotationMath.FullRounds(groups[g].Count)))
-            {
-                foreach (var m in round.Matches)
-                {
-                    var home = new CompetitionEntry(new Pair(m.Home.First, m.Home.Second));
-                    var away = new CompetitionEntry(new Pair(m.Away.First, m.Away.Second));
-                    home.AssignToGroup(group);
-                    away.AssignToGroup(group);
-                    _entries.Add(home);
-                    _entries.Add(away);
-                    _matches.Add(Match.ForGroup(group, round.Number, ++order, home, away));
-                }
-            }
+            AppendRounds(group, planner.Plan(groups[g], Rounds > 0 ? Rounds : RotationMath.FullRounds(groups[g].Count)), 0);
         }
         Status = CompetitionStatus.GroupStage;
+    }
+
+    /// <summary>Añade al grupo los partidos de las jornadas planificadas, numeradas a partir de <paramref name="roundOffset"/> + 1.</summary>
+    private void AppendRounds(Group group, IReadOnlyList<PlannedRound> plan, int roundOffset)
+    {
+        var order = GroupMatches(group).Select(m => m.Order).DefaultIfEmpty(0).Max();
+        foreach (var round in plan)
+        {
+            foreach (var m in round.Matches)
+            {
+                var home = new CompetitionEntry(new Pair(m.Home.First, m.Home.Second));
+                var away = new CompetitionEntry(new Pair(m.Away.First, m.Away.Second));
+                home.AssignToGroup(group);
+                away.AssignToGroup(group);
+                _entries.Add(home);
+                _entries.Add(away);
+                _matches.Add(Match.ForGroup(group, roundOffset + round.Number, ++order, home, away));
+            }
+        }
     }
 
     /// <summary>Jugadores distintos que participan en un grupo de una liga rotatoria.</summary>

@@ -146,6 +146,10 @@ export const api = {
       request<CompetitionDetail>('POST', `/api/competitions/${id}/draw-rotating-manual`, { groups }),
     drawRotating: (id: number, playerIds: number[]) =>
       request<CompetitionDetail>('POST', `/api/competitions/${id}/draw-rotating`, { playerIds }),
+    addRotatingPlayer: (id: number, playerId: number) =>
+      request<CompetitionDetail>('POST', `/api/competitions/${id}/rotating/players`, { playerId }),
+    removeRound: (id: number, groupId: number, round: number) =>
+      request<CompetitionDetail>('DELETE', `/api/competitions/${id}/groups/${groupId}/rounds/${round}`),
     nextLeague: (id: number) => request<CompetitionSummary>('POST', `/api/competitions/${id}/next-league`),
     playoffs: (id: number) => request<CompetitionDetail>('POST', `/api/competitions/${id}/playoffs`),
   },
@@ -253,6 +257,8 @@ export const api = {
   matches: {
     setResult: (id: number, sets: SetScore[]) =>
       request<MatchDto>('PUT', `/api/matches/${id}/result`, { sets }),
+    moveToRound: (id: number, round: number) =>
+      request<CompetitionDetail>('PUT', `/api/matches/${id}/round`, { round }),
     clearResult: (id: number) => request<MatchDto>('DELETE', `/api/matches/${id}/result`),
   },
 }

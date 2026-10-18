@@ -29,6 +29,13 @@ public sealed class CompetitionRepository : ICompetitionRepository
     public async Task AddAsync(Competition competition, CancellationToken ct = default) =>
         await _db.Competitions.AddAsync(competition, ct);
 
+    public async Task DeleteOrphanPairsAsync(IReadOnlyCollection<int> pairIds, CancellationToken ct = default)
+    {
+        if (pairIds.Count == 0) return;
+        await _db.Set<Pair>().Where(p => pairIds.Contains(p.Id) && !_db.Entries.Any(e => e.PairId == p.Id))
+            .ExecuteDeleteAsync(ct);
+    }
+
     public async Task DeleteAsync(int id, CancellationToken ct = default)
     {
         // Con EnableRetryOnFailure, EF Core no permite abrir una transacción manual fuera de la

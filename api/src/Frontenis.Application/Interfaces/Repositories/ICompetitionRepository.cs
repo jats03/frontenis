@@ -13,6 +13,8 @@ public interface ICompetitionRepository
     Task<Competition?> GetDetailedByMatchIdAsync(int matchId, CancellationToken ct = default);
     /// <summary>Añade una competición nueva (se persiste con <see cref="IUnitOfWork.SaveChangesAsync"/>).</summary>
     Task AddAsync(Competition competition, CancellationToken ct = default);
+    /// <summary>Elimina, de las parejas indicadas, las que ya no tienen ninguna inscripción.</summary>
+    Task DeleteOrphanPairsAsync(IReadOnlyCollection<int> pairIds, CancellationToken ct = default);
     /// <summary>Elimina la competición con todos sus grupos, inscripciones y partidos.</summary>
     Task DeleteAsync(int id, CancellationToken ct = default);
 }

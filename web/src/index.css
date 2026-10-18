@@ -200,6 +200,9 @@ th[aria-sort="descending"] button.link-button::after { content: ' ▼'; }
 .suggestions { list-style: none; padding: 0; display: grid; gap: .6rem; }
 .suggestions li { border: 1px solid var(--border); border-radius: 10px; padding: .6rem .8rem; display: grid; gap: .2rem; }
 .suggestions li.best { border-color: var(--primary); background: var(--win); }
+.round-mover { margin: -.2rem 0 .6rem; font-size: .85rem; }
+.round-mover select { padding: .2rem .4rem; }
+.round-head { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
 button.small { padding: .15rem .5rem; font-size: .85rem; margin-left: .4rem; }
 
 .source-filter summary { cursor: pointer; font-weight: 600; }

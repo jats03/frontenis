@@ -61,6 +61,13 @@ public sealed class Match
     internal static Match ForGroup(Group group, int round, int order, CompetitionEntry home, CompetitionEntry away) =>
         new(MatchPhase.Group, round, order) { Group = group, HomeEntry = home, AwayEntry = away };
 
+    /// <summary>Cambia el partido de jornada y su posición dentro del grupo (solo liga rotatoria).</summary>
+    internal void Reschedule(int round, int order)
+    {
+        Round = round;
+        Order = order;
+    }
+
     internal static Match ForPlayoff(int round, int order) => new(MatchPhase.Playoff, round, order);
 
     internal void LinkTo(Match next, BracketSlot slot)
