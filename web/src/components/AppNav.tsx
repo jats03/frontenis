@@ -1,7 +1,9 @@
 import type { ReactNode } from 'react'
 import { NavLink } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
+import { greetingFor } from '../avatar'
 import { useDevice } from '../useDevice'
+import PlayerAvatar from './PlayerAvatar'
 import { CalendarIcon, HomeIcon, MoreIcon, TrophyIcon, UsersIcon } from './Icons'
 
 const items: { to: string; label: string; short?: string; icon: ReactNode; end?: boolean }[] = [
@@ -23,7 +25,15 @@ export default function AppNav() {
       <NavLink to="/" className="brand" aria-label="Club Frontenis Ciudad de Jaén, inicio">
         <img src="/logo.png" alt="" className="logo" />
       </NavLink>
-      {firstName && <span className="greeting" title={`Eres ${me!.owner.name}`}>Hola, {firstName}</span>}
+      {firstName && (
+        <span className="greeting" title={`Eres ${me!.owner.name}`}>
+          <span className="greeting-text">
+            <span className="greeting-hello">{greetingFor(new Date())}</span>
+            <strong className="greeting-name">{firstName}</strong>
+          </span>
+          <PlayerAvatar playerId={me!.owner.id} size={40} className="greeting-avatar" />
+        </span>
+      )}
     </header>
     <nav aria-label="Principal" className="main-nav">
       {items.map(i => (

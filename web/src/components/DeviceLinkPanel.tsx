@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { notify } from '../alerts'
 import { api } from '../api/client'
 import { useAsync } from '../hooks'
+import PlayerAvatar from './PlayerAvatar'
 import type { DeviceState } from '../useDevice'
 
 type Device = DeviceState
@@ -23,8 +24,11 @@ function Linked({ device }: { device: Device }) {
   }
   return (
     <div className="row between device-bar">
-      <span>Eres <strong>{me.owner.name}</strong>
+      <span className="device-who">
+        <PlayerAvatar playerId={me.owner.id} size={36} />
+        <span>Eres <strong>{me.owner.name}</strong>
         {me.delegates.length > 0 && <span className="muted"> · también puedes apuntar a {me.delegates.map(d => d.name).join(', ')}</span>}
+        </span>
       </span>
       <button type="button" className="secondary" onClick={() => void unlink()}>No soy yo</button>
       {error && <p className="error" role="alert">{error}</p>}

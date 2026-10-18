@@ -351,5 +351,12 @@ li.card.inactive { opacity: .65; }
 .row.align-end { align-items: flex-end; }
 .week-title { font-size: 1rem; margin: 1.4rem 0 .2rem; padding-bottom: .3rem; border-bottom: 2px solid var(--primary); color: var(--primary); }
 .slot-week .slot-day { margin-top: .9rem; }
-.topbar .greeting { color: #fff; font-weight: 600; margin-left: auto; padding-left: .75rem; max-width: 70%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-@media (min-width: 900px) { .topbar .greeting { margin-left: 1rem; padding-left: 0; } }
+.topbar .greeting { display: flex; align-items: center; gap: .6rem; margin-left: auto; max-width: 70%; color: #fff; min-width: 0; }
+.greeting-text { display: grid; line-height: 1.15; text-align: right; min-width: 0; }
+.greeting-hello { font-size: .78rem; opacity: .9; }
+.greeting-name { font-size: 1rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.greeting-hello { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.greeting-avatar { flex: none; border-radius: 50%; box-shadow: 0 0 0 2px #fff; }
+@media (min-width: 900px) { .topbar .greeting { margin-left: 1rem; } .greeting-text { text-align: left; order: 2; } }
+.device-who { display: inline-flex; align-items: center; gap: .6rem; min-width: 0; }
+.device-who svg { flex: none; border-radius: 50%; }
