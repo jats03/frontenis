@@ -23,6 +23,10 @@ export default function PlayerCard({ playerId, onClose }: Props) {
   const summary = data?.summary
   const card = summary ? cardFromHistory(summary) : null
   const name = summary?.name ?? ''
+  const counts: [string, string, number][] = summary ? [
+    ['V', 'Victorias', summary.won], ['D', 'Derrotas', summary.lost], ['SET', 'Sets ganados', summary.setsFor],
+    ['TF', 'Tantos a favor', summary.tantosFor], ['TC', 'Tantos en contra', summary.tantosAgainst], ['PAR', 'Partidos jugados', summary.played],
+  ] : []
 
   return (
     <dialog ref={ref} className="card-dialog" aria-label={name ? `Carta de ${name}` : 'Carta del jugador'}
@@ -42,15 +46,14 @@ export default function PlayerCard({ playerId, onClose }: Props) {
           <p className="fut-position">{summary.position}</p>
           {card.played === 0 && <p className="fut-empty">Aún sin partidos: la carta se irá llenando al jugar.</p>}
           <ul className="fut-stats" aria-label="Estadísticas">
-            {card.stats.map(s => (
-              <li key={s.key} title={s.title}>
-                <strong>{card.played === 0 ? '–' : s.value}</strong>
-                <span>{s.label}</span>
-                <span className="sr-only"> {s.title}</span>
+            {counts.map(([label, title, value]) => (
+              <li key={label} title={title}>
+                <strong>{value}</strong>
+                <span aria-hidden="true">{label}</span>
+                <span className="sr-only"> {title}</span>
               </li>
             ))}
           </ul>
-          <p className="fut-foot">{summary.won} ganados · {summary.played} partidos</p>
         </div>
       )}
       <button type="button" className="secondary fut-close" onClick={() => ref.current?.close()}>Cerrar</button>

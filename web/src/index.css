@@ -434,6 +434,6 @@ body:has(.loading-block) .spinner-overlay { display: none; }
 .fut-stats li { display: flex; justify-content: center; align-items: baseline; gap: .35rem; }
 .fut-stats strong { font-size: 1.35rem; font-weight: 800; }
 .fut-stats li > span:not(.sr-only) { font-size: .8rem; font-weight: 700; letter-spacing: .04em; }
-.fut-foot { margin: .4rem 0 .6rem; font-size: .8rem; font-weight: 600; }
+
 button.secondary.fut-close { background: var(--card); }
 @media (prefers-reduced-motion: reduce) { .card-dialog[open] .fut-card { animation: none; } .greeting-avatar { transition: none; } }
