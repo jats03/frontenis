@@ -1,3 +1,6 @@
+import { useEffect } from 'react'
+import { loaderHidden, loaderShown } from '../alerts'
+
 /** Una raqueta de frontenis con el mango abajo, dibujada con su centro en x = 22 (pivote en la empuñadura). */
 function Racket({ className }: { className: string }) {
   return (
@@ -22,6 +25,8 @@ function Racket({ className }: { className: string }) {
  * raqueta a la otra, que golpean justo al llegar. Es decorativa (el aviso accesible lo da el componente que la usa).
  */
 export default function RacketLoader({ size = 160 }: { size?: number }) {
+  // Mientras las raquetas están en pantalla, los avisos esperan (ver alerts.ts).
+  useEffect(() => { loaderShown(); return loaderHidden }, [])
   return (
     <svg className="rally" style={{ color: 'var(--loader-ink)' }} viewBox="0 0 160 84" width={size} height={Math.round((size * 84) / 160)} aria-hidden="true" focusable="false">
       <ellipse className="rally-shadow" cx="80" cy="78" rx="6" ry="1.6" fill="#000" />

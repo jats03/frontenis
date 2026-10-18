@@ -4,9 +4,22 @@ const toast = Swal.mixin({
   toast: true, position: 'top-end', showConfirmButton: false, timer: 2800, timerProgressBar: true,
 })
 
-/** Aviso breve tras crear, generar o eliminar algo. */
+// Mientras se muestra algún «Cargando…» (las raquetas) no sale ningún aviso: se guarda y se enseña al terminar.
+let loadersShown = 0
+let waiting: (() => void) | null = null
+
+/** Lo llaman los avisos de carga al aparecer y al desaparecer. */
+export function loaderShown() { loadersShown++ }
+export function loaderHidden() {
+  loadersShown = Math.max(0, loadersShown - 1)
+  if (loadersShown === 0 && waiting) { const show = waiting; waiting = null; show() }
+}
+
+/** Aviso breve tras crear, generar o eliminar algo. Si hay una carga en pantalla, espera a que termine. */
 export function notify(title: string, icon: 'success' | 'info' = 'success') {
-  void toast.fire({ icon, title })
+  const show = () => { void toast.fire({ icon, title }) }
+  if (loadersShown > 0) waiting = show // solo se conserva el último aviso pendiente
+  else show()
 }
 
 /** Pide un texto (p. ej. un nuevo nombre). Devuelve null si se cancela. */
