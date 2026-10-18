@@ -351,7 +351,6 @@ li.card.inactive { opacity: .65; }
 .row.align-end { align-items: flex-end; }
 .week-title { font-size: 1rem; margin: 1.4rem 0 .2rem; padding-bottom: .3rem; border-bottom: 2px solid var(--primary); color: var(--primary); }
 .slot-week .slot-day { margin-top: .9rem; }
-.topbar a.greeting { display: block; min-height: 0; color: #fff; font-weight: 600; max-width: 45%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.topbar .greeting:hover { text-decoration: underline; }
-@media (max-width: 899px) { .topbar a.greeting { position: absolute; right: 1rem; max-width: calc(50% - 22px - 1.5rem); } }
-@media (min-width: 900px) { .topbar a.greeting { margin-left: 1rem; } }
+.topbar .greeting { color: #fff; font-weight: 600; max-width: 45%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 899px) { .topbar .greeting { position: absolute; right: 1rem; max-width: calc(50% - 22px - 1.5rem); } }
+@media (min-width: 900px) { .topbar .greeting { margin-left: 1rem; } }

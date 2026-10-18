@@ -23,7 +23,7 @@ export default function AppNav() {
       <NavLink to="/" className="brand" aria-label="Club Frontenis Ciudad de Jaén, inicio">
         <img src="/logo.png" alt="" className="logo" />
       </NavLink>
-      {firstName && <NavLink to="/reservas" className="greeting" title={`Eres ${me!.owner.name}`}>Hola, {firstName}</NavLink>}
+      {firstName && <span className="greeting" title={`Eres ${me!.owner.name}`}>Hola, {firstName}</span>}
     </header>
     <nav aria-label="Principal" className="main-nav">
       {items.map(i => (
