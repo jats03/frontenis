@@ -30,7 +30,7 @@ export default function PlayerCard({ playerId, onClose }: Props) {
 
   return (
     <dialog ref={ref} className="card-dialog" aria-label={name ? `Carta de ${name}` : 'Carta del jugador'}
-      onClose={onClose} onClick={e => { if (e.target === ref.current) ref.current?.close() }}>
+      onClose={onClose} onClick={() => ref.current?.close()}>
       {!summary || !card ? (
         error ? <p role="alert">{error}</p> : <LoadingBlock />
       ) : (
@@ -56,7 +56,7 @@ export default function PlayerCard({ playerId, onClose }: Props) {
           </ul>
         </div>
       )}
-      <button type="button" className="secondary fut-close" onClick={() => ref.current?.close()}>Cerrar</button>
+      {summary && <button type="button" className="secondary fut-close" onClick={() => ref.current?.close()}>Cerrar</button>}
     </dialog>
   )
 }
