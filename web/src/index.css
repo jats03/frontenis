@@ -440,7 +440,27 @@ body:has(.loading-block) .spinner-overlay { display: none; }
 .fut-hint { margin: .3rem 0 .4rem; min-height: 2.4em; font-size: .8rem; line-height: 1.25; display: flex; align-items: center; justify-content: center; text-align: center; gap: .3rem; }
 
 button.secondary.fut-close { background: var(--card); }
-@media (prefers-reduced-motion: reduce) { .card-dialog[open] .fut-card { animation: none; } .greeting-avatar { transition: none; } }
+/* Inclinación 3D hacia el puntero y reflejo que lo sigue; las de oro llevan además un brillo holográfico. */
+.fut-tilt { perspective: 700px; width: min(300px, 86vw); margin: 0 auto; --rx: 0deg; --ry: 0deg; --mx: 50%; --my: 30%; }
+.fut-tilt .fut-card { position: relative; overflow: hidden; margin-bottom: 1rem; transform: rotateX(var(--rx)) rotateY(var(--ry)); transition: transform .35s ease-out; }
+.fut-tilt.tilting .fut-card { transition: transform .06s linear; }
+.fut-card::after { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: .0;
+  background: radial-gradient(circle at var(--mx) var(--my), rgba(255, 255, 255, .85), rgba(255, 255, 255, 0) 55%); mix-blend-mode: soft-light; transition: opacity .3s; }
+.fut-tilt.tilting .fut-card::after { opacity: .9; }
+.fut-card.gold::before { content: ''; position: absolute; inset: -40% -60%; pointer-events: none; opacity: .35; mix-blend-mode: color-dodge;
+  background: linear-gradient(105deg, transparent 38%, rgba(255, 255, 255, .9) 48%, rgba(120, 220, 255, .6) 52%, rgba(255, 140, 220, .5) 56%, transparent 66%);
+  animation: fut-sweep 3.6s ease-in-out .5s infinite; }
+@keyframes fut-sweep { 0% { transform: translateX(-60%); } 55%, 100% { transform: translateX(60%); } }
+.fut-levelup { position: relative; z-index: 2; margin: 0 0 .8rem; font-weight: 800; font-size: 1.3rem; color: #f6e27a; text-shadow: 0 2px 8px rgba(0, 0, 0, .7);
+  animation: fut-pop .7s cubic-bezier(.2, 1.4, .4, 1) .3s both; }
+@keyframes fut-pop { from { transform: scale(.3); opacity: 0; } to { transform: none; opacity: 1; } }
+.fut-confetti { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 1; }
+.fut-confetti i { position: absolute; top: -12px; width: 8px; height: 14px; border-radius: 2px; opacity: 0; animation: fut-fall 2.4s ease-in both; }
+@keyframes fut-fall { 0% { transform: translate(0, 0) rotate(0); opacity: 1; } 100% { transform: translate(var(--drift), 105vh) rotate(var(--spin)); opacity: .9; } }
+@media (prefers-reduced-motion: reduce) {
+  .card-dialog[open] .fut-card { animation: none; } .greeting-avatar { transition: none; }
+  .fut-tilt .fut-card { transition: none; } .fut-card.gold::before, .fut-levelup { animation: none; } .fut-confetti { display: none; }
+}
 /* El «Cargando…» sobre el fondo oscurecido va en claro (el fondo es oscuro en modo claro y oscuro) */
 .card-dialog .loading-block { color: #fff; }
 .card-dialog .loading-text { color: #fff; font-weight: 600; text-shadow: 0 1px 3px rgba(0, 0, 0, .6); }
