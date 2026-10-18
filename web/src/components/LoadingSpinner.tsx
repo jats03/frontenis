@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import RacketLoader from './RacketLoader'
 
 const DELAY_MS = 150 // evita parpadeos en peticiones muy rápidas
 
@@ -27,7 +28,10 @@ export default function LoadingSpinner() {
   if (!visible) return null
   return (
     <div className="spinner-overlay" role="status" aria-live="polite" aria-label="Cargando">
-      <div className="loader" />
+      <div className="loader-card">
+        <RacketLoader />
+        <span className="loader-text" aria-hidden="true">Cargando…</span>
+      </div>
       <span className="sr-only">Cargando…</span>
     </div>
   )
