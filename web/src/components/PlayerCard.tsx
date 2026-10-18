@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { api } from '../api/client'
 import type { HistoryFilter } from '../api/types'
 import { cardFromHistory, positionCode } from '../cardStats'
@@ -23,10 +23,14 @@ export default function PlayerCard({ playerId, onClose }: Props) {
   const summary = data?.summary
   const card = summary ? cardFromHistory(summary) : null
   const name = summary?.name ?? ''
-  const counts: [string, string, number][] = summary ? [
-    ['V', 'Victorias', summary.won], ['D', 'Derrotas', summary.lost], ['SET', 'Sets ganados', summary.setsFor],
-    ['TF', 'Tantos a favor', summary.tantosFor], ['TC', 'Tantos en contra', summary.tantosAgainst], ['PAR', 'Partidos jugados', summary.played],
+  const [hint, setHint] = useState<string | null>(null)
+  const diff = summary ? summary.tantosFor - summary.tantosAgainst : 0
+  const counts: [string, string, string][] = summary ? [
+    ['V', 'Victorias', String(summary.won)], ['D', 'Derrotas', String(summary.lost)], ['SET', 'Sets ganados', String(summary.setsFor)],
+    ['DT', 'Diferencia de tantos (a favor menos en contra)', diff > 0 ? `+${diff}` : diff < 0 ? `−${-diff}` : '0'],
+    ['PAR', 'Partidos jugados', String(summary.played)],
   ] : []
+  const hinted = counts.find(([label]) => label === hint)
 
   return (
     <dialog ref={ref} className="card-dialog" aria-label={name ? `Carta de ${name}` : 'Carta del jugador'}
@@ -47,13 +51,20 @@ export default function PlayerCard({ playerId, onClose }: Props) {
           {card.played === 0 && <p className="fut-empty">Aún sin partidos: la carta se irá llenando al jugar.</p>}
           <ul className="fut-stats" aria-label="Estadísticas">
             {counts.map(([label, title, value]) => (
-              <li key={label} title={title}>
-                <strong>{value}</strong>
-                <span aria-hidden="true">{label}</span>
-                <span className="sr-only"> {title}</span>
+              <li key={label}>
+                {/* En el móvil no hay «pasar el ratón»: al tocar una sigla se explica debajo. */}
+                <button type="button" className="fut-stat" aria-pressed={hint === label} title={title}
+                  onClick={e => { e.stopPropagation(); setHint(h => (h === label ? null : label)) }}>
+                  <strong>{value}</strong>
+                  <span aria-hidden="true">{label}</span>
+                  <span className="sr-only"> {title}</span>
+                </button>
               </li>
             ))}
           </ul>
+          <p className="fut-hint" aria-live="polite">
+            {hinted ? <span><strong>{hinted[0]}</strong> · {hinted[1]}</span> : 'Toca una sigla para ver qué significa'}
+          </p>
         </div>
       )}
       {summary && <button type="button" className="secondary fut-close" onClick={() => ref.current?.close()}>Cerrar</button>}
