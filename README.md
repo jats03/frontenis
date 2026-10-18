@@ -25,7 +25,7 @@ La API crea la base de datos al arrancar (`EnsureCreated`; el esquema equivalent
 y siembra el administrador definido en `appsettings.json` (`Admin:Username` / `Admin:Password`,
 por defecto `admin` / `Cambia-Esta-Clave-2026!`). **Cámbialos y cambia `Jwt:Key` antes de publicar:** en producción
 la API se niega a arrancar con la clave JWT de ejemplo, y la contraseña inicial debe tener al menos 12 caracteres.
-Cualquier visitante puede consultar; solo el administrador crea o modifica datos.
+Cualquier visitante puede consultar; solo el administrador crea o modifica datos (salvo reservas y registrar partidos de entrenamiento, que también pueden hacer los jugadores con el dispositivo vinculado).
 
 ### Seguridad de la autenticación
 
@@ -78,6 +78,7 @@ Todo lo que se hace queda anotado, con **quién** lo hace: el administrador (por
 - **Tabla `AuditLogs`**: solo las acciones que modifican datos (POST, PUT y DELETE, incluido el inicio de sesión), con fecha, autor, ruta y resultado.
 - **Retención**: se borran solas pasados 30 días (`Audit:RetentionDays`, variable `Audit__RetentionDays`).
 - No se guardan contraseñas, cuerpos de petición ni el identificador del dispositivo; los textos se limpian para que nadie pueda falsear líneas del registro.
+- El administrador lo consulta en **/registro** (Más → Registro de actividad), con filtros por autor, texto, tipo y fechas; `GET api/audit` (solo admin).
 - Está indicado en la política de privacidad (`/privacidad`).
 
 ## Estructura del repositorio

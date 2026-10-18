@@ -2,7 +2,7 @@ import type {
   CompetitionDetail, CompetitionSummary, CreateCompetition, GroupStandings, MatchDto,
   PairDto, PairingPreview, Player, PlayerHistory, PlayerHistoryRow, Position, SetScore,
   HistoryFilter, NewTrainingMatch, TrainingDetail, TrainingSuggestion, TrainingSummary,
-  DeviceLink, DeviceMe, PlayerDelegateRow, PlayerRef, SaveSlot, SaveSlotTemplate, Slot, SlotTemplate,
+  AuditPage, AuditQuery, DeviceLink, DeviceMe, PlayerDelegateRow, PlayerRef, SaveSlot, SaveSlotTemplate, Slot, SlotTemplate,
 } from './types'
 import { deviceHeaders, deviceToken, hasDeviceToken } from '../device'
 
@@ -216,6 +216,19 @@ export const api = {
     availablePlayers: () => request<PlayerRef[]>('GET', '/api/device/available-players'),
     link: (playerId: number) => request<DeviceMe>('POST', '/api/device/link', { playerId }, deviceHeaders()),
     unlink: () => request<void>('DELETE', '/api/device/link', undefined, deviceHeaders()),
+  },
+
+  audit: {
+    /** Registro de actividad (solo administrador). Las fechas son días locales (aaaa-mm-dd). */
+    search: (q: AuditQuery, pageSize = 50) => {
+      const p = new URLSearchParams({ page: String(q.page), pageSize: String(pageSize) })
+      if (q.actor) p.set('actor', q.actor)
+      if (q.text.trim()) p.set('text', q.text.trim())
+      if (q.method) p.set('method', q.method)
+      if (q.from) p.set('from', new Date(`${q.from}T00:00:00`).toISOString())
+      if (q.to) { const end = new Date(`${q.to}T00:00:00`); end.setDate(end.getDate() + 1); p.set('to', end.toISOString()) }
+      return request<AuditPage>('GET', `/api/audit?${p}`)
+    },
   },
 
   deviceLinks: {

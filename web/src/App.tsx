@@ -18,6 +18,7 @@ import ReservasPage from './pages/ReservasPage'
 import AccountPage from './pages/AccountPage'
 import TrainingDetailPage from './pages/TrainingDetailPage'
 import TrainingsPage from './pages/TrainingsPage'
+import AuditPage from './pages/AuditPage'
 import WhatsappPage from './pages/WhatsappPage'
 import TimerPage from './pages/TimerPage'
 
@@ -43,6 +44,7 @@ export default function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/competiciones" element={<CompetitionsPage />} />
           <Route path="/mas" element={<MorePage />} />
+          <Route path="/registro" element={<AuditPage />} />
           <Route path="/competiciones/nueva" element={<CompetitionNewPage />} />
           <Route path="/competiciones/:id" element={<CompetitionDetailPage />} />
           <Route path="/jugadores" element={<PlayersRoute />} />

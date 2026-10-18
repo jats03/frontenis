@@ -122,6 +122,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ISlotTemplateCommands, SlotTemplateCommands>();
 
         services.AddScoped<IDeviceAccessResolver, DeviceAccessResolver>();
+        services.AddScoped<IAuditQueries, AuditQueries>();
         services.AddScoped<IDeviceLinkService, DeviceLinkService>();
         services.AddScoped<IDeviceLinkAdminCommands, DeviceLinkAdminCommands>();
         services.AddScoped<IDeviceAttendanceCommands, DeviceAttendanceCommands>();

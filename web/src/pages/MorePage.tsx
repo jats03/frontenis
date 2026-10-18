@@ -32,6 +32,10 @@ export default function MorePage() {
               <strong>Mi cuenta</strong>
               <span className="muted">Cambiar la contraseña ({username}).</span>
             </Link>
+            <Link className="card link-card" to="/registro">
+              <strong>Registro de actividad</strong>
+              <span className="muted">Quién ha hecho qué: apuntarse, resultados, inicios de sesión…</span>
+            </Link>
             <button className="card link-card as-button" onClick={logout}>
               <strong>Cerrar sesión</strong>
               <span className="muted">Salir del modo administrador en este dispositivo.</span>

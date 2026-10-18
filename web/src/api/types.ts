@@ -129,3 +129,14 @@ export interface PlayerRef { id: number; name: string }
 export interface DeviceMe { owner: PlayerRef; delegates: PlayerRef[] }
 export interface DeviceLink { playerId: number; playerName: string; linkedAtUtc: string }
 export interface PlayerDelegateRow { ownerId: number; ownerName: string; delegateId: number; delegateName: string }
+
+/** Quién hace una acción registrada. */
+export type AuditActor = 'Visitor' | 'Player' | 'Admin'
+export interface AuditEntry {
+  id: number; atUtc: string; actor: AuditActor; actorName: string; playerId: number | null
+  method: string; path: string; status: number; durationMs: number
+}
+export interface AuditPage { items: AuditEntry[]; total: number; page: number; pageSize: number }
+export interface AuditQuery {
+  actor: AuditActor | ''; text: string; method: string; from: string; to: string; page: number
+}

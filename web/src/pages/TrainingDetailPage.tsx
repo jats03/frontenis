@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import Disclosure from '../components/Disclosure'
 import ActionMenu from '../components/ActionMenu'
 import PageHeader from '../components/PageHeader'
@@ -8,6 +8,7 @@ import { confirmDelete, notify, promptText } from '../alerts'
 import { api } from '../api/client'
 import type { Player, TrainingDetail, TrainingRow, TrainingSuggestion } from '../api/types'
 import { useAuth } from '../auth/AuthContext'
+import { useDevice } from '../useDevice'
 import PlayerPicker from '../components/PlayerPicker'
 import SubTabs from '../components/SubTabs'
 import { useAsync, useDocumentTitle } from '../hooks'
@@ -50,6 +51,9 @@ export default function TrainingDetailPage() {
   const id = Number(useParams().id)
   const navigate = useNavigate()
   const { isAdmin } = useAuth()
+  const { me } = useDevice()
+  // Registrar partidos: solo el administrador y los jugadores con el dispositivo vinculado («Soy yo»).
+  const canRegister = isAdmin || !!me
   const { data, setData, error, loading } = useAsync(() => api.trainings.get(id), [id], `/api/trainings/${id}`)
   const players = useAsync(() => api.players.list(), [], '/api/players')
   useDocumentTitle(data?.summary.name ?? 'Entrenamiento')
@@ -149,21 +153,26 @@ export default function TrainingDetailPage() {
       <PageHeader title={s.name}
         subtitle={<>{formatShortDate(s.date)} · {s.pointsPerWin} pts por victoria{s.pointsPerLoss > 0 && ` · ${s.pointsPerLoss} por derrota`}</>}
         actions={<>
-          {!formOpen && <button onClick={() => setFormOpen(true)}>+ Registrar partido</button>}
+          {canRegister && !formOpen && <button onClick={() => setFormOpen(true)}>+ Registrar partido</button>}
           <ActionMenu items={[
             { label: 'Todas las sesiones', onSelect: () => navigate('/entrenamientos') },
             { label: 'Editar nombre', hidden: !isAdmin, onSelect: () => void rename() },
             { label: 'Eliminar sesión', danger: true, hidden: !isAdmin, onSelect: () => void removeSession() },
           ]} />
         </>} />
+      {!isAdmin && me === null && (
+        <p className="muted" role="note">
+          Para registrar partidos tienes que identificarte como jugador: <Link to="/reservas">elige «Soy yo» en Reservas</Link>.
+        </p>
+      )}
       {!formOpen && formError && <p className="error" role="alert">{formError}</p>}
 
       <div className="training-layout">
         <div>
-          {formOpen && (
+          {canRegister && formOpen && (
             <section className="card form" id="nuevo-partido" aria-label="Registrar partido">
               <h2>Registrar partido</h2>
-              <p className="muted">Cualquier persona puede registrar un partido; solo el administrador puede borrarlos.</p>
+              <p className="muted">Pueden registrar partidos el administrador y los jugadores identificados; solo el administrador puede borrarlos.</p>
               <div className="cols">
                 {slotSelect(0, 'Pareja A · jugador 1')}{slotSelect(1, 'Pareja A · jugador 2')}
               </div>
