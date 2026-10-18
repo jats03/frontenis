@@ -125,6 +125,47 @@ public class BookingServiceTests
     }
 
     [Fact]
+    public async Task CloseWeek_undoes_early_openings_and_leaves_regular_ones()
+    {
+        var w = new BookingWorld();
+        await w.Schedule().GenerateAsync(new GenerateSlotsRequest(NextMonday, 1));
+        w.Clock.Now = new DateTime(2026, 10, 14, 12, 0, 0);       // la semana abre el viernes 16
+        Assert.Equal(2, (await w.Schedule().OpenWeekAsync(new OpenWeekRequest(NextMonday))).Opened);
+
+        var result = await w.Schedule().CloseWeekAsync(new OpenWeekRequest(NextMonday));
+
+        Assert.Equal(2, result.Closed);
+        Assert.All(w.Slots.Items, s => Assert.Equal(new DateTime(2026, 10, 16, 19, 0, 0), s.OpensAt));
+        Assert.Equal(0, (await w.Schedule().CloseWeekAsync(new OpenWeekRequest(NextMonday))).Closed);
+
+        w.Clock.Now = new DateTime(2026, 10, 17, 12, 0, 0);       // ya abiertas por su horario
+        Assert.Equal(0, (await w.Schedule().CloseWeekAsync(new OpenWeekRequest(NextMonday))).Closed);
+    }
+
+    [Fact]
+    public async Task Admin_can_close_a_slot_opened_by_mistake_and_the_dto_says_when()
+    {
+        var w = new BookingWorld();
+        await w.Schedule().GenerateAsync(new GenerateSlotsRequest(NextMonday, 1));
+        w.Clock.Now = new DateTime(2026, 10, 14, 12, 0, 0);
+        var id = w.Slots.Items.First().Id;
+
+        var opened = await w.Admin().OpenNowAsync(id);
+        Assert.Equal(SlotStatus.Open, opened.Status);
+        Assert.True(opened.CanCloseSignUps);
+
+        var closed = await w.Admin().CloseSignUpsAsync(id);
+        Assert.Equal(SlotStatus.Pending, closed.Status);
+        Assert.False(closed.CanCloseSignUps);
+
+        w.Clock.Now = new DateTime(2026, 10, 17, 12, 0, 0);       // abierta por su horario: no se puede cerrar
+        var regular = (await w.Queries().ListAsync(NextMonday, NextMonday, SlotAudience.Admin)).First(s => s.Id == id);
+        Assert.Equal(SlotStatus.Open, regular.Status);
+        Assert.False(regular.CanCloseSignUps);
+        await Assert.ThrowsAsync<DomainException>(() => w.Admin().CloseSignUpsAsync(id));
+    }
+
+    [Fact]
     public async Task Public_listing_shows_this_week_and_open_slots_but_the_admin_sees_everything()
     {
         var w = new BookingWorld();

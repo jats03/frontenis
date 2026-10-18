@@ -156,6 +156,26 @@ public class BookingDomainTests
     }
 
     [Fact]
+    public void CloseSignUps_undoes_an_early_opening_but_not_the_regular_one()
+    {
+        var s = Slot();                                          // se abre en Opens
+        var regular = Opens;
+        var now = Opens.AddDays(-1);
+        Assert.False(s.CloseSignUps(now, regular));              // ya estaba sin abrir
+        s.OpenNow(now);
+        Assert.True(s.CanCloseSignUps(now, regular));
+        Assert.True(s.CloseSignUps(now, regular));
+        Assert.Equal(regular, s.OpensAt);
+        Assert.False(s.IsOpen(now));
+
+        var later = Opens.AddHours(1);                           // ya llegó su hora habitual
+        Assert.False(s.CanCloseSignUps(later, regular));
+        Assert.Throws<DomainException>(() => s.CloseSignUps(later, regular));
+        s.Cancel();
+        Assert.Throws<DomainException>(() => s.CloseSignUps(now, regular));
+    }
+
+    [Fact]
     public void Reschedule_changes_the_slot_but_validates_it()
     {
         var s = Slot();

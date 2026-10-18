@@ -65,4 +65,19 @@ public sealed class SlotScheduleService : ISlotScheduleService
         if (opened > 0) await _uow.SaveChangesAsync(ct);
         return new OpenWeekResultDto(opened);
     }
+
+    public async Task<CloseWeekResultDto> CloseWeekAsync(OpenWeekRequest r, CancellationToken ct = default)
+    {
+        var monday = Weeks.MondayOf(r.WeekStart);
+        var now = _clock.Now;
+        var closed = 0;
+        foreach (var slot in await _slots.ListForUpdateAsync(monday, monday.AddDays(6), ct))
+        {
+            var scheduled = _opening.OpensAtFor(slot.Date);
+            if (slot.CanCloseSignUps(now, scheduled) && slot.CloseSignUps(now, scheduled)) closed++;
+        }
+
+        if (closed > 0) await _uow.SaveChangesAsync(ct);
+        return new CloseWeekResultDto(closed);
+    }
 }

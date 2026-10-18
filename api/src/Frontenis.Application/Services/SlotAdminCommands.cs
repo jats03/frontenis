@@ -51,6 +51,9 @@ public sealed class SlotAdminCommands : ISlotAdminCommands
     public Task<SlotDto> OpenNowAsync(int id, CancellationToken ct = default) =>
         ChangeAsync(id, slot => slot.OpenNow(_clock.Now), ct);
 
+    public Task<SlotDto> CloseSignUpsAsync(int id, CancellationToken ct = default) =>
+        ChangeAsync(id, slot => slot.CloseSignUps(_clock.Now, _opening.OpensAtFor(slot.Date)), ct);
+
     public async Task DeleteAsync(int id, CancellationToken ct = default)
     {
         _slots.Remove(await _slots.GetOrThrowAsync(id, ct));

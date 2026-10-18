@@ -69,6 +69,16 @@ public sealed class SlotsController : ControllerBase
     public async Task<ActionResult<GenerateSlotsResultDto>> Generate(GenerateSlotsRequest request, CancellationToken ct) =>
         Ok(await _schedule.GenerateAsync(request, ct));
 
+    /// <summary>Deshace «Abrir ya»: la franja vuelve a quedar sin abrir hasta su hora habitual (administrador).</summary>
+    [HttpPost("{id:int}/close"), AdminOnly]
+    public async Task<ActionResult<SlotDto>> CloseSignUps(int id, CancellationToken ct) =>
+        Ok(await _commands.CloseSignUpsAsync(id, ct));
+
+    /// <summary>Vuelve a cerrar las inscripciones abiertas antes de tiempo en toda una semana (administrador).</summary>
+    [HttpPost("close-week"), AdminOnly]
+    public async Task<ActionResult<CloseWeekResultDto>> CloseWeek(OpenWeekRequest request, CancellationToken ct) =>
+        Ok(await _schedule.CloseWeekAsync(request, ct));
+
     /// <summary>Abre ya las inscripciones de toda una semana (administrador).</summary>
     [HttpPost("open-week"), AdminOnly]
     public async Task<ActionResult<OpenWeekResultDto>> OpenWeek(OpenWeekRequest request, CancellationToken ct) =>

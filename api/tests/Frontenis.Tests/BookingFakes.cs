@@ -122,7 +122,7 @@ internal sealed class BookingWorld
 
     public SlotScheduleService Schedule() =>
         new(Slots, Templates, new WeeklySlotGenerator(), Opening, Clock, Uow);
-    public SlotDtoBuilder Builder() => new(Players, Clock, Options);
+    public SlotDtoBuilder Builder() => new(Players, Clock, Options, Opening);
     public AttendanceCommands Attendance() => new(Slots, Players, Builder(), Clock, Uow);
     public SlotAdminCommands Admin() => new(Slots, Builder(), Opening, Clock, Uow);
     public SlotQueries Queries() => new(Slots, Builder(), Clock);

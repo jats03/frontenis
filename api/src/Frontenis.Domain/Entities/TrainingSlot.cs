@@ -65,6 +65,29 @@ public sealed class TrainingSlot
         return true;
     }
 
+    /// <summary>
+    /// Se puede deshacer la apertura anticipada: la franja está abierta, no ha empezado ni está cancelada, y su
+    /// apertura programada (<paramref name="scheduledOpening"/>) todavía no ha llegado.
+    /// </summary>
+    public bool CanCloseSignUps(DateTime now, DateTime scheduledOpening) =>
+        !IsCancelled && now < StartsAt && OpensAt <= now && scheduledOpening > now;
+
+    /// <summary>
+    /// Vuelve a cerrar las inscripciones (deshace «Abrir ya»): la franja queda sin abrir hasta su apertura programada.
+    /// Los apuntados se conservan. Devuelve <c>false</c> si ya estaba sin abrir.
+    /// </summary>
+    /// <exception cref="DomainException">Cancelada, ya empezada o abierta por su horario habitual.</exception>
+    public bool CloseSignUps(DateTime now, DateTime scheduledOpening)
+    {
+        if (IsCancelled) throw new DomainException("La franja está cancelada.");
+        if (now >= StartsAt) throw new DomainException("La franja ya ha empezado.");
+        if (OpensAt > now) return false;
+        if (scheduledOpening <= now)
+            throw new DomainException("Esta franja se abre sola a esta hora. Si no quieres que se apunten, cancélala.");
+        OpensAt = scheduledOpening;
+        return true;
+    }
+
     /// <summary>Estado de la franja en el instante <paramref name="now"/> (hora local).</summary>
     public SlotStatus StatusAt(DateTime now)
     {

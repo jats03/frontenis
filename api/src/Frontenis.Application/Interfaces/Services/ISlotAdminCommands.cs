@@ -15,6 +15,8 @@ public interface ISlotAdminCommands
     Task<SlotDto> RestoreAsync(int id, CancellationToken ct = default);
     /// <summary>Abre ya las inscripciones de la franja.</summary>
     Task<SlotDto> OpenNowAsync(int id, CancellationToken ct = default);
+    /// <summary>Deshace «Abrir ya»: la franja vuelve a quedar sin abrir hasta su hora habitual (conserva los apuntados).</summary>
+    Task<SlotDto> CloseSignUpsAsync(int id, CancellationToken ct = default);
     /// <summary>Elimina la franja con sus apuntados.</summary>
     Task DeleteAsync(int id, CancellationToken ct = default);
 }

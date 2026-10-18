@@ -16,12 +16,14 @@ public sealed class SlotDtoBuilder : ISlotDtoBuilder
     private readonly IPlayerRepository _players;
     private readonly IClock _clock;
     private readonly BookingOptions _options;
+    private readonly IOpeningPolicy _opening;
 
-    public SlotDtoBuilder(IPlayerRepository players, IClock clock, BookingOptions options)
+    public SlotDtoBuilder(IPlayerRepository players, IClock clock, BookingOptions options, IOpeningPolicy opening)
     {
         _players = players;
         _clock = clock;
         _options = options;
+        _opening = opening;
     }
 
     public async Task<SlotDto> BuildAsync(TrainingSlot slot, CancellationToken ct = default) =>
@@ -44,6 +46,7 @@ public sealed class SlotDtoBuilder : ISlotDtoBuilder
             .Select(a => new SlotAttendeeDto(a.PlayerId, names.GetValueOrDefault(a.PlayerId, "—")))
             .ToList();
         return new SlotDto(s.Id, s.Date, s.Start, s.End, s.OpensAt, s.StatusAt(now),
-            s.HasFewPlayers(_options.MinPlayers, now), _options.MinPlayers, s.TemplateId, attendees.Count, attendees);
+            s.HasFewPlayers(_options.MinPlayers, now), _options.MinPlayers, s.TemplateId, attendees.Count, attendees,
+            s.CanCloseSignUps(now, _opening.OpensAtFor(s.Date)));
     }
 }
