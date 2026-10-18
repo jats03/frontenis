@@ -40,8 +40,10 @@ function weekPosition(mondayIso: string) {
 
 function build(slots: Slot[], mondayIso: string, link: string, showWeek: boolean): string {
   const { year, month, week } = weekPosition(mondayIso)
+  const style = loadTemplateStyle()
+  const footer = style.footer.trim() ? `*${style.footer.trim()}*` : ''
   return buildTemplate({
-    ...loadTemplateStyle(), bold: true, year, month, week, days: toDays(slots), showWeek,
+    ...style, footer, bold: true, year, month, week, days: toDays(slots), showWeek,
     closing: ['¡Apuntaros!', link],
   })
 }
