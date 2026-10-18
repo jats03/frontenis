@@ -371,13 +371,13 @@ li.card.inactive { opacity: .65; }
 .slot-when { margin: .2rem 0 .5rem; }
 .slot-when .slot-day::first-letter { text-transform: uppercase; }
 
-/* Carga: dos raquetas y una pelota. Ciclo de 0,2 s: la pelota va a la derecha (0,10 s) y vuelve (0,10 s). */
+/* Carga: dos raquetas y una pelota. Ciclo de 0,1 s: la pelota va a la derecha (0,05 s) y vuelve (0,05 s). */
 .loader-card { display: grid; justify-items: center; gap: .2rem; padding: .9rem 1.4rem .7rem; border-radius: 16px;
   background: var(--card); border: 1px solid var(--border); box-shadow: 0 8px 28px rgba(0, 0, 0, .18); }
 .loader-text { font-size: .85rem; font-weight: 600; color: var(--muted); }
 .rally { overflow: visible; }
-.ball-x { animation: ball-x .1s ease-in-out infinite alternate; }
-.ball-y { animation: ball-y .1s infinite; }
+.ball-x { animation: ball-x .05s ease-in-out infinite alternate; }
+.ball-y { animation: ball-y .05s infinite; }
 @keyframes ball-x { from { transform: translate(47px, 52px); } to { transform: translate(113px, 52px); } }
 @keyframes ball-y {
   0% { transform: translateY(0); animation-timing-function: cubic-bezier(.2, .7, .4, 1); }
@@ -385,15 +385,15 @@ li.card.inactive { opacity: .65; }
   100% { transform: translateY(0); }
 }
 .racket { transform-origin: 22px 68px; }
-.racket-left { animation: swing .2s infinite; }
-.racket-right { animation: swing .2s infinite; animation-delay: -.1s; }
+.racket-left { animation: swing .1s infinite; }
+.racket-right { animation: swing .1s infinite; animation-delay: -.05s; }
 @keyframes swing {
   0% { transform: rotate(14deg); animation-timing-function: ease-out; }
   22% { transform: rotate(-4deg); }
   80% { transform: rotate(-34deg); animation-timing-function: ease-in; }
   100% { transform: rotate(14deg); }
 }
-.rally-shadow { opacity: .16; transform-origin: 80px 78px; animation: shadow .1s ease-in-out infinite; }
+.rally-shadow { opacity: .16; transform-origin: 80px 78px; animation: shadow .05s ease-in-out infinite; }
 @keyframes shadow { 0%, 100% { transform: scaleX(1); opacity: .2; } 50% { transform: scaleX(.55); opacity: .08; } }
 @media (prefers-reduced-motion: reduce) {
   .ball-x { animation-duration: 1.6s; } .ball-y { animation-duration: 1.6s; }
