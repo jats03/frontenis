@@ -7,14 +7,15 @@ interface Props {
   /** Jugadores del club, para apuntar a alguien a mano. */
   players: Player[]
   onOpenNow: () => void
+  onCloseSignUps: () => void
   onCancel: () => void
   onRestore: () => void
   onDelete: () => void
   onSignUp: (playerId: number) => void
 }
 
-/** Acciones del administrador sobre una franja: abrir ya, cancelar o restaurar, eliminar y apuntar a un jugador. */
-export default function SlotAdminActions({ slot, players, onOpenNow, onCancel, onRestore, onDelete, onSignUp }: Props) {
+/** Acciones del administrador sobre una franja: abrir ya, volver a cerrar, cancelar o restaurar, eliminar y apuntar a un jugador. */
+export default function SlotAdminActions({ slot, players, onOpenNow, onCloseSignUps, onCancel, onRestore, onDelete, onSignUp }: Props) {
   const [playerId, setPlayerId] = useState('')
   const taken = new Set(slot.attendees.map(a => a.playerId))
   const available = players.filter(p => !taken.has(p.id))
@@ -40,6 +41,7 @@ export default function SlotAdminActions({ slot, players, onOpenNow, onCancel, o
       )}
       <div className="row">
         {slot.status === 'Pending' && <button type="button" onClick={onOpenNow}>Abrir ya</button>}
+        {slot.canCloseSignUps && <button type="button" className="secondary" onClick={onCloseSignUps}>Cerrar inscripciones</button>}
         {editable && <button type="button" className="secondary" onClick={onCancel}>Cancelar franja</button>}
         {slot.status === 'Cancelled' && <button type="button" className="secondary" onClick={onRestore}>Restaurar</button>}
         <button type="button" className="secondary danger" onClick={() => void remove()}>Eliminar</button>

@@ -59,6 +59,12 @@ export default function ReservasGestionPage() {
       () => (created === 0 ? 'No faltaba ninguna franja' : `${created} franja(s) creada(s)`))
   }
 
+  const closeWeek = () => {
+    let closed = 0
+    void run(async () => { closed = (await api.slots.closeWeek(weekStart)).closed },
+      () => (closed === 0 ? 'No había franjas abiertas antes de tiempo' : `${closed} franja(s) vuelta(s) a cerrar`))
+  }
+
   const openWeek = (e: FormEvent) => {
     e.preventDefault()
     let opened = 0
@@ -121,11 +127,14 @@ export default function ReservasGestionPage() {
         <div className="row"><button type="submit">Generar franjas</button></div>
       </form>
 
-      <h2 className="section-title">Abrir una semana ya</h2>
+      <h2 className="section-title">Abrir o cerrar una semana</h2>
       <form className="card form" onSubmit={openWeek}>
-        <p className="muted">Abre las inscripciones de todas las franjas de esa semana sin esperar a la apertura automática.</p>
+        <p className="muted">Abre las inscripciones de todas las franjas de esa semana sin esperar a la apertura automática. Si te equivocas, «Cerrar semana» las deja como estaban (no toca las que ya se abren por su horario).</p>
         <label>Cualquier día de la semana<input type="date" value={weekStart} onChange={e => setWeekStart(e.target.value)} required /></label>
-        <div className="row"><button type="submit">Abrir semana</button></div>
+        <div className="row">
+          <button type="submit">Abrir semana</button>
+          <button type="button" className="secondary" onClick={closeWeek}>Cerrar semana</button>
+        </div>
       </form>
 
       <h2 className="section-title">Añadir una franja extra</h2>

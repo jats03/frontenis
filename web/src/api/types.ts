@@ -112,6 +112,8 @@ export interface Slot {
   status: SlotStatus
   /** Menos jugadores que el mínimo recomendado (solo con la franja abierta). */
   fewPlayers: boolean
+  /** Se abrió antes de su hora habitual y el administrador puede volver a cerrarla. */
+  canCloseSignUps: boolean
   minPlayers: number
   templateId: number | null
   attendeeCount: number

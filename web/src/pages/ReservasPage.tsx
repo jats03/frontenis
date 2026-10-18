@@ -102,6 +102,7 @@ export default function ReservasPage() {
                     {isAdmin && (
                       <SlotAdminActions slot={slot} players={players.data ?? []}
                         onOpenNow={() => void run(() => api.slots.openNow(slot.id), 'Franja abierta')}
+                        onCloseSignUps={() => void run(() => api.slots.closeSignUps(slot.id), 'Inscripciones cerradas')}
                         onCancel={() => void run(() => api.slots.cancel(slot.id), 'Franja cancelada')}
                         onRestore={() => void run(() => api.slots.restore(slot.id), 'Franja restaurada')}
                         onDelete={() => void remove(slot)}

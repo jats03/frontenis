@@ -195,10 +195,12 @@ export const api = {
     cancel: (id: number) => request<Slot>('POST', `/api/slots/${id}/cancel`),
     restore: (id: number) => request<Slot>('POST', `/api/slots/${id}/restore`),
     openNow: (id: number) => request<Slot>('POST', `/api/slots/${id}/open`),
+    closeSignUps: (id: number) => request<Slot>('POST', `/api/slots/${id}/close`),
     remove: (id: number) => request<void>('DELETE', `/api/slots/${id}`),
     generate: (from: string, weeks: number) =>
       request<{ created: number }>('POST', '/api/slots/generate', { from, weeks }),
     openWeek: (weekStart: string) => request<{ opened: number }>('POST', '/api/slots/open-week', { weekStart }),
+    closeWeek: (weekStart: string) => request<{ closed: number }>('POST', '/api/slots/close-week', { weekStart }),
     /** Administrador: apunta y quita a cualquier jugador. */
     signUp: (slotId: number, playerId: number) =>
       request<Slot>('POST', `/api/slots/${slotId}/attendees`, { playerId }),
