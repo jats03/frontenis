@@ -1,4 +1,6 @@
 using System.Text.Json.Serialization;
+using Frontenis.Api.Auditing;
+using Frontenis.Api.Auditing.Interfaces;
 using Frontenis.Api.Extensions;
 using Frontenis.Api.HostedServices;
 using Frontenis.Api.Middleware;
@@ -19,6 +21,9 @@ builder.Services.AddProxyForwarding();
 builder.Services.AddRateLimiting();
 builder.Services.AddFrontenisCors(builder.Configuration);
 builder.Services.AddHostedService<DatabaseInitializationService>();
+builder.Services.AddMemoryCache();
+builder.Services.AddScoped<IActorResolver, ActorResolver>();
+builder.Services.AddHostedService<AuditPurgeService>();
 
 var app = builder.Build();
 
@@ -28,6 +33,8 @@ app.UseMiddleware<SecurityHeadersMiddleware>();
 
 // CORS va antes que el resto para que también las respuestas 429/401 lleguen al navegador con sus cabeceras CORS.
 app.UseCors();
+// Registra cada petición (quién, qué y resultado); va antes de la gestión de errores para ver también los 500.
+app.UseMiddleware<RequestAuditMiddleware>();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.UseRateLimiter();
 if (app.Environment.IsDevelopment())

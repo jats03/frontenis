@@ -62,6 +62,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ITrainingRepository, TrainingRepository>();
         services.AddScoped<ISlotRepository, SlotRepository>();
         services.AddScoped<ISlotTemplateRepository, SlotTemplateRepository>();
+        services.AddScoped<IAuditRepository, AuditRepository>();
         services.AddScoped<IDeviceLinkRepository, DeviceLinkRepository>();
         services.AddScoped<IPlayerDelegateRepository, PlayerDelegateRepository>();
 

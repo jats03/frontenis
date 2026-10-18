@@ -21,6 +21,7 @@ public sealed class FrontenisDbContext : DbContext, IUnitOfWork
     public DbSet<SlotTemplate> SlotTemplates => Set<SlotTemplate>();
     public DbSet<TrainingSlot> TrainingSlots => Set<TrainingSlot>();
     public DbSet<SlotAttendance> SlotAttendances => Set<SlotAttendance>();
+    public DbSet<AuditEntry> AuditEntries => Set<AuditEntry>();
     public DbSet<DeviceLink> DeviceLinks => Set<DeviceLink>();
     public DbSet<PlayerDelegate> PlayerDelegates => Set<PlayerDelegate>();
 
@@ -162,6 +163,17 @@ public sealed class FrontenisDbContext : DbContext, IUnitOfWork
             e.HasIndex(x => new { x.OwnerPlayerId, x.DelegatePlayerId }).IsUnique();
             e.HasOne<Player>().WithMany().HasForeignKey(x => x.OwnerPlayerId).OnDelete(DeleteBehavior.Cascade);
             e.HasOne<Player>().WithMany().HasForeignKey(x => x.DelegatePlayerId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        b.Entity<AuditEntry>(e =>
+        {
+            e.ToTable("AuditLogs");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Actor).HasConversion<byte>();
+            e.Property(x => x.ActorName).HasMaxLength(AuditEntry.MaxName).IsRequired();
+            e.Property(x => x.Method).HasMaxLength(10).IsRequired();
+            e.Property(x => x.Path).HasMaxLength(AuditEntry.MaxPath).IsRequired();
+            e.HasIndex(x => x.AtUtc);
         });
 
         b.Entity<User>(e =>

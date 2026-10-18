@@ -7,6 +7,6 @@ public static class CorsExtensions
     public static IServiceCollection AddFrontenisCors(this IServiceCollection services, IConfiguration config)
     {
         var origins = config.GetSection("Cors:Origins").Get<string[]>() ?? Array.Empty<string>();
-        return services.AddCors(o => o.AddDefaultPolicy(p => p.WithOrigins(origins).AllowAnyHeader().AllowAnyMethod()));
+        return services.AddCors(o => o.AddDefaultPolicy(p => p.WithOrigins(origins).AllowAnyHeader().AllowAnyMethod().SetPreflightMaxAge(TimeSpan.FromHours(1))));
     }
 }

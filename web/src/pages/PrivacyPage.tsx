@@ -42,6 +42,12 @@ export default function PrivacyPage() {
             <td>Prestar el servicio, garantizar su seguridad y prevenir abusos</td>
             <td>Interés legítimo (art. 6.1.f RGPD)</td>
           </tr>
+          <tr>
+            <td>Registro de actividad</td>
+            <td>Qué pantalla se abre y qué acción se hace (apuntarse, guardar un resultado, iniciar sesión…), con la fecha, el resultado y quién la hace: el nombre del administrador, el del jugador cuyo dispositivo está vinculado, o «visitante»</td>
+            <td>Seguridad, detección de abusos y poder aclarar quién cambió qué. Las acciones que modifican datos se guardan 30 días y después se borran solas</td>
+            <td>Interés legítimo en la seguridad y gestión de la web (art. 6.1.f RGPD)</td>
+          </tr>
         </tbody>
       </table>
       <p>

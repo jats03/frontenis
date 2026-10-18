@@ -70,6 +70,16 @@ Los jugadores ven las franjas de entrenamiento de la semana y la siguiente (`/re
 - **Recordatorio por WhatsApp**: cualquiera puede avisar al grupo desde `/reservas`, con "Avisar por WhatsApp" en un entreno abierto o "Recordar la semana por WhatsApp". Abre WhatsApp con el texto escrito (`wa.me`) y la persona elige el grupo; WhatsApp no permite enviar a grupos de forma automática. Los textos siguen el mismo formato que la plantilla de WhatsApp de «Más» (título, semana, día, franja y líneas numeradas con los apuntados; usan el título y el pie guardados en esa plantilla, y todo va en negrita (también el pie)) y los construye `web/src/reminders.ts`. El enlace del mensaje usa la dirección desde la que se abre la app; en pruebas locales WhatsApp no lo convierte en enlace (no es una dirección pública), así que se puede fijar con `VITE_PUBLIC_URL` en `web/.env`.
 - La API necesita datos de zona horaria (`Europe/Madrid`); la imagen `mcr.microsoft.com/dotnet/aspnet` los incluye.
 
+## Registro de actividad
+
+Todo lo que se hace queda anotado, con **quién** lo hace: el administrador (por su sesión), un jugador (por el dispositivo vinculado) o «visitante».
+
+- **Log del servidor** (consola de Render): una línea `AUDIT` por cada petición a la API (consultas incluidas) y otra `AUDIT ... VISTA /ruta` cada vez que la web abre una pantalla. Ejemplo: `AUDIT Player Ana García POST /api/slots/12/attend -> 200 (35 ms)`.
+- **Tabla `AuditLogs`**: solo las acciones que modifican datos (POST, PUT y DELETE, incluido el inicio de sesión), con fecha, autor, ruta y resultado.
+- **Retención**: se borran solas pasados 30 días (`Audit:RetentionDays`, variable `Audit__RetentionDays`).
+- No se guardan contraseñas, cuerpos de petición ni el identificador del dispositivo; los textos se limpian para que nadie pueda falsear líneas del registro.
+- Está indicado en la política de privacidad (`/privacidad`).
+
 ## Estructura del repositorio
 
 ```

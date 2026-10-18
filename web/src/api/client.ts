@@ -4,7 +4,7 @@ import type {
   HistoryFilter, NewTrainingMatch, TrainingDetail, TrainingSuggestion, TrainingSummary,
   DeviceLink, DeviceMe, PlayerDelegateRow, PlayerRef, SaveSlot, SaveSlotTemplate, Slot, SlotTemplate,
 } from './types'
-import { deviceHeaders } from '../device'
+import { deviceHeaders, deviceToken, hasDeviceToken } from '../device'
 
 export const BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:5080'
 const TOKEN_KEY = 'frontenis.token'
@@ -57,6 +57,8 @@ function historyQuery(f: HistoryFilter): string {
 
 async function request<T>(method: string, path: string, body?: unknown, extraHeaders?: Record<string, string>): Promise<T> {
   const headers: Record<string, string> = { ...extraHeaders }
+  // Si este navegador ya tiene identificador, viaja siempre: el servidor anota quién hace cada cosa en su registro.
+  if (!headers['X-Device-Token'] && hasDeviceToken()) headers['X-Device-Token'] = deviceToken()
   if (body !== undefined) headers['Content-Type'] = 'application/json'
   const token = tokenStore.get()
   if (token) headers.Authorization = `Bearer ${token}`

@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { logPageView } from './audit'
 import { Link, Route, Routes, useLocation } from 'react-router-dom'
 import ApiStatus from './components/ApiStatus'
 import AppNav from './components/AppNav'
@@ -29,6 +30,8 @@ export default function App() {
     if (first.current) { first.current = false; return }
     main.current?.focus()
   }, [pathname])
+  // Cada pantalla que se abre queda anotada en el registro del servidor.
+  useEffect(() => { logPageView(pathname) }, [pathname])
   return (
     <div className="app">
       <a className="skip-link" href="#contenido" onClick={e => { e.preventDefault(); main.current?.focus() }}>Saltar al contenido</a>
