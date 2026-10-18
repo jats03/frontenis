@@ -437,3 +437,6 @@ body:has(.loading-block) .spinner-overlay { display: none; }
 
 button.secondary.fut-close { background: var(--card); }
 @media (prefers-reduced-motion: reduce) { .card-dialog[open] .fut-card { animation: none; } .greeting-avatar { transition: none; } }
+/* El «Cargando…» sobre el fondo oscurecido lleva su propia tarjeta para que el texto se lea en claro y oscuro */
+.card-dialog .loading-block { background: var(--card); color: var(--text); border: 1px solid var(--border); border-radius: 16px; padding: .9rem 1.6rem .8rem; box-shadow: 0 8px 24px rgba(0, 0, 0, .4); }
+.card-dialog .loading-text { color: var(--text); font-weight: 600; }
