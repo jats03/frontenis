@@ -27,7 +27,7 @@ export default function ReservasGestionPage() {
   const [end, setEnd] = useState('20:00')
   // Generar franjas y abrir semana
   const [from, setFrom] = useState(nextMonday)
-  const [weeks, setWeeks] = useState(1)
+  const [weeks, setWeeks] = useState(4)
   const [weekStart, setWeekStart] = useState(nextMonday)
   // Franja extra
   const [extraDate, setExtraDate] = useState(todayIso())

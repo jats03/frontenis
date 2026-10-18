@@ -348,3 +348,6 @@ details.how > summary { font-weight: 500; color: var(--link); }
 li.card.inactive { opacity: .65; }
 .device-bar { padding: .4rem 0; }
 .share-reminder { margin: .5rem 0; align-self: flex-start; }
+.row.align-end { align-items: flex-end; }
+.week-title { font-size: 1rem; margin: 1.4rem 0 .2rem; padding-bottom: .3rem; border-bottom: 2px solid var(--primary); color: var(--primary); }
+.slot-week .slot-day { margin-top: .9rem; }

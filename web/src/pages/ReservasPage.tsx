@@ -11,17 +11,20 @@ import SlotAdminActions from '../components/SlotAdminActions'
 import SlotCard from '../components/SlotCard'
 import ShareReminderButton from '../components/ShareReminderButton'
 import SlotSignUp from '../components/SlotSignUp'
-import { addDaysIso, formatDate, mondayOfIso, todayIso } from '../dates'
+import { addDaysIso, formatDate, mondayOfIso, todayIso, weekTitle } from '../dates'
 import { useAsync, useDocumentTitle } from '../hooks'
 import { isRemindable, reservasLink, slotReminder, weekReminder } from '../reminders'
 import { useDevice } from '../useDevice'
 
-/** Franjas de entrenamiento de esta semana y la siguiente. El administrador puede gestionarlas desde aquí. */
+/** Cuántas semanas (desde la actual) se muestran: todas las que el administrador haya generado. */
+const WEEKS_SHOWN = 8
+
+/** Franjas de entrenamiento de las próximas semanas. El administrador puede gestionarlas desde aquí. */
 export default function ReservasPage() {
   useDocumentTitle('Reservas de entrenos')
   const { isAdmin } = useAuth()
   const from = useMemo(() => mondayOfIso(todayIso()), [])
-  const to = addDaysIso(from, 13)
+  const to = addDaysIso(from, WEEKS_SHOWN * 7 - 1)
   const slots = useAsync(() => api.slots.list(from, to), [from, to])
   // Solo el administrador necesita la lista de jugadores (para apuntar a mano): al resto no se le pide.
   const players = useAsync(() => (isAdmin ? api.players.list() : Promise.resolve([] as Player[])), [isAdmin])
@@ -67,7 +70,7 @@ export default function ReservasPage() {
 
   return (
     <>
-      <PageHeader title="Reservas de entrenos" subtitle="Franjas de esta semana y de la siguiente"
+      <PageHeader title="Reservas de entrenos" subtitle="Franjas de las próximas semanas"
         actions={isAdmin && <Link className="button" to="/reservas/gestion">Gestionar</Link>} />
       {!isAdmin && <DeviceLinkPanel device={device} />}
       {error && <p className="error" role="alert">{error}</p>}
@@ -84,7 +87,8 @@ export default function ReservasPage() {
       {weeks.map(({ monday, days }) => {
         const weekSlots = days.flatMap(([, list]) => list)
         return (
-          <div key={monday}>
+          <div key={monday} className="slot-week">
+            <h2 className="week-title">{weekTitle(monday)}</h2>
             {weekSlots.some(isRemindable) && (
               <ShareReminderButton label="Recordar la semana por WhatsApp"
                 message={weekReminder(weekSlots, monday, link)} />

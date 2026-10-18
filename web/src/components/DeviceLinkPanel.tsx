@@ -48,7 +48,7 @@ function Pick({ device }: { device: Device }) {
       <h2 id="quien-eres">¿Quién eres?</h2>
       <p className="muted">Elígete una sola vez y podrás apuntarte a los entrenos con un toque. Se guarda en este móvil, sin cuenta ni contraseña.</p>
       {players.error && <p className="error">{players.error}</p>}
-      <div className="row">
+      <div className="row align-end">
         <label className="grow">Mi nombre
           <select value={playerId} onChange={e => setPlayerId(e.target.value)}>
             <option value="">Elegir…</option>

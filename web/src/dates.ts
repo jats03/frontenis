@@ -33,3 +33,14 @@ export const mondayOfIso = (iso: string) => addDaysIso(iso, -((parseDate(iso).ge
 /** «viernes, 16 de octubre, 19:00» a partir de una fecha-hora local sin zona. */
 export const formatOpening = (iso: string) =>
   `${parseDate(iso).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}, ${iso.slice(11, 16)}`
+
+/** «Semana del 19 al 25 de octubre» (o «Esta semana» / «Próxima semana») a partir del lunes. */
+export const weekTitle = (mondayIso: string) => {
+  const thisMonday = mondayOfIso(todayIso())
+  if (mondayIso === thisMonday) return 'Esta semana'
+  if (mondayIso === addDaysIso(thisMonday, 7)) return 'Próxima semana'
+  const a = parseDate(mondayIso), b = parseDate(addDaysIso(mondayIso, 6))
+  const day = (d: Date) => d.toLocaleDateString('es-ES', { day: 'numeric' })
+  const full = (d: Date) => d.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })
+  return a.getMonth() === b.getMonth() ? `Semana del ${day(a)} al ${full(b)}` : `Semana del ${full(a)} al ${full(b)}`
+}
