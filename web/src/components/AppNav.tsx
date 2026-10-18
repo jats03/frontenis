@@ -1,9 +1,10 @@
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { NavLink } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import { greetingFor } from '../avatar'
 import { useDevice } from '../useDevice'
 import PlayerAvatar from './PlayerAvatar'
+import PlayerCard from './PlayerCard'
 import { CalendarIcon, HomeIcon, MoreIcon, TrophyIcon, UsersIcon } from './Icons'
 
 const items: { to: string; label: string; short?: string; icon: ReactNode; end?: boolean }[] = [
@@ -18,6 +19,7 @@ const items: { to: string; label: string; short?: string; icon: ReactNode; end?:
 export default function AppNav() {
   const { isAdmin, logout, username } = useAuth()
   const { me } = useDevice()
+  const [showCard, setShowCard] = useState(false)
   const firstName = me?.owner.name.trim().split(/\s+/)[0]
   return (
     <>
@@ -31,10 +33,13 @@ export default function AppNav() {
             <span className="greeting-hello">{greetingFor(new Date())}<span className="greeting-comma">,</span></span>
             <strong className="greeting-name">{firstName}</strong>
           </span>
-          <PlayerAvatar playerId={me!.owner.id} size={40} className="greeting-avatar" />
+          <button type="button" className="greeting-avatar-btn" aria-label="Ver mi carta de jugador" onClick={() => setShowCard(true)}>
+            <PlayerAvatar playerId={me!.owner.id} size={40} className="greeting-avatar" />
+          </button>
         </span>
       )}
     </header>
+    {showCard && me && <PlayerCard playerId={me.owner.id} onClose={() => setShowCard(false)} />}
     <nav aria-label="Principal" className="main-nav">
       {items.map(i => (
         <NavLink key={i.to} to={i.to} end={i.end}>
