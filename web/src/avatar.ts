@@ -8,7 +8,7 @@ export interface AvatarParts {
   mouth: 'smile' | 'grin'
 }
 
-const SKINS = ['#f5d0b0', '#e8b48a', '#d29a6e', '#a8734d', '#7a4f33']
+const SKINS = ['#fdeee0', '#fbe6d4', '#f9dfca']
 const HAIRS = ['#2b1d14', '#5a3a22', '#a5672b', '#d9a441', '#c8473a', '#4a4a55']
 const SHIRTS = ['#0f766e', '#e4572e', '#3b6fd4', '#f2a900', '#8e44ad', '#2e9e5b', '#d6336c']
 const BACKGROUNDS = ['#cdeae6', '#fde3d6', '#dbe6fb', '#fdf0c8', '#eadcf5', '#d7f0e0', '#fbdbe6']
