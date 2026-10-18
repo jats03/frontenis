@@ -8,7 +8,7 @@ const capitalize = (t: string) => t.charAt(0).toUpperCase() + t.slice(1)
 const dayLabel = (iso: string) => capitalize(parseDate(iso).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }))
 const dayShort = (iso: string) => capitalize(parseDate(iso).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric' }))
 const range = (s: Slot) => `${formatTime(s.start)}–${formatTime(s.end)}`
-const people = (n: number) => (n === 0 ? 'todavía nadie apuntado' : n === 1 ? '1 apuntado' : `${n} apuntados`)
+const people = (n: number) => (n === 1 ? '1 apuntado' : `${n} apuntados`)
 
 /** Mensaje para recordar al grupo que se apunten a un entreno concreto. */
 export function slotReminder(slot: Slot, link: string): string {
