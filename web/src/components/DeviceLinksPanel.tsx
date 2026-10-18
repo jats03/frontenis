@@ -1,6 +1,7 @@
 import { notify } from '../alerts'
 import { api } from '../api/client'
 import { useAsync } from '../hooks'
+import PlayerName from './PlayerName'
 
 /** Administrador: jugadores con dispositivo vinculado; se pueden liberar (por ejemplo, si cambian de móvil). */
 export default function DeviceLinksPanel({ onError }: { onError: (message: string | null) => void }) {
@@ -21,7 +22,7 @@ export default function DeviceLinksPanel({ onError }: { onError: (message: strin
       <ul className="plain">
         {links.data?.map(l => (
           <li key={l.playerId} className="card row between">
-            <span><strong>{l.playerName}</strong> <span className="muted">· desde el {new Date(l.linkedAtUtc).toLocaleDateString('es-ES')}</span></span>
+            <span><strong><PlayerName playerId={l.playerId}>{l.playerName}</PlayerName></strong> <span className="muted">· desde el {new Date(l.linkedAtUtc).toLocaleDateString('es-ES')}</span></span>
             <button type="button" className="secondary" onClick={() => void release(l.playerId)}>Liberar</button>
           </li>
         ))}

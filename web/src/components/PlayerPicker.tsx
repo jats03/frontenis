@@ -1,4 +1,5 @@
 import type { Player } from '../api/types'
+import PlayerName from './PlayerName'
 
 interface Props {
   players: Player[]
@@ -54,7 +55,7 @@ export default function PlayerPicker({ players, selected, onChange, disabledIds,
             <label className="check">
               <input type="checkbox" checked={selected.has(p.id)} disabled={disabledIds?.has(p.id)}
                 onChange={() => toggle(p.id)} />
-              {p.name}{p.groupNumber != null && <span className="muted"> · G{p.groupNumber}</span>}
+              <PlayerName playerId={p.id}>{p.name}</PlayerName>{p.groupNumber != null && <span className="muted"> · G{p.groupNumber}</span>}
             </label>
             {onSwap && (
               <button type="button" className="secondary swap" disabled={swappingIds?.has(p.id)}

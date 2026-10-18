@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 
 interface Props {
-  title: string
+  title: ReactNode
   /** Texto de apoyo bajo el título (estado, fecha, reglas…). */
   subtitle?: ReactNode
   /** Etiqueta de estado junto al título. */

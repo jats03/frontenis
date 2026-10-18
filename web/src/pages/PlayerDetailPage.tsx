@@ -5,6 +5,7 @@ import { api } from '../api/client'
 import type { Relation } from '../api/types'
 import { useAsync, useDocumentTitle } from '../hooks'
 import LoadingBlock from '../components/LoadingBlock'
+import PlayerName from '../components/PlayerName'
 
 function RelationTable({ title, caption, rows, query }: { title: string; caption: string; rows: Relation[]; query: string }) {
   return (
@@ -24,7 +25,7 @@ function RelationTable({ title, caption, rows, query }: { title: string; caption
             <tbody>
               {rows.map(r => (
                 <tr key={r.playerId}>
-                  <td className="left"><Link to={`/jugadores/${r.playerId}${query}`}>{r.name}</Link></td>
+                  <td className="left"><Link to={`/jugadores/${r.playerId}${query}`}><PlayerName playerId={r.playerId}>{r.name}</PlayerName></Link></td>
                   <td>{r.played}</td><td>{r.won}</td><td>{r.lost}</td><td>{r.winRate}%</td>
                 </tr>
               ))}
@@ -58,7 +59,7 @@ export default function PlayerDetailPage() {
 
   return (
     <>
-      <PageHeader title={s.name} subtitle={<Link to={`/jugadores/historico${query}`}>← Volver al histórico</Link>} />
+      <PageHeader title={<PlayerName playerId={s.playerId} size={34}>{s.name}</PlayerName>} subtitle={<Link to={`/jugadores/historico${query}`}>← Volver al histórico</Link>} />
       <SourceFilter value={filter} onChange={setFilter} />
       <section className="card stats">
         {stat('Partidos', s.played)}{stat('Victorias', s.won)}{stat('Derrotas', s.lost)}

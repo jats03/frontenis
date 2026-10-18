@@ -10,6 +10,7 @@ import PlayersTabs from '../components/PlayersTabs'
 import { useAuth } from '../auth/AuthContext'
 import { useAsync, useDocumentTitle } from '../hooks'
 import LoadingBlock from '../components/LoadingBlock'
+import PlayerName from '../components/PlayerName'
 
 export default function PlayersPage() {
   useDocumentTitle('Jugadores')
@@ -170,8 +171,8 @@ export default function PlayersPage() {
               <p className="muted">Un delantero y un zaguero ({chosenForwards.length} delanteros, {chosenBacks.length} zagueros).</p>
               {randomPair && (
                 <p className="random-pair">
-                  <strong>{randomPair[0].name}</strong> <span className="muted">(Delantero)</span> +{' '}
-                  <strong>{randomPair[1].name}</strong> <span className="muted">(Zaguero)</span>
+                  <strong><PlayerName playerId={randomPair[0].id}>{randomPair[0].name}</PlayerName></strong> <span className="muted">(Delantero)</span> +{' '}
+                  <strong><PlayerName playerId={randomPair[1].id}>{randomPair[1].name}</PlayerName></strong> <span className="muted">(Zaguero)</span>
                 </p>
               )}
               <div className="row">
@@ -189,8 +190,8 @@ export default function PlayersPage() {
                 <div className="random-match">
                   {randomMatch.map((pair, i) => (
                     <p key={i} className="random-pair">
-                      <strong>{pair[0].name}</strong> <span className="muted">(Delantero)</span> +{' '}
-                      <strong>{pair[1].name}</strong> <span className="muted">(Zaguero)</span>
+                      <strong><PlayerName playerId={pair[0].id}>{pair[0].name}</PlayerName></strong> <span className="muted">(Delantero)</span> +{' '}
+                      <strong><PlayerName playerId={pair[1].id}>{pair[1].name}</PlayerName></strong> <span className="muted">(Zaguero)</span>
                     </p>
                   ))}
                 </div>
@@ -217,11 +218,11 @@ export default function PlayersPage() {
                 <>
                   <ul className="plain">
                     {preview.pairs.map((p, i) => (
-                      <li key={i}>{p.player1.name} <span className="muted">({p.player1.position})</span> + {p.player2.name}{' '}
+                      <li key={i}><PlayerName playerId={p.player1.id}>{p.player1.name}</PlayerName> <span className="muted">({p.player1.position})</span> + <PlayerName playerId={p.player2.id}>{p.player2.name}</PlayerName>{' '}
                         <span className="muted">({p.player2.position})</span></li>
                     ))}
                   </ul>
-                  {preview.unpaired && <p className="muted">Sin pareja: {preview.unpaired.name}</p>}
+                  {preview.unpaired && <p className="muted">Sin pareja: <PlayerName playerId={preview.unpaired.id}>{preview.unpaired.name}</PlayerName></p>}
                 </>
               )}
             </section>

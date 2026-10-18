@@ -13,6 +13,7 @@ import PlayerPicker from '../components/PlayerPicker'
 import SubTabs from '../components/SubTabs'
 import { useAsync, useDocumentTitle } from '../hooks'
 import LoadingBlock from '../components/LoadingBlock'
+import PlayerName from '../components/PlayerName'
 
 type Slots = [string, string, string, string]
 const EMPTY: Slots = ['', '', '', '']
@@ -34,7 +35,7 @@ function Standings({ rows, label }: { rows: TrainingRow[]; label: string }) {
         <tbody>
           {rows.map(r => (
             <tr key={r.playerIds.join('-')}>
-              <td>{r.rank}</td><td className="left">{r.name}</td>
+              <td>{r.rank}</td><td className="left"><PlayerName playerId={r.playerIds}>{r.name}</PlayerName></td>
               <td>{r.played}</td><td>{r.won}</td><td>{r.lost}</td>
               <td className="opt">{r.pointsFor}</td><td className="opt">{r.pointsAgainst}</td>
               <td>{r.pointsDiff > 0 ? `+${r.pointsDiff}` : r.pointsDiff}</td>

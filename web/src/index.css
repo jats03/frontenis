@@ -480,3 +480,9 @@ button.secondary.fut-close { background: var(--card); }
 @media (max-width: 600px) { .audit-table .nowrap { white-space: normal; } .audit-table .audit-raw { display: none; } }
 
 .audit-device { font-size: .8rem; color: var(--muted); }
+
+/* Nombre de jugador con su logo de perfil a la izquierda */
+.pname { display: inline-flex; align-items: center; gap: .4rem; vertical-align: middle; }
+.pname-faces { display: inline-flex; flex: none; }
+.pname-faces svg { flex: none; }
+.pname-faces svg + svg { margin-left: -.5rem; box-shadow: -2px 0 0 var(--card); border-radius: 50%; }

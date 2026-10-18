@@ -3,6 +3,7 @@ import type { Slot } from '../api/types'
 import { formatDate, formatOpening, formatTime } from '../dates'
 import { slotStatusLabel } from '../slots'
 import { WarningIcon } from './Icons'
+import PlayerName from './PlayerName'
 
 interface Props {
   slot: Slot
@@ -41,7 +42,7 @@ export default function SlotCard({ slot, onRemoveAttendee, children }: Props) {
           <ul className="chips" aria-label={`Apuntados (${slot.attendeeCount})`}>
             {slot.attendees.map(a => (
               <li key={a.playerId} className="chip">
-                {a.name}
+                <PlayerName playerId={a.playerId} size={20}>{a.name}</PlayerName>
                 {onRemoveAttendee && (
                   <button type="button" aria-label={`Quitar a ${a.name}`} onClick={() => onRemoveAttendee(a.playerId)}>✕</button>
                 )}

@@ -7,6 +7,7 @@ import { api } from '../api/client'
 import type { PlayerHistoryRow } from '../api/types'
 import { useAsync, useDocumentTitle } from '../hooks'
 import LoadingBlock from '../components/LoadingBlock'
+import PlayerName from '../components/PlayerName'
 
 type SortKey = 'classificationPoints' | 'won' | 'lost' | 'played' | 'winRate' | 'tantosDiff' | 'tantosFor' | 'name'
 
@@ -71,7 +72,7 @@ export default function PlayerHistoryPage() {
                 {rows.map((r, i) => (
                   <tr key={r.playerId}>
                     <td>{i + 1}</td>
-                    <td className="left"><Link to={`/jugadores/${r.playerId}${query}`}>{r.name}</Link></td>
+                    <td className="left"><Link to={`/jugadores/${r.playerId}${query}`}><PlayerName playerId={r.playerId}>{r.name}</PlayerName></Link></td>
                     <td>{r.played}</td><td>{r.won}</td><td>{r.lost}</td><td>{r.played ? `${r.winRate}%` : '—'}</td>
                     <td className="opt">{r.tantosFor}</td>
                     <td>{r.tantosDiff > 0 ? `+${r.tantosDiff}` : r.tantosDiff}</td>

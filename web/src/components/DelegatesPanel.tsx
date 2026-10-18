@@ -3,6 +3,7 @@ import { notify } from '../alerts'
 import { api } from '../api/client'
 import type { Player } from '../api/types'
 import { useAsync } from '../hooks'
+import PlayerName from './PlayerName'
 
 /** Administrador: qué jugador puede apuntar también a qué otros (por ejemplo, un padre con sus hijos). */
 export default function DelegatesPanel({ players, onError }: { players: Player[]; onError: (message: string | null) => void }) {
@@ -35,7 +36,8 @@ export default function DelegatesPanel({ players, onError }: { players: Player[]
       <ul className="plain">
         {delegates.data?.map(d => (
           <li key={`${d.ownerId}-${d.delegateId}`} className="card row between">
-            <span><strong>{d.ownerName}</strong> puede apuntar a <strong>{d.delegateName}</strong></span>
+            <span><strong><PlayerName playerId={d.ownerId}>{d.ownerName}</PlayerName></strong> puede apuntar a{' '}
+              <strong><PlayerName playerId={d.delegateId}>{d.delegateName}</PlayerName></strong></span>
             <button type="button" className="secondary danger" onClick={() => void remove(d.ownerId, d.delegateId)}>Quitar</button>
           </li>
         ))}

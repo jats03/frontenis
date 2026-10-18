@@ -7,6 +7,7 @@ import { useAuth } from '../auth/AuthContext'
 import LoadingBlock from '../components/LoadingBlock'
 import PageHeader from '../components/PageHeader'
 import { useAsync, useDocumentTitle } from '../hooks'
+import PlayerName from '../components/PlayerName'
 
 const PAGE_SIZE = 50
 const EMPTY: AuditQuery = { actor: '', text: '', method: '', from: '', to: '', page: 1 }
@@ -82,7 +83,8 @@ export default function AuditPage() {
                     <tr key={a.id}>
                       <td className="left nowrap">{when(a.atUtc)}</td>
                       <td className="left"><span className={`badge actor-${a.actor}`}>{ACTOR_LABEL[a.actor]}</span>{' '}
-                        {a.actor !== 'Visitor' && <strong>{a.actorName}</strong>}</td>
+                        {a.actor !== 'Visitor' && <strong>{a.playerId !== null
+                          ? <PlayerName playerId={a.playerId} size={20}>{a.actorName}</PlayerName> : a.actorName}</strong>}</td>
                       <td className="left">{describeAction(a.method, a.path)}
                         {a.device && <div className="audit-device">Dispositivo: {a.device}</div>}
                         <div className="muted audit-raw">{a.method} {a.path}</div></td>
