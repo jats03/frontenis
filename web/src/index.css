@@ -266,7 +266,7 @@ details.present summary { cursor: pointer; font-weight: 600; min-height: 32px; d
 /* ---------- Navegación: barra inferior (hasta 899px) y barra lateral (ordenador) ---------- */
 .main-nav a { text-decoration: none; color: var(--muted); }
 .main-nav .lbl-short { display: none; }
-.topbar { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; justify-content: center; min-height: 56px;
+.topbar { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; justify-content: flex-start; min-height: 56px;
   background: var(--primary); padding: .35rem 1rem; padding-top: max(.35rem, env(safe-area-inset-top)); }
 .topbar a { display: inline-flex; align-items: center; min-height: 44px; }
 .topbar .logo { height: 44px; width: 44px; border-radius: 8px; }
@@ -351,6 +351,5 @@ li.card.inactive { opacity: .65; }
 .row.align-end { align-items: flex-end; }
 .week-title { font-size: 1rem; margin: 1.4rem 0 .2rem; padding-bottom: .3rem; border-bottom: 2px solid var(--primary); color: var(--primary); }
 .slot-week .slot-day { margin-top: .9rem; }
-.topbar .greeting { color: #fff; font-weight: 600; max-width: 45%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-@media (max-width: 899px) { .topbar .greeting { position: absolute; right: 1rem; max-width: calc(50% - 22px - 1.5rem); } }
-@media (min-width: 900px) { .topbar .greeting { margin-left: 1rem; } }
+.topbar .greeting { color: #fff; font-weight: 600; margin-left: auto; padding-left: .75rem; max-width: 70%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (min-width: 900px) { .topbar .greeting { margin-left: 1rem; padding-left: 0; } }
