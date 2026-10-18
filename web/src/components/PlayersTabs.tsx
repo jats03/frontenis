@@ -3,9 +3,9 @@ import { Link } from 'react-router-dom'
 export type PlayersView = 'lista' | 'sorteos' | 'historico'
 
 const tabs: { key: PlayersView; label: string; to: string }[] = [
-  { key: 'lista', label: 'Lista', to: '/jugadores' },
+  { key: 'historico', label: 'Histórico', to: '/jugadores' },
+  { key: 'lista', label: 'Lista', to: '/jugadores?vista=lista' },
   { key: 'sorteos', label: 'Sorteos', to: '/jugadores?vista=sorteos' },
-  { key: 'historico', label: 'Histórico', to: '/jugadores/historico' },
 ]
 
 /** Pestañas de la sección Jugadores (cada una es un enlace, así funcionan el botón atrás y compartir la dirección). */

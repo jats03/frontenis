@@ -11,7 +11,7 @@ import LoginPage from './pages/LoginPage'
 import MorePage from './pages/MorePage'
 import PlayerDetailPage from './pages/PlayerDetailPage'
 import PlayerHistoryPage from './pages/PlayerHistoryPage'
-import PlayersPage from './pages/PlayersPage'
+import PlayersRoute from './pages/PlayersRoute'
 import ReservasGestionPage from './pages/ReservasGestionPage'
 import ReservasPage from './pages/ReservasPage'
 import AccountPage from './pages/AccountPage'
@@ -42,7 +42,7 @@ export default function App() {
           <Route path="/mas" element={<MorePage />} />
           <Route path="/competiciones/nueva" element={<CompetitionNewPage />} />
           <Route path="/competiciones/:id" element={<CompetitionDetailPage />} />
-          <Route path="/jugadores" element={<PlayersPage />} />
+          <Route path="/jugadores" element={<PlayersRoute />} />
           <Route path="/jugadores/historico" element={<PlayerHistoryPage />} />
           <Route path="/jugadores/:id" element={<PlayerDetailPage />} />
           <Route path="/entrenamientos" element={<TrainingsPage />} />
