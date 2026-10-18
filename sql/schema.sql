@@ -165,6 +165,7 @@ CREATE TABLE IF NOT EXISTS "AuditLogs" (
     "Method" varchar(10) NOT NULL,
     "Path" varchar(300) NOT NULL,
     "Status" integer NOT NULL,
-    "DurationMs" integer NOT NULL
+    "DurationMs" integer NOT NULL,
+    "Device" varchar(120) NULL               -- navegador, sistema y huella corta al vincular/desvincular un móvil
 );
 CREATE INDEX IF NOT EXISTS "IX_AuditLogs_AtUtc" ON "AuditLogs"("AtUtc");

@@ -11,4 +11,6 @@ public interface IActorResolver
     /// el administrador se reconoce por su sesión y un jugador solo si ya se le identificó hace poco.
     /// </summary>
     Task<RequestActor> ResolveAsync(HttpContext context, bool lookup, CancellationToken ct = default);
+    /// <summary>Olvida lo que se sabía del dispositivo de la petición (al vincularlo o desvincularlo).</summary>
+    void Forget(HttpContext context);
 }

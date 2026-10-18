@@ -16,7 +16,7 @@ namespace Frontenis.Api.Auditing;
 /// </summary>
 public sealed class ActorResolver : IActorResolver
 {
-    public const string DeviceHeader = "X-Device-Token";
+    public const string DeviceHeader = AuditDevice.TokenHeader;
     private static readonly TimeSpan Remember = TimeSpan.FromMinutes(30);
 
     private readonly IDeviceAccessResolver _devices;
@@ -45,19 +45,23 @@ public sealed class ActorResolver : IActorResolver
             // La clave en memoria es el propio identificador, que solo vive en el servidor un rato y nunca se escribe.
             var key = "actor:" + token;
             if (!lookup) return _cache.TryGetValue(key, out RequestActor? known) && known is not null ? known : RequestActor.Visitor;
-            return await _cache.GetOrCreateAsync(key, async entry =>
-            {
-                entry.AbsoluteExpirationRelativeToNow = Remember;
-                var access = await _devices.FindAsync(token, ct);
-                if (access is null) return RequestActor.Visitor;
-                var player = await _players.GetByIdAsync(access.OwnerPlayerId, ct);
-                return player is null ? RequestActor.Visitor
-                    : new RequestActor(ActorKind.Player, AuditText.Clean(player.Name, 100), player.Id);
-            }) ?? RequestActor.Visitor;
+            if (_cache.TryGetValue(key, out RequestActor? cached) && cached is not null) return cached;
+            var access = await _devices.FindAsync(token, ct);
+            var player = access is null ? null : await _players.GetByIdAsync(access.OwnerPlayerId, ct);
+            if (player is null) return RequestActor.Visitor; // sin vínculo no se recuerda: así un «Soy yo» se nota enseguida
+            var actor = new RequestActor(ActorKind.Player, AuditText.Clean(player.Name, 100), player.Id);
+            _cache.Set(key, actor, Remember);
+            return actor;
         }
         catch (Exception) when (!ct.IsCancellationRequested)
         {
             return RequestActor.Visitor; // el registro nunca debe romper la petición
         }
+    }
+
+    public void Forget(HttpContext context)
+    {
+        var token = context.Request.Headers[DeviceHeader].ToString();
+        if (!string.IsNullOrWhiteSpace(token)) _cache.Remove("actor:" + token);
     }
 }

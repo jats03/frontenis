@@ -458,3 +458,5 @@ button.secondary.fut-close { background: var(--card); }
 .audit-status.warn { color: var(--warn, #b45309); }
 .audit-status.bad { color: var(--danger); }
 @media (max-width: 600px) { .audit-table .nowrap { white-space: normal; } .audit-table .audit-raw { display: none; } }
+
+.audit-device { font-size: .8rem; color: var(--muted); }

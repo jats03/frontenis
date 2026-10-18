@@ -88,5 +88,7 @@ internal static class SchemaScripts
         );
         """,
         "CREATE INDEX IF NOT EXISTS \"IX_AuditLogs_AtUtc\" ON \"AuditLogs\"(\"AtUtc\");",
+        // Dispositivo (navegador, sistema y huella corta) al vincular o desvincular un móvil.
+        "ALTER TABLE \"AuditLogs\" ADD COLUMN IF NOT EXISTS \"Device\" varchar(120) NULL;",
     };
 }

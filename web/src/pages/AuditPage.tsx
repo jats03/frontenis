@@ -84,6 +84,7 @@ export default function AuditPage() {
                       <td className="left"><span className={`badge actor-${a.actor}`}>{ACTOR_LABEL[a.actor]}</span>{' '}
                         {a.actor !== 'Visitor' && <strong>{a.actorName}</strong>}</td>
                       <td className="left">{describeAction(a.method, a.path)}
+                        {a.device && <div className="audit-device">Dispositivo: {a.device}</div>}
                         <div className="muted audit-raw">{a.method} {a.path}</div></td>
                       <td><span className={`audit-status ${statusClass(a.status)}`}>{a.status}</span></td>
                       <td className="opt">{a.durationMs}</td>

@@ -134,7 +134,7 @@ export interface PlayerDelegateRow { ownerId: number; ownerName: string; delegat
 export type AuditActor = 'Visitor' | 'Player' | 'Admin'
 export interface AuditEntry {
   id: number; atUtc: string; actor: AuditActor; actorName: string; playerId: number | null
-  method: string; path: string; status: number; durationMs: number
+  method: string; path: string; status: number; durationMs: number; device?: string | null
 }
 export interface AuditPage { items: AuditEntry[]; total: number; page: number; pageSize: number }
 export interface AuditQuery {

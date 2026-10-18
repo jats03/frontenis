@@ -173,6 +173,7 @@ public sealed class FrontenisDbContext : DbContext, IUnitOfWork
             e.Property(x => x.ActorName).HasMaxLength(AuditEntry.MaxName).IsRequired();
             e.Property(x => x.Method).HasMaxLength(10).IsRequired();
             e.Property(x => x.Path).HasMaxLength(AuditEntry.MaxPath).IsRequired();
+            e.Property(x => x.Device).HasMaxLength(AuditEntry.MaxDevice);
             e.HasIndex(x => x.AtUtc);
         });
 

@@ -76,6 +76,7 @@ Todo lo que se hace queda anotado, con **quién** lo hace: el administrador (por
 
 - **Log del servidor** (consola de Render): una línea `AUDIT` por cada petición a la API (consultas incluidas) y otra `AUDIT ... VISTA /ruta` cada vez que la web abre una pantalla. Ejemplo: `AUDIT Player Ana García POST /api/slots/12/attend -> 200 (35 ms)`.
 - **Tabla `AuditLogs`**: solo las acciones que modifican datos (POST, PUT y DELETE, incluido el inicio de sesión), con fecha, autor, ruta y resultado.
+- Al vincular o desvincular un móvil («Soy yo» / «No soy yo») se anota además el dispositivo (navegador, sistema y huella corta), en el log y en la tabla.
 - **Retención**: se borran solas pasados 30 días (`Audit:RetentionDays`, variable `Audit__RetentionDays`).
 - No se guardan contraseñas, cuerpos de petición ni el identificador del dispositivo; los textos se limpian para que nadie pueda falsear líneas del registro.
 - El administrador lo consulta en **/registro** (Más → Registro de actividad), con filtros por autor, texto, tipo y fechas; `GET api/audit` (solo admin).

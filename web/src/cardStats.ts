@@ -39,9 +39,9 @@ export function cardFromHistory(h: PlayerHistoryRow): PlayerCardData {
   ]
   if (h.played === 0) return { overall: null, tier: 'bronze', stats, played: 0 }
   const overall = Math.round(
-    stats[0].value * 0.35 + stats[1].value * 0.2 + stats[2].value * 0.15 +
-    stats[3].value * 0.15 + stats[4].value * 0.1 + stats[5].value * 0.05)
-  return { overall, tier: overall >= 75 ? 'gold' : overall >= 60 ? 'silver' : 'bronze', stats, played: h.played }
+    stats[0].value * 0.4 + stats[1].value * 0.2 + stats[2].value * 0.15 +
+    stats[3].value * 0.15 + stats[4].value * 0.1)
+  return { overall, tier: overall > 70 ? 'gold' : overall >= 50 ? 'silver' : 'bronze', stats, played: h.played }
 }
 
 export const positionCode = (p: 'Delantero' | 'Zaguero') => (p === 'Delantero' ? 'DEL' : 'ZAG')

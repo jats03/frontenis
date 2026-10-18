@@ -22,7 +22,7 @@ public sealed class AuditQueries : IAuditQueries
         var text = string.IsNullOrWhiteSpace(filter.Text) ? null : filter.Text.Trim();
         var (items, total) = await _audit.SearchAsync(filter with { Page = page, PageSize = size, Method = method, Text = text }, ct);
         return new AuditPageDto(
-            items.Select(a => new AuditEntryDto(a.Id, a.AtUtc, a.Actor, a.ActorName, a.PlayerId, a.Method, a.Path, a.Status, a.DurationMs)).ToList(),
+            items.Select(a => new AuditEntryDto(a.Id, a.AtUtc, a.Actor, a.ActorName, a.PlayerId, a.Method, a.Path, a.Status, a.DurationMs, a.Device)).ToList(),
             total, page, size);
     }
 }
