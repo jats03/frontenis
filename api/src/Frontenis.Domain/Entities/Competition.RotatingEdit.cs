@@ -37,8 +37,8 @@ public sealed partial class Competition
     }
 
     /// <summary>
-    /// Mueve un partido pendiente a otra jornada de su grupo (o a una nueva al final). Ningún jugador del partido
-    /// puede jugar ya en esa jornada. Si la jornada de origen se queda vacía, desaparece y las siguientes se renumeran.
+    /// Mueve un partido pendiente a otra jornada de su grupo (o a una nueva al final). Da igual que algún jugador del
+    /// partido ya juegue en esa jornada. Si la jornada de origen se queda vacía, desaparece y las siguientes se renumeran.
     /// </summary>
     public Match MoveMatchToRound(int matchId, int round)
     {
@@ -54,10 +54,6 @@ public sealed partial class Competition
         var lastRound = inGroup.Max(m => m.Round);
         if (round > lastRound + 1) throw new DomainException($"La jornada máxima a la que se puede mover es la {lastRound + 1}.");
         if (round == match.Round) return match;
-
-        var busy = inGroup.Where(m => m != match && m.Round == round).SelectMany(PlayerIds).ToHashSet();
-        if (PlayerIds(match).Any(busy.Contains))
-            throw new DomainException($"Algún jugador de ese partido ya juega en la jornada {round}.");
 
         match.Reschedule(round, inGroup.Max(m => m.Order) + 1);
         CompactRounds(group);
@@ -117,8 +113,8 @@ public sealed partial class Competition
     }
 
     /// <summary>
-    /// Intercambia las jornadas de dos partidos pendientes del mismo grupo. Tras el cambio ningún jugador puede
-    /// quedar jugando dos veces en la misma jornada. Sirve cuando mover un partido solo chocaría con otro.
+    /// Intercambia las jornadas de dos partidos pendientes del mismo grupo. Un jugador puede acabar jugando
+    /// varias veces en la misma jornada: no se impide.
     /// </summary>
     public void SwapMatchRounds(int matchId, int otherMatchId)
     {
@@ -134,12 +130,6 @@ public sealed partial class Competition
         var inGroup = GroupMatches(group);
         if (!inGroup.Contains(b)) throw new DomainException("Los dos partidos tienen que ser del mismo grupo.");
         if (a.Round == b.Round) throw new DomainException("Los dos partidos ya están en la misma jornada.");
-
-        // Los demás partidos de cada jornada (sin los dos que se cruzan) no pueden compartir jugadores con el que llega.
-        bool Clashes(Match arriving, int round) =>
-            PlayerIds(arriving).Any(inGroup.Where(m => m != a && m != b && m.Round == round).SelectMany(PlayerIds).ToHashSet().Contains);
-        if (Clashes(a, b.Round)) throw new DomainException($"Algún jugador del primer partido ya juega en la jornada {b.Round}.");
-        if (Clashes(b, a.Round)) throw new DomainException($"Algún jugador del segundo partido ya juega en la jornada {a.Round}.");
 
         (var roundA, var orderA) = (a.Round, a.Order);
         a.Reschedule(b.Round, b.Order);
@@ -192,11 +182,6 @@ public sealed partial class Competition
 
     private List<Match> GroupMatches(Group group) =>
         _matches.Where(m => m.Phase == MatchPhase.Group && (m.Group == group || (m.GroupId.HasValue && m.GroupId == group.Id))).ToList();
-
-    private static IEnumerable<int> PlayerIds(Match m) => new[]
-    {
-        m.HomeEntry!.Pair.Player1Id, m.HomeEntry.Pair.Player2Id, m.AwayEntry!.Pair.Player1Id, m.AwayEntry.Pair.Player2Id,
-    };
 
     /// <summary>Quita los partidos del grupo que cumplan la condición, con sus inscripciones; devuelve sus parejas.</summary>
     private List<Pair> RemoveGroupMatches(Group group, Func<Match, bool> where)

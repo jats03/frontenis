@@ -1,46 +1,31 @@
 import { useState } from 'react'
 import { notify } from '../alerts'
 import { api } from '../api/client'
-import type { MatchDto, PairDto } from '../api/types'
+import type { MatchDto } from '../api/types'
 
 interface Props {
   match: MatchDto
   /** Partidos de la fase de grupos del mismo grupo (incluido este). */
   groupMatches: MatchDto[]
-  pairs: PairDto[]
   onChanged: () => Promise<void> | void
 }
 
 const NEW_ROUND = 'new'
 
-/** Jugadores de un partido (los de sus dos parejas). */
-function playersOf(m: MatchDto, pairs: PairDto[]): number[] {
-  return [m.homeEntryId, m.awayEntryId].flatMap(id => {
-    const p = pairs.find(x => x.entryId === id)
-    return p ? [p.player1.id, p.player2.id] : []
-  })
-}
-
 /**
  * Herramientas de un partido pendiente de una liga rotatoria: moverlo a otra jornada de su grupo (o a una nueva)
- * o intercambiarlo con otro partido pendiente, lo que permite cruzar partidos aunque moverlos solos chocaría.
+ * o intercambiarlo con otro partido pendiente. No se impide que un jugador repita en una misma jornada.
  */
-export default function MatchRoundMover({ match, groupMatches, pairs, onChanged }: Props) {
+export default function MatchRoundMover({ match, groupMatches, onChanged }: Props) {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const rounds = [...new Set(groupMatches.map(m => m.round))].sort((a, b) => a - b)
   const last = Math.max(...rounds)
 
-  // Solo se ofrecen los intercambios que no dejan a nadie jugando dos veces en la misma jornada.
-  const swaps = groupMatches.filter(other => {
-    if (other.id === match.id || other.isPlayed || other.round === match.round) return false
-    const clash = (arriving: MatchDto, round: number) => {
-      const busyIds = new Set(groupMatches.filter(m => m.id !== match.id && m.id !== other.id && m.round === round)
-        .flatMap(m => playersOf(m, pairs)))
-      return playersOf(arriving, pairs).some(id => busyIds.has(id))
-    }
-    return !clash(match, other.round) && !clash(other, match.round)
-  }).sort((a, b) => a.round - b.round || a.order - b.order)
+  // Se puede intercambiar con cualquier otro partido pendiente del grupo en otra jornada.
+  const swaps = groupMatches
+    .filter(other => other.id !== match.id && !other.isPlayed && other.round !== match.round)
+    .sort((a, b) => a.round - b.round || a.order - b.order)
 
   async function run(action: () => Promise<unknown>, done: string) {
     setBusy(true)

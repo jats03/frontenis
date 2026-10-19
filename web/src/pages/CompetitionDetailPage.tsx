@@ -228,7 +228,7 @@ function CompetitionDetailView({ id }: { id: number }) {
                               <div key={m.id}>
                                 <MatchCard match={m} canEdit={isAdmin} setsPerMatch={summary.setsPerMatch} onChanged={() => void load()} />
                                 {canEditRounds && !m.isPlayed && (
-                                  <MatchRoundMover match={m} groupMatches={list} pairs={detail.pairs} onChanged={load} />
+                                  <MatchRoundMover match={m} groupMatches={list} onChanged={load} />
                                 )}
                                 {canAddMatches && list.length > 1 && (
                                   <div className="round-mover">

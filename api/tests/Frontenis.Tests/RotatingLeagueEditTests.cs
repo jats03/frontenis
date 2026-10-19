@@ -118,13 +118,15 @@ public class RotatingLeagueEditTests
     }
 
     [Fact]
-    public void Moving_a_match_to_a_round_where_a_player_already_plays_is_rejected()
+    public void Moving_a_match_to_a_round_where_a_player_already_plays_is_allowed()
     {
         var c = Started(groups: 1, perGroup: 4);
         var g = Last(c);
         var matches = InGroup(c, g);
-        // con 4 jugadores hay 1 partido por jornada y todos juegan siempre: mover a otra jornada existente choca
-        Assert.Throws<DomainException>(() => c.MoveMatchToRound(matches[0].Id, matches[1].Round));
+        // con 4 jugadores todos juegan en todas las jornadas: mover a otra jornada existente deja a los mismos jugadores dos veces
+        var moved = c.MoveMatchToRound(matches[0].Id, matches[1].Round);
+        // la jornada de origen se quedó vacía y se renumeró; ahora hay una jornada con dos partidos
+        Assert.Equal(2, InGroup(c, g).Count(m => m.Round == moved.Round));
     }
 
     [Fact]
@@ -200,11 +202,6 @@ public class RotatingLeagueEditTests
         c.SwapMatchRounds(a.Id, b.Id);
         Assert.Equal(rb, a.Round);
         Assert.Equal(ra, b.Round);
-        foreach (var round in InGroup(c, Last(c)).GroupBy(m => m.Round))
-        {
-            var ids = round.SelectMany(m => new[] { m.HomeEntry!.Pair.Player1Id, m.HomeEntry.Pair.Player2Id, m.AwayEntry!.Pair.Player1Id, m.AwayEntry.Pair.Player2Id }).ToList();
-            Assert.Equal(ids.Count, ids.Distinct().Count());
-        }
     }
 
     [Fact]
@@ -223,22 +220,15 @@ public class RotatingLeagueEditTests
     }
 
     [Fact]
-    public void Swap_is_rejected_when_a_player_would_play_twice_in_a_round()
+    public void Swap_is_allowed_even_if_a_player_ends_up_twice_in_a_round()
     {
         var c = Started(groups: 1, perGroup: 8, rounds: 3);
         var ms = InGroup(c, Last(c));
-        var ids = (Match m) => new[] { m.HomeEntry!.Pair.Player1Id, m.HomeEntry.Pair.Player2Id, m.AwayEntry!.Pair.Player1Id, m.AwayEntry.Pair.Player2Id };
-        // busca un cruce que choque: el partido a llegaría a la jornada de b y comparte jugador con otro partido de esa jornada
-        foreach (var a in ms) foreach (var b in ms.Where(x => x.Round != a.Round))
-        {
-            var others = ms.Where(m => m != a && m != b && m.Round == b.Round).SelectMany(ids).ToHashSet();
-            if (!ids(a).Any(others.Contains)) continue;
-            var before = (a.Round, b.Round);
-            Assert.Throws<DomainException>(() => c.SwapMatchRounds(a.Id, b.Id));
-            Assert.Equal(before, (a.Round, b.Round));
-            return;
-        }
-        Assert.True(false, "no se encontró un cruce con choque");
+        var a = ms.First(m => m.Round == 1);
+        var b = ms.First(m => m.Round == 2);
+        c.SwapMatchRounds(a.Id, b.Id);
+        Assert.Equal(2, a.Round);
+        Assert.Equal(1, b.Round);
     }
 
     [Fact]
