@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import Disclosure from '../components/Disclosure'
 import ActionMenu from '../components/ActionMenu'
 import PageHeader from '../components/PageHeader'
-import { formatShortDate } from '../dates'
+import { formatClock, formatShortDate } from '../dates'
 import { confirmDelete, notify, promptText } from '../alerts'
 import { api } from '../api/client'
 import type { Player, TrainingDetail, TrainingRow, TrainingSuggestion } from '../api/types'
@@ -203,6 +203,7 @@ export default function TrainingDetailPage() {
               <ol className="training-matches">
                 {[...data.matches].reverse().map(m => (
                   <li key={m.id} value={m.order}>
+                    {m.playedAtUtc && <time className="tm-time" dateTime={m.playedAtUtc}>{formatClock(m.playedAtUtc)}</time>}
                     <div className="tm-teams">
                       <span className={m.homeWon ? 'team winner' : 'team'}>{m.homeName}</span>
                       <span className={!m.homeWon ? 'team winner' : 'team'}>{m.awayName}</span>

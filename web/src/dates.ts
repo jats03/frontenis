@@ -15,6 +15,10 @@ export const formatDate = (iso: string) =>
 export const formatShortDate = (iso: string) =>
   parseDate(iso).toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
 
+/** Hora (hora de Madrid) de un instante UTC con «Z»: «19:42». */
+export const formatClock = (isoUtc: string) =>
+  new Date(isoUtc).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Madrid' })
+
 /** «18:00:00» → «18:00». */
 export const formatTime = (time: string) => time.slice(0, 5)
 

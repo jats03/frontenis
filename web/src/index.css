@@ -253,6 +253,9 @@ details.present summary { cursor: pointer; font-weight: 600; min-height: 32px; d
 .training-matches { list-style: none; padding: 0; margin: 0; display: grid; gap: 0; }
 .training-matches li { display: grid; grid-template-columns: 1fr auto; gap: .2rem .8rem; align-items: center; padding: .6rem 0; border-bottom: 1px solid var(--border); }
 .training-matches li:last-child { border-bottom: 0; }
+.training-matches li { position: relative; }
+.tm-time { position: absolute; top: .3rem; right: 0; font-size: .75rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.tm-score { padding-top: .6rem; }
 .tm-teams { display: grid; gap: .1rem; min-width: 0; }
 .tm-score { display: grid; text-align: right; font-variant-numeric: tabular-nums; }
 .tm-score strong { font-size: 1.15rem; }

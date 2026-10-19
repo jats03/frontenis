@@ -77,6 +77,8 @@ export interface TrainingMatch {
   id: number; order: number; homeName: string; awayName: string
   homePlayerIds: number[]; awayPlayerIds: number[]
   homeScore: number; awayScore: number; homeWon: boolean
+  /** Momento en que se apuntó el partido (UTC, con «Z»); null en los partidos antiguos, que no guardaban la hora. */
+  playedAtUtc: string | null
 }
 export interface TrainingRow {
   rank: number; name: string; playerIds: number[]; played: number; won: number; lost: number

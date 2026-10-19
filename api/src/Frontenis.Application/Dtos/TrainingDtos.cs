@@ -15,7 +15,7 @@ public sealed record TrainingSummaryDto(
 
 public sealed record TrainingMatchDto(
     int Id, int Order, string HomeName, string AwayName, int[] HomePlayerIds, int[] AwayPlayerIds,
-    int HomeScore, int AwayScore, bool HomeWon);
+    int HomeScore, int AwayScore, bool HomeWon, DateTime? PlayedAtUtc);
 
 public sealed record TrainingRowDto(
     int Rank, string Name, int[] PlayerIds, int Played, int Won, int Lost,

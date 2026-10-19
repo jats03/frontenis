@@ -26,12 +26,15 @@ public sealed class TrainingDetailBuilder : ITrainingDetailBuilder
             r.Player2Id == 0 ? new[] { r.Player1Id } : new[] { r.Player1Id, r.Player2Id },
             r.Played, r.Won, r.Lost, r.PointsFor, r.PointsAgainst, r.PointsDiff, r.ClassificationPoints);
 
+        // Los partidos anteriores a que se guardara la hora no la tienen (fecha por defecto): se devuelven sin hora.
+        static DateTime? PlayedAt(DateTime utc) => utc.Year < 2000 ? null : DateTime.SpecifyKind(utc, DateTimeKind.Utc);
+
         return new TrainingDetailDto(
             session.ToSummary(),
             session.Matches.OrderBy(m => m.Order).ThenBy(m => m.Id).Select(m => new TrainingMatchDto(
                 m.Id, m.Order, $"{Name(m.Home1Id)} / {Name(m.Home2Id)}", $"{Name(m.Away1Id)} / {Name(m.Away2Id)}",
                 new[] { m.Home1Id, m.Home2Id }, new[] { m.Away1Id, m.Away2Id },
-                m.HomeScore, m.AwayScore, m.HomeWon)).ToList(),
+                m.HomeScore, m.AwayScore, m.HomeWon, PlayedAt(m.PlayedAtUtc))).ToList(),
             TrainingStandings.ByPair(games, session.PointsPerWin, session.PointsPerLoss).Select(Row).ToList(),
             TrainingStandings.ByPlayer(games, session.PointsPerWin, session.PointsPerLoss).Select(Row).ToList());
     }
