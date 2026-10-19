@@ -61,17 +61,28 @@ public class RotatingLeagueTests
         Assert.All(seen.Values, v => Assert.Equal(1, v));
     }
 
-    [Fact]
-    public void Group_of_six_covers_most_partner_combinations()
+    [Theory]
+    [InlineData(5)]
+    [InlineData(6)]
+    [InlineData(7)]
+    [InlineData(8)]
+    [InlineData(9)]
+    [InlineData(10)]
+    [InlineData(11)]
+    [InlineData(12)]
+    [InlineData(13)]
+    public void Every_player_partners_with_every_other_player_of_the_group(int size)
     {
-        var rounds = new RotationPlanner(Rnd(5)).Plan(Players(6), RotationMath.FullRounds(6));
-        Assert.Equal(8, rounds.Count);
-        var seen = new HashSet<(int, int)>();
-        foreach (var round in rounds)
-            foreach (var m in round.Matches)
-                foreach (var (a, b) in new[] { m.Home, m.Away })
-                    seen.Add((Math.Min(a.Id, b.Id), Math.Max(a.Id, b.Id)));
-        Assert.True(seen.Count >= 14, $"solo {seen.Count} de 15 combinaciones");
+        foreach (var seed in new[] { 1, 5, 9 })
+        {
+            var rounds = new RotationPlanner(Rnd(seed)).Plan(Players(size), RotationMath.FullRounds(size));
+            var seen = new HashSet<(int, int)>();
+            foreach (var round in rounds)
+                foreach (var m in round.Matches)
+                    foreach (var (a, b) in new[] { m.Home, m.Away })
+                        seen.Add((Math.Min(a.Id, b.Id), Math.Max(a.Id, b.Id)));
+            Assert.Equal(size * (size - 1) / 2, seen.Count);
+        }
     }
 
     [Fact]

@@ -17,17 +17,46 @@ public sealed class RotationPlanner : IRotationPlanner
 {
     private const int Attempts = 150;
     private const int SearchBudget = 20000;
+    /// <summary>Sorteos completos que se prueban como máximo para conseguir que todos jueguen con todos.</summary>
+    private const int MaxPlans = 400;
 
     private readonly IRandomizer _randomizer;
     private int _budget;
 
     public RotationPlanner(IRandomizer randomizer) { _randomizer = randomizer; }
 
+    /// <summary>
+    /// Planifica las jornadas del grupo. Con n múltiplo de 4 el calendario es exacto; en el resto de casos el reparto
+    /// es por sorteo, así que se repite hasta conseguir que todos jueguen de compañeros con todos (si las jornadas
+    /// alcanzan) o, si no alcanzan, el sorteo con más compañeros distintos.
+    /// </summary>
     public IReadOnlyList<PlannedRound> Plan(IReadOnlyList<Player> players, int rounds)
     {
         var n = players.Count;
         if (n < 4) throw new DomainException("Cada grupo necesita al menos 4 jugadores.");
         if (rounds < 1) throw new DomainException("Debe haber al menos 1 jornada.");
+        if (n % 4 == 0) return PlanOnce(players, rounds);
+
+        var allPairs = n * (n - 1) / 2;
+        var possible = Math.Min(allPairs, rounds * 2 * (n / 4));
+        IReadOnlyList<PlannedRound>? best = null;
+        var bestDistinct = -1;
+        for (var attempt = 0; attempt < MaxPlans && bestDistinct < possible; attempt++)
+        {
+            var plan = PlanOnce(players, rounds);
+            var distinct = DistinctPartners(plan);
+            if (distinct > bestDistinct) { bestDistinct = distinct; best = plan; }
+        }
+        return best!;
+    }
+
+    private static int DistinctPartners(IReadOnlyList<PlannedRound> plan) =>
+        plan.SelectMany(r => r.Matches).SelectMany(m => new[] { m.Home, m.Away })
+            .Select(p => (Math.Min(p.First.Id, p.Second.Id), Math.Max(p.First.Id, p.Second.Id))).Distinct().Count();
+
+    private IReadOnlyList<PlannedRound> PlanOnce(IReadOnlyList<Player> players, int rounds)
+    {
+        var n = players.Count;
 
         var restCount = n % 4;
         var rests = new int[n];
