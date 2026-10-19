@@ -27,9 +27,9 @@ public sealed partial class Competition
         var players = GroupPlayers(group).Append(player).ToList();
         var removed = RemoveGroupMatches(group, _ => true);
 
-        // Jornadas totales: las fijadas en la liga o, si no, las necesarias para que todos jueguen con todos.
-        var total = Rounds > 0 ? Rounds : RotationMath.FullRounds(players.Count);
-        AppendRounds(group, planner.Plan(players, total), 0);
+        // Todos contra todos: las jornadas necesarias para que cada jugador sea compañero de todos los demás del grupo,
+        // aunque la liga se hubiera creado con menos jornadas fijas (con un jugador más ya no bastarían).
+        AppendRounds(group, planner.Plan(players, RotationMath.FullRounds(players.Count)), 0);
 
         PairCount++;
         RefreshStatus();

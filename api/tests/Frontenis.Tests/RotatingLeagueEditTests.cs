@@ -76,11 +76,18 @@ public class RotatingLeagueEditTests
     }
 
     [Fact]
-    public void A_fixed_number_of_rounds_is_respected()
+    public void Adding_a_player_gives_a_full_round_robin_even_if_the_league_had_fixed_rounds()
     {
         var c = Started(groups: 1, perGroup: 4, rounds: 3);
+        var g = Last(c);
         c.AddPlayerToLastGroup(TestHelpers.Player(99, "Nuevo", PlayerPosition.Delantero), Planner());
-        Assert.Equal(3, InGroup(c, Last(c)).Select(m => m.Round).Distinct().Count());
+        var ms = InGroup(c, g);
+        Assert.Equal(RotationMath.FullRounds(5), ms.Select(m => m.Round).Distinct().Count());
+        var seen = new HashSet<(int, int)>();
+        foreach (var m in ms)
+            foreach (var p in new[] { m.HomeEntry!.Pair, m.AwayEntry!.Pair })
+                seen.Add((Math.Min(p.Player1Id, p.Player2Id), Math.Max(p.Player1Id, p.Player2Id)));
+        Assert.Equal(10, seen.Count); // 5 jugadores: las 10 parejas posibles
     }
 
     [Fact]
