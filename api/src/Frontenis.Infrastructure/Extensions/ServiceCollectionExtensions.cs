@@ -147,6 +147,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ICompetitionCommands>(sp => new CacheInvalidatingCompetitionCommands(
             sp.GetRequiredService<CompetitionCommands>(), sp.GetRequiredService<IReadCache>()));
         services.AddScoped<ICompetitionDrawService, CompetitionDrawService>();
+        services.AddScoped<IRotatingLeagueCommands, RotatingLeagueCommands>();
         services.AddScoped<CompetitionQueries>();
         services.AddCached<ICompetitionQueries, CompetitionQueries, CachedCompetitionQueries>();
 

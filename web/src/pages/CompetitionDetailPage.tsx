@@ -10,6 +10,9 @@ import PageHeader from '../components/PageHeader'
 import MatchCard from '../components/MatchCard'
 import RegistrationPanel from '../components/RegistrationPanel'
 import RotatingDrawPanel from '../components/RotatingDrawPanel'
+import RotatingAddPlayer from '../components/RotatingAddPlayer'
+import MatchRoundMover from '../components/MatchRoundMover'
+import RemoveRoundButton from '../components/RemoveRoundButton'
 import SubTabs from '../components/SubTabs'
 import StandingsTable from '../components/StandingsTable'
 import { statusLabel, typeLabel } from '../labels'
@@ -71,6 +74,8 @@ function CompetitionDetailView({ id }: { id: number }) {
   const hasPlayoffs = detail.matches.some(m => m.phase === 'Playoff')
   const canGeneratePlayoffs = isAdmin && isTournament && summary.status === 'GroupStage' && !hasPlayoffs &&
     groupMatches.length > 0 && groupMatches.every(m => m.isPlayed)
+
+  const canEditRounds = isAdmin && isRotating && summary.status === 'GroupStage'
 
   async function generatePlayoffs() {
     try { await api.competitions.playoffs(id); notify('Fase final generada'); await load(); setTab('playoffs') }
@@ -203,9 +208,19 @@ function CompetitionDetailView({ id }: { id: number }) {
                         <h2>{g.name}</h2>
                         {rounds.map(r => (
                           <div key={r}>
-                            <h3>Jornada {r}</h3>
+                            <div className="round-head">
+                              <h3>Jornada {r}</h3>
+                              {canEditRounds && rounds.length > 1 && !list.some(m => m.round === r && m.isPlayed) && (
+                                <RemoveRoundButton competitionId={id} groupId={g.id} round={r} onChanged={load} onError={setError} />
+                              )}
+                            </div>
                             {list.filter(m => m.round === r).map(m => (
-                              <MatchCard key={m.id} match={m} canEdit={isAdmin} setsPerMatch={summary.setsPerMatch} onChanged={() => void load()} />
+                              <div key={m.id}>
+                                <MatchCard match={m} canEdit={isAdmin} setsPerMatch={summary.setsPerMatch} onChanged={() => void load()} />
+                                {canEditRounds && !m.isPlayed && (
+                                  <MatchRoundMover matchId={m.id} round={r} rounds={rounds} onChanged={load} />
+                                )}
+                              </div>
                             ))}
                           </div>
                         ))}
@@ -245,6 +260,10 @@ function CompetitionDetailView({ id }: { id: number }) {
                 )
               })()}
             </>
+          )}
+
+          {tab === 'matches' && canEditRounds && matchMode === 'groups' && (
+            <RotatingAddPlayer detail={detail} players={players} onChanged={load} />
           )}
 
           {tab === 'playoffs' && <Bracket matches={detail.matches} canEdit={isAdmin} setsPerMatch={summary.setsPerMatch} onChanged={() => void load()} />}
