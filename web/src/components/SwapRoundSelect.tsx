@@ -5,7 +5,7 @@ interface Props {
   competitionId: number
   groupId: number
   round: number
-  /** Otras jornadas del grupo con las que se puede intercambiar (sin partidos jugados). */
+  /** Otras jornadas del grupo con las que se puede intercambiar (tengan o no partidos jugados). */
   others: number[]
   onChanged: () => Promise<void> | void
   onError: (message: string) => void

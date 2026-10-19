@@ -96,7 +96,7 @@ public sealed partial class Competition
 
     /// <summary>
     /// Intercambia dos jornadas enteras de un grupo: los partidos de una pasan a la otra y viceversa.
-    /// Ninguna de las dos puede tener partidos jugados.
+    /// Da igual que haya partidos jugados: el orden de las jornadas no afecta a los resultados.
     /// </summary>
     public void SwapRounds(int groupId, int roundA, int roundB)
     {
@@ -107,8 +107,6 @@ public sealed partial class Competition
         var a = inGroup.Where(m => m.Round == roundA).ToList();
         var b = inGroup.Where(m => m.Round == roundB).ToList();
         if (a.Count == 0 || b.Count == 0) throw new NotFoundException("Esa jornada no existe.");
-        if (a.Concat(b).Any(m => m.IsPlayed))
-            throw new DomainException("No se pueden intercambiar jornadas que ya tienen partidos jugados.");
 
         foreach (var m in a) m.Reschedule(roundB, m.Order);
         foreach (var m in b) m.Reschedule(roundA, m.Order);

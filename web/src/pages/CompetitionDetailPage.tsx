@@ -211,11 +211,13 @@ function CompetitionDetailView({ id }: { id: number }) {
                           <div key={r}>
                             <div className="round-head">
                               <h3>Jornada {r}</h3>
-                              {canEditRounds && rounds.length > 1 && !list.some(m => m.round === r && m.isPlayed) && (
+                              {canEditRounds && rounds.length > 1 && (
                                 <div className="round-tools">
                                   <SwapRoundSelect competitionId={id} groupId={g.id} round={r} onChanged={load} onError={setError}
-                                    others={rounds.filter(x => x !== r && !list.some(m => m.round === x && m.isPlayed))} />
-                                  <RemoveRoundButton competitionId={id} groupId={g.id} round={r} onChanged={load} onError={setError} />
+                                    others={rounds.filter(x => x !== r)} />
+                                  {!list.some(m => m.round === r && m.isPlayed) && (
+                                    <RemoveRoundButton competitionId={id} groupId={g.id} round={r} onChanged={load} onError={setError} />
+                                  )}
                                 </div>
                               )}
                             </div>

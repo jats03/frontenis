@@ -255,7 +255,7 @@ public class RotatingLeagueEditTests
     }
 
     [Fact]
-    public void Swapping_rounds_rejects_played_missing_or_equal_rounds()
+    public void Swapping_rounds_rejects_missing_or_equal_rounds_but_allows_played_ones()
     {
         var c = Started(groups: 1, perGroup: 4, rounds: 3);
         var g = Last(c);
@@ -263,8 +263,10 @@ public class RotatingLeagueEditTests
         Assert.Throws<NotFoundException>(() => c.SwapRounds(g.Id, 1, 9));
         Assert.Throws<NotFoundException>(() => c.SwapRounds(999, 1, 2));
         Play(c, InGroup(c, g).First(m => m.Round == 1));
-        Assert.Throws<DomainException>(() => c.SwapRounds(g.Id, 1, 2));
-        c.SwapRounds(g.Id, 2, 3);
+        var played = InGroup(c, g).First(m => m.Round == 1);
+        c.SwapRounds(g.Id, 1, 2);
+        Assert.Equal(2, played.Round);
+        Assert.True(played.IsPlayed);
         Assert.Equal(3, InGroup(c, g).Select(m => m.Round).Distinct().Count());
     }
 }
