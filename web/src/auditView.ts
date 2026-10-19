@@ -28,6 +28,7 @@ const RULES: [RegExp, string][] = [
   [/^POST \/api\/players/, 'Crea un jugador'],
   [/^PUT \/api\/players\/(\d+)/, 'Edita al jugador $1'],
   [/^DELETE \/api\/players\/(\d+)/, 'Elimina al jugador $1'],
+  [/^PUT \/api\/matches\/(\d+)\/swap/, 'Intercambia de jornada el partido $1 con otro'],
   [/^PUT \/api\/matches\/(\d+)\/round/, 'Mueve el partido $1 de jornada'],
   [/^PUT \/api\/matches\/(\d+)/, 'Guarda el resultado del partido $1'],
   [/^DELETE \/api\/matches\/(\d+)/, 'Borra el resultado del partido $1'],

@@ -4,3 +4,5 @@ namespace Frontenis.Application.Dtos;
 public sealed record AddRotatingPlayerRequest(int PlayerId);
 
 public sealed record MoveMatchRequest(int Round);
+
+public sealed record SwapMatchRequest(int OtherMatchId);

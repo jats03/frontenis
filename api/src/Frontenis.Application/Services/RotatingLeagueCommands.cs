@@ -39,6 +39,13 @@ public sealed class RotatingLeagueCommands : IRotatingLeagueCommands
         return await SaveAsync(competition, Array.Empty<Pair>(), ct);
     }
 
+    public async Task<CompetitionDetailDto> SwapMatchesAsync(int matchId, SwapMatchRequest request, CancellationToken ct = default)
+    {
+        var competition = await _competitions.GetDetailedByMatchOrThrowAsync(matchId, ct);
+        competition.SwapMatchRounds(matchId, request.OtherMatchId);
+        return await SaveAsync(competition, Array.Empty<Pair>(), ct);
+    }
+
     public async Task<CompetitionDetailDto> RemoveRoundAsync(int competitionId, int groupId, int round, CancellationToken ct = default)
     {
         var competition = await _competitions.GetDetailedOrThrowAsync(competitionId, ct);

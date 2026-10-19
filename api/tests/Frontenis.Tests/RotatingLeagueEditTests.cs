@@ -188,4 +188,56 @@ public class RotatingLeagueEditTests
         var c = Started(groups: 1, perGroup: 4, rounds: 1);
         Assert.Throws<DomainException>(() => c.RemoveRound(Last(c).Id, 1));
     }
+
+    [Fact]
+    public void Swapping_two_matches_exchanges_their_rounds()
+    {
+        var c = Started(groups: 1, perGroup: 4, rounds: 3);
+        var ms = InGroup(c, Last(c));
+        var a = ms.First(m => m.Round == 1);
+        var b = ms.First(m => m.Round == 2);
+        var (ra, rb) = (a.Round, b.Round);
+        c.SwapMatchRounds(a.Id, b.Id);
+        Assert.Equal(rb, a.Round);
+        Assert.Equal(ra, b.Round);
+        foreach (var round in InGroup(c, Last(c)).GroupBy(m => m.Round))
+        {
+            var ids = round.SelectMany(m => new[] { m.HomeEntry!.Pair.Player1Id, m.HomeEntry.Pair.Player2Id, m.AwayEntry!.Pair.Player1Id, m.AwayEntry.Pair.Player2Id }).ToList();
+            Assert.Equal(ids.Count, ids.Distinct().Count());
+        }
+    }
+
+    [Fact]
+    public void Swap_is_rejected_for_same_round_played_or_other_group_matches()
+    {
+        var c = Started(groups: 2, perGroup: 4, rounds: 3);
+        var first = InGroup(c, c.Groups.First());
+        var last = InGroup(c, Last(c));
+        Assert.Throws<DomainException>(() => c.SwapMatchRounds(first[0].Id, first[0].Id));
+        Assert.Throws<DomainException>(() => c.SwapMatchRounds(first[0].Id, last[0].Id));
+        var sameRound = first.Where(m => m.Round == first[0].Round).ToList();
+        if (sameRound.Count > 1) Assert.Throws<DomainException>(() => c.SwapMatchRounds(sameRound[0].Id, sameRound[1].Id));
+        var other = first.First(m => m.Round != first[0].Round);
+        Play(c, first[0]);
+        Assert.Throws<DomainException>(() => c.SwapMatchRounds(first[0].Id, other.Id));
+    }
+
+    [Fact]
+    public void Swap_is_rejected_when_a_player_would_play_twice_in_a_round()
+    {
+        var c = Started(groups: 1, perGroup: 8, rounds: 3);
+        var ms = InGroup(c, Last(c));
+        var ids = (Match m) => new[] { m.HomeEntry!.Pair.Player1Id, m.HomeEntry.Pair.Player2Id, m.AwayEntry!.Pair.Player1Id, m.AwayEntry.Pair.Player2Id };
+        // busca un cruce que choque: el partido a llegaría a la jornada de b y comparte jugador con otro partido de esa jornada
+        foreach (var a in ms) foreach (var b in ms.Where(x => x.Round != a.Round))
+        {
+            var others = ms.Where(m => m != a && m != b && m.Round == b.Round).SelectMany(ids).ToHashSet();
+            if (!ids(a).Any(others.Contains)) continue;
+            var before = (a.Round, b.Round);
+            Assert.Throws<DomainException>(() => c.SwapMatchRounds(a.Id, b.Id));
+            Assert.Equal(before, (a.Round, b.Round));
+            return;
+        }
+        Assert.True(false, "no se encontró un cruce con choque");
+    }
 }

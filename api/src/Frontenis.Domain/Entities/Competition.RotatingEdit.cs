@@ -65,6 +65,36 @@ public sealed partial class Competition
     }
 
     /// <summary>
+    /// Intercambia las jornadas de dos partidos pendientes del mismo grupo. Tras el cambio ningún jugador puede
+    /// quedar jugando dos veces en la misma jornada. Sirve cuando mover un partido solo chocaría con otro.
+    /// </summary>
+    public void SwapMatchRounds(int matchId, int otherMatchId)
+    {
+        EnsureRotatingInProgress();
+        if (matchId == otherMatchId) throw new DomainException("Elige dos partidos distintos.");
+        var a = FindMatch(matchId);
+        var b = FindMatch(otherMatchId);
+        if (a.Phase != MatchPhase.Group || b.Phase != MatchPhase.Group)
+            throw new DomainException("Solo se intercambian partidos de la fase de grupos.");
+        if (a.IsPlayed || b.IsPlayed) throw new DomainException("No se puede intercambiar un partido que ya tiene resultado.");
+
+        var group = _groups.First(g => g == a.Group || g.Id == a.GroupId);
+        var inGroup = GroupMatches(group);
+        if (!inGroup.Contains(b)) throw new DomainException("Los dos partidos tienen que ser del mismo grupo.");
+        if (a.Round == b.Round) throw new DomainException("Los dos partidos ya están en la misma jornada.");
+
+        // Los demás partidos de cada jornada (sin los dos que se cruzan) no pueden compartir jugadores con el que llega.
+        bool Clashes(Match arriving, int round) =>
+            PlayerIds(arriving).Any(inGroup.Where(m => m != a && m != b && m.Round == round).SelectMany(PlayerIds).ToHashSet().Contains);
+        if (Clashes(a, b.Round)) throw new DomainException($"Algún jugador del primer partido ya juega en la jornada {b.Round}.");
+        if (Clashes(b, a.Round)) throw new DomainException($"Algún jugador del segundo partido ya juega en la jornada {a.Round}.");
+
+        (var roundA, var orderA) = (a.Round, a.Order);
+        a.Reschedule(b.Round, b.Order);
+        b.Reschedule(roundA, orderA);
+    }
+
+    /// <summary>
     /// Quita una jornada de un grupo con todos sus partidos, siempre que ninguno tenga resultado; las siguientes
     /// jornadas se renumeran. Devuelve las parejas que han quedado sin partido.
     /// </summary>
