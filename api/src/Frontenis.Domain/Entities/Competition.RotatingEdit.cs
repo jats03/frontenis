@@ -95,6 +95,26 @@ public sealed partial class Competition
     }
 
     /// <summary>
+    /// Intercambia dos jornadas enteras de un grupo: los partidos de una pasan a la otra y viceversa.
+    /// Ninguna de las dos puede tener partidos jugados.
+    /// </summary>
+    public void SwapRounds(int groupId, int roundA, int roundB)
+    {
+        EnsureRotatingInProgress();
+        var group = _groups.FirstOrDefault(g => g.Id == groupId) ?? throw new NotFoundException("Grupo no encontrado.");
+        if (roundA == roundB) throw new DomainException("Elige dos jornadas distintas.");
+        var inGroup = GroupMatches(group);
+        var a = inGroup.Where(m => m.Round == roundA).ToList();
+        var b = inGroup.Where(m => m.Round == roundB).ToList();
+        if (a.Count == 0 || b.Count == 0) throw new NotFoundException("Esa jornada no existe.");
+        if (a.Concat(b).Any(m => m.IsPlayed))
+            throw new DomainException("No se pueden intercambiar jornadas que ya tienen partidos jugados.");
+
+        foreach (var m in a) m.Reschedule(roundB, m.Order);
+        foreach (var m in b) m.Reschedule(roundA, m.Order);
+    }
+
+    /// <summary>
     /// Quita una jornada de un grupo con todos sus partidos, siempre que ninguno tenga resultado; las siguientes
     /// jornadas se renumeran. Devuelve las parejas que han quedado sin partido.
     /// </summary>

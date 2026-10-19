@@ -240,4 +240,31 @@ public class RotatingLeagueEditTests
         }
         Assert.True(false, "no se encontró un cruce con choque");
     }
+
+    [Fact]
+    public void Swapping_two_rounds_exchanges_all_their_matches()
+    {
+        var c = Started(groups: 1, perGroup: 8, rounds: 3);
+        var g = Last(c);
+        var r1 = InGroup(c, g).Where(m => m.Round == 1).Select(m => m.Id).ToList();
+        var r3 = InGroup(c, g).Where(m => m.Round == 3).Select(m => m.Id).ToList();
+        c.SwapRounds(g.Id, 1, 3);
+        Assert.Equal(r3.OrderBy(x => x).ToList(), InGroup(c, g).Where(m => m.Round == 1).Select(m => m.Id).OrderBy(x => x).ToList());
+        Assert.Equal(r1.OrderBy(x => x).ToList(), InGroup(c, g).Where(m => m.Round == 3).Select(m => m.Id).OrderBy(x => x).ToList());
+        Assert.Equal(3, InGroup(c, g).Select(m => m.Round).Distinct().Count());
+    }
+
+    [Fact]
+    public void Swapping_rounds_rejects_played_missing_or_equal_rounds()
+    {
+        var c = Started(groups: 1, perGroup: 4, rounds: 3);
+        var g = Last(c);
+        Assert.Throws<DomainException>(() => c.SwapRounds(g.Id, 1, 1));
+        Assert.Throws<NotFoundException>(() => c.SwapRounds(g.Id, 1, 9));
+        Assert.Throws<NotFoundException>(() => c.SwapRounds(999, 1, 2));
+        Play(c, InGroup(c, g).First(m => m.Round == 1));
+        Assert.Throws<DomainException>(() => c.SwapRounds(g.Id, 1, 2));
+        c.SwapRounds(g.Id, 2, 3);
+        Assert.Equal(3, InGroup(c, g).Select(m => m.Round).Distinct().Count());
+    }
 }

@@ -13,6 +13,7 @@ import RotatingDrawPanel from '../components/RotatingDrawPanel'
 import RotatingAddPlayer from '../components/RotatingAddPlayer'
 import MatchRoundMover from '../components/MatchRoundMover'
 import RemoveRoundButton from '../components/RemoveRoundButton'
+import SwapRoundSelect from '../components/SwapRoundSelect'
 import SubTabs from '../components/SubTabs'
 import StandingsTable from '../components/StandingsTable'
 import { statusLabel, typeLabel } from '../labels'
@@ -211,7 +212,11 @@ function CompetitionDetailView({ id }: { id: number }) {
                             <div className="round-head">
                               <h3>Jornada {r}</h3>
                               {canEditRounds && rounds.length > 1 && !list.some(m => m.round === r && m.isPlayed) && (
-                                <RemoveRoundButton competitionId={id} groupId={g.id} round={r} onChanged={load} onError={setError} />
+                                <div className="round-tools">
+                                  <SwapRoundSelect competitionId={id} groupId={g.id} round={r} onChanged={load} onError={setError}
+                                    others={rounds.filter(x => x !== r && !list.some(m => m.round === x && m.isPlayed))} />
+                                  <RemoveRoundButton competitionId={id} groupId={g.id} round={r} onChanged={load} onError={setError} />
+                                </div>
                               )}
                             </div>
                             {list.filter(m => m.round === r).map(m => (

@@ -12,6 +12,8 @@ public interface IRotatingLeagueCommands
     Task<CompetitionDetailDto> MoveMatchAsync(int matchId, MoveMatchRequest request, CancellationToken ct = default);
     /// <summary>Intercambia las jornadas de dos partidos pendientes del mismo grupo.</summary>
     Task<CompetitionDetailDto> SwapMatchesAsync(int matchId, SwapMatchRequest request, CancellationToken ct = default);
+    /// <summary>Intercambia dos jornadas enteras de un grupo (sin partidos jugados).</summary>
+    Task<CompetitionDetailDto> SwapRoundsAsync(int competitionId, int groupId, SwapRoundsRequest request, CancellationToken ct = default);
     /// <summary>Quita una jornada de un grupo (sin partidos jugados) y renumera las siguientes.</summary>
     Task<CompetitionDetailDto> RemoveRoundAsync(int competitionId, int groupId, int round, CancellationToken ct = default);
 }

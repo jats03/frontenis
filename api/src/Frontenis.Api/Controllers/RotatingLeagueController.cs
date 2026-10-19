@@ -27,6 +27,11 @@ public sealed class RotatingLeagueController : ControllerBase
     public async Task<ActionResult<CompetitionDetailDto>> SwapMatches(int matchId, SwapMatchRequest request, CancellationToken ct) =>
         Ok(await _commands.SwapMatchesAsync(matchId, request, ct));
 
+    /// <summary>Intercambia dos jornadas enteras de un grupo.</summary>
+    [HttpPut("api/competitions/{id:int}/groups/{groupId:int}/rounds/swap")]
+    public async Task<ActionResult<CompetitionDetailDto>> SwapRounds(int id, int groupId, SwapRoundsRequest request, CancellationToken ct) =>
+        Ok(await _commands.SwapRoundsAsync(id, groupId, request, ct));
+
     /// <summary>Quita una jornada de un grupo (sin partidos jugados).</summary>
     [HttpDelete("api/competitions/{id:int}/groups/{groupId:int}/rounds/{round:int}")]
     public async Task<ActionResult<CompetitionDetailDto>> RemoveRound(int id, int groupId, int round, CancellationToken ct) =>
