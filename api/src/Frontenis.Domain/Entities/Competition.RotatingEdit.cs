@@ -65,6 +65,38 @@ public sealed partial class Competition
     }
 
     /// <summary>
+    /// Añade un partido a una jornada de un grupo (o a una nueva, la siguiente a la última). Sin más condiciones:
+    /// vale aunque la jornada ya tenga partidos jugados, aunque algún jugador ya juegue en ella o aunque la liga
+    /// estuviera terminada (en ese caso vuelve a estar en juego). Los cuatro jugadores deben ser distintos y del grupo.
+    /// </summary>
+    public Match AddMatchToRound(int groupId, int round, int home1Id, int home2Id, int away1Id, int away2Id)
+    {
+        if (!IsRotating) throw new DomainException("Solo las ligas rotatorias admiten este cambio.");
+        if (Status == CompetitionStatus.Draft) throw new DomainException("La liga aún no se ha sorteado.");
+        var group = _groups.FirstOrDefault(g => g.Id == groupId) ?? throw new NotFoundException("Grupo no encontrado.");
+
+        var ids = new[] { home1Id, home2Id, away1Id, away2Id };
+        if (ids.Distinct().Count() != 4) throw new DomainException("Elige cuatro jugadores distintos.");
+        var players = GroupPlayers(group).ToDictionary(p => p.Id);
+        if (ids.Any(id => !players.ContainsKey(id))) throw new DomainException("Los cuatro jugadores deben ser de este grupo.");
+
+        var inGroup = GroupMatches(group);
+        var lastRound = inGroup.Select(m => m.Round).DefaultIfEmpty(0).Max();
+        if (round < 1 || round > lastRound + 1) throw new DomainException($"La jornada debe estar entre 1 y {lastRound + 1}.");
+
+        var home = new CompetitionEntry(new Pair(players[home1Id], players[home2Id]));
+        var away = new CompetitionEntry(new Pair(players[away1Id], players[away2Id]));
+        home.AssignToGroup(group);
+        away.AssignToGroup(group);
+        _entries.Add(home);
+        _entries.Add(away);
+        var match = Match.ForGroup(group, round, inGroup.Select(m => m.Order).DefaultIfEmpty(0).Max() + 1, home, away);
+        _matches.Add(match);
+        RefreshStatus();
+        return match;
+    }
+
+    /// <summary>
     /// Intercambia las jornadas de dos partidos pendientes del mismo grupo. Tras el cambio ningún jugador puede
     /// quedar jugando dos veces en la misma jornada. Sirve cuando mover un partido solo chocaría con otro.
     /// </summary>

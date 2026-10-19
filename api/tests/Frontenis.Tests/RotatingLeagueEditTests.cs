@@ -269,4 +269,51 @@ public class RotatingLeagueEditTests
         Assert.True(played.IsPlayed);
         Assert.Equal(3, InGroup(c, g).Select(m => m.Round).Distinct().Count());
     }
+
+    [Fact]
+    public void A_match_can_be_added_to_any_round_even_if_players_already_play_there_or_it_has_played_matches()
+    {
+        var c = Started(groups: 1, perGroup: 4, rounds: 3);
+        var g = Last(c);
+        var ps = c.GroupPlayers(g).Select(p => p.Id).ToList();
+        var before = InGroup(c, g).Count;
+        Play(c, InGroup(c, g).First(m => m.Round == 1));
+
+        var m = c.AddMatchToRound(g.Id, 1, ps[0], ps[1], ps[2], ps[3]);
+
+        Assert.Equal(before + 1, InGroup(c, g).Count);
+        Assert.Equal(1, m.Round);
+        Assert.False(m.IsPlayed);
+        Assert.Equal(ps[0], m.HomeEntry!.Pair.Player1Id);
+        Assert.Equal(ps[3], m.AwayEntry!.Pair.Player2Id);
+    }
+
+    [Fact]
+    public void A_match_can_open_a_new_round_and_reopens_a_finished_league()
+    {
+        var c = Started(groups: 1, perGroup: 4, rounds: 3);
+        var g = Last(c);
+        var ps = c.GroupPlayers(g).Select(p => p.Id).ToList();
+        foreach (var x in c.Matches.ToList()) Play(c, x);
+        Assert.Equal(CompetitionStatus.Finished, c.Status);
+
+        var m = c.AddMatchToRound(g.Id, 4, ps[0], ps[1], ps[2], ps[3]);
+
+        Assert.Equal(4, m.Round);
+        Assert.Equal(CompetitionStatus.GroupStage, c.Status);
+    }
+
+    [Fact]
+    public void Adding_a_match_validates_players_round_group_and_draw()
+    {
+        var c = Started(groups: 2, perGroup: 4, rounds: 3);
+        var g = Last(c);
+        var ps = c.GroupPlayers(g).Select(p => p.Id).ToList();
+        var other = c.GroupPlayers(c.Groups.First()).Select(p => p.Id).First();
+        Assert.Throws<DomainException>(() => c.AddMatchToRound(g.Id, 1, ps[0], ps[0], ps[2], ps[3]));
+        Assert.Throws<DomainException>(() => c.AddMatchToRound(g.Id, 1, ps[0], ps[1], ps[2], other));
+        Assert.Throws<DomainException>(() => c.AddMatchToRound(g.Id, 0, ps[0], ps[1], ps[2], ps[3]));
+        Assert.Throws<DomainException>(() => c.AddMatchToRound(g.Id, 5, ps[0], ps[1], ps[2], ps[3]));
+        Assert.Throws<NotFoundException>(() => c.AddMatchToRound(999, 1, ps[0], ps[1], ps[2], ps[3]));
+    }
 }

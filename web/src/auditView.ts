@@ -35,6 +35,7 @@ const RULES: [RegExp, string][] = [
   [/^POST \/api\/competitions\/(\d+)\/rotating\/players/, 'Añade un jugador a la liga rotatoria $1'],
   [/^PUT \/api\/competitions\/(\d+)\/groups\/(\d+)\/rounds\/swap/, 'Intercambia dos jornadas del grupo $2 (competición $1)'],
   [/^DELETE \/api\/competitions\/(\d+)\/groups\/(\d+)\/rounds\/(\d+)/, 'Quita la jornada $3 del grupo $2 (competición $1)'],
+  [/^POST \/api\/competitions\/(\d+)\/groups\/(\d+)\/matches/, 'Añade un partido al grupo $2 (competición $1)'],
   [/^POST \/api\/competitions\/(\d+)\/draw/, 'Hace el sorteo de la competición $1'],
   [/^POST \/api\/competitions/, 'Crea una competición o inscribe parejas'],
   [/^DELETE \/api\/competitions\/(\d+)/, 'Elimina la competición $1'],

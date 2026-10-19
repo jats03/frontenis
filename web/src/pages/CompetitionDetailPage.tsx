@@ -14,6 +14,7 @@ import RotatingAddPlayer from '../components/RotatingAddPlayer'
 import MatchRoundMover from '../components/MatchRoundMover'
 import RemoveRoundButton from '../components/RemoveRoundButton'
 import SwapRoundSelect from '../components/SwapRoundSelect'
+import AddMatchForm from '../components/AddMatchForm'
 import SubTabs from '../components/SubTabs'
 import StandingsTable from '../components/StandingsTable'
 import { statusLabel, typeLabel } from '../labels'
@@ -77,6 +78,7 @@ function CompetitionDetailView({ id }: { id: number }) {
     groupMatches.length > 0 && groupMatches.every(m => m.isPlayed)
 
   const canEditRounds = isAdmin && isRotating && summary.status === 'GroupStage'
+  const canAddMatches = isAdmin && isRotating && summary.status !== 'Draft'
 
   async function generatePlayoffs() {
     try { await api.competitions.playoffs(id); notify('Fase final generada'); await load(); setTab('playoffs') }
@@ -231,6 +233,9 @@ function CompetitionDetailView({ id }: { id: number }) {
                             ))}
                           </div>
                         ))}
+                        {canAddMatches && (
+                          <AddMatchForm competitionId={id} groupId={g.id} rounds={rounds} pairs={detail.pairs} onChanged={load} />
+                        )}
                       </section>
                     )
                   })}
