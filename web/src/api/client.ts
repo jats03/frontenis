@@ -263,6 +263,7 @@ export const api = {
       request<MatchDto>('PUT', `/api/matches/${id}/result`, { sets }),
     moveToRound: (id: number, round: number) =>
       request<CompetitionDetail>('PUT', `/api/matches/${id}/round`, { round }),
+    remove: (id: number) => request<CompetitionDetail>('DELETE', `/api/matches/${id}`),
     swapWith: (id: number, otherMatchId: number) =>
       request<CompetitionDetail>('PUT', `/api/matches/${id}/swap`, { otherMatchId }),
     clearResult: (id: number) => request<MatchDto>('DELETE', `/api/matches/${id}/result`),

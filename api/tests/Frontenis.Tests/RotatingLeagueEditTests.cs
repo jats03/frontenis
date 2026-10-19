@@ -316,4 +316,47 @@ public class RotatingLeagueEditTests
         Assert.Throws<DomainException>(() => c.AddMatchToRound(g.Id, 5, ps[0], ps[1], ps[2], ps[3]));
         Assert.Throws<NotFoundException>(() => c.AddMatchToRound(999, 1, ps[0], ps[1], ps[2], ps[3]));
     }
+
+    [Fact]
+    public void A_match_can_be_removed_even_if_played_and_its_pairs_are_returned()
+    {
+        var c = Started(groups: 1, perGroup: 4, rounds: 3);
+        var g = Last(c);
+        var m = InGroup(c, g).First(x => x.Round == 2);
+        Play(c, m);
+        var before = InGroup(c, g).Count;
+
+        var removed = c.RemoveMatch(m.Id);
+
+        Assert.Equal(before - 1, InGroup(c, g).Count);
+        Assert.Equal(2, removed.Count);
+        Assert.False(InGroup(c, g).Any(x => x.Id == m.Id));
+    }
+
+    [Fact]
+    public void Removing_the_only_match_of_a_round_compacts_the_numbering()
+    {
+        var c = Started(groups: 1, perGroup: 4, rounds: 3);
+        var g = Last(c);
+        var rounds = InGroup(c, g).Select(x => x.Round).Distinct().Count();
+        var only = InGroup(c, g).Where(x => x.Round == 1).ToList();
+        foreach (var x in only.Skip(1).ToList()) c.RemoveMatch(x.Id);
+        c.RemoveMatch(only[0].Id);
+        Assert.Equal(rounds - 1, InGroup(c, g).Select(x => x.Round).Distinct().Count());
+        Assert.Equal(1, InGroup(c, g).Min(x => x.Round));
+    }
+
+    [Fact]
+    public void Removing_matches_keeps_at_least_one_per_group_and_can_finish_the_league()
+    {
+        var c = Started(groups: 1, perGroup: 4, rounds: 3);
+        var g = Last(c);
+        var all = InGroup(c, g);
+        foreach (var x in all.Skip(1).Take(all.Count - 2).ToList()) c.RemoveMatch(x.Id);
+        Play(c, InGroup(c, g)[0]);
+        c.RemoveMatch(InGroup(c, g)[1].Id);
+        Assert.Equal(CompetitionStatus.Finished, c.Status);
+        Assert.Throws<DomainException>(() => c.RemoveMatch(InGroup(c, g)[0].Id));
+        Assert.Throws<NotFoundException>(() => c.RemoveMatch(99999));
+    }
 }

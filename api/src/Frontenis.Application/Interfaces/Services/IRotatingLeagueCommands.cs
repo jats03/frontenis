@@ -10,6 +10,8 @@ public interface IRotatingLeagueCommands
     Task<CompetitionDetailDto> AddPlayerAsync(int competitionId, AddRotatingPlayerRequest request, CancellationToken ct = default);
     /// <summary>Mueve un partido pendiente a otra jornada de su grupo.</summary>
     Task<CompetitionDetailDto> MoveMatchAsync(int matchId, MoveMatchRequest request, CancellationToken ct = default);
+    /// <summary>Borra un partido de una jornada (con o sin resultado); si la jornada queda vacía, desaparece.</summary>
+    Task<CompetitionDetailDto> RemoveMatchAsync(int matchId, CancellationToken ct = default);
     /// <summary>Añade un partido a una jornada de un grupo, sin más condiciones.</summary>
     Task<CompetitionDetailDto> AddMatchAsync(int competitionId, int groupId, AddMatchRequest request, CancellationToken ct = default);
     /// <summary>Intercambia las jornadas de dos partidos pendientes del mismo grupo.</summary>

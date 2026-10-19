@@ -97,6 +97,26 @@ public sealed partial class Competition
     }
 
     /// <summary>
+    /// Borra un partido de una jornada, tenga o no resultado. Si la jornada se queda vacía desaparece y las siguientes
+    /// se renumeran. El grupo tiene que conservar al menos un partido. Devuelve las parejas que han quedado sin partido.
+    /// </summary>
+    public IReadOnlyList<Pair> RemoveMatch(int matchId)
+    {
+        if (!IsRotating) throw new DomainException("Solo las ligas rotatorias admiten este cambio.");
+        if (Status == CompetitionStatus.Draft) throw new DomainException("La liga aún no se ha sorteado.");
+        var match = FindMatch(matchId);
+        if (match.Phase != MatchPhase.Group) throw new DomainException("Solo se borran partidos de la fase de grupos.");
+
+        var group = _groups.First(g => g == match.Group || g.Id == match.GroupId);
+        if (GroupMatches(group).Count == 1) throw new DomainException("El grupo tiene que conservar al menos un partido.");
+
+        var removed = RemoveGroupMatches(group, m => m == match);
+        CompactRounds(group);
+        RefreshStatus();
+        return removed;
+    }
+
+    /// <summary>
     /// Intercambia las jornadas de dos partidos pendientes del mismo grupo. Tras el cambio ningún jugador puede
     /// quedar jugando dos veces en la misma jornada. Sirve cuando mover un partido solo chocaría con otro.
     /// </summary>

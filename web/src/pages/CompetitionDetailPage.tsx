@@ -15,6 +15,7 @@ import MatchRoundMover from '../components/MatchRoundMover'
 import RemoveRoundButton from '../components/RemoveRoundButton'
 import SwapRoundSelect from '../components/SwapRoundSelect'
 import AddMatchForm from '../components/AddMatchForm'
+import RemoveMatchButton from '../components/RemoveMatchButton'
 import SubTabs from '../components/SubTabs'
 import StandingsTable from '../components/StandingsTable'
 import { statusLabel, typeLabel } from '../labels'
@@ -228,6 +229,11 @@ function CompetitionDetailView({ id }: { id: number }) {
                                 <MatchCard match={m} canEdit={isAdmin} setsPerMatch={summary.setsPerMatch} onChanged={() => void load()} />
                                 {canEditRounds && !m.isPlayed && (
                                   <MatchRoundMover match={m} groupMatches={list} pairs={detail.pairs} onChanged={load} />
+                                )}
+                                {canAddMatches && list.length > 1 && (
+                                  <div className="round-mover">
+                                    <RemoveMatchButton matchId={m.id} played={m.isPlayed} onChanged={load} onError={setError} />
+                                  </div>
                                 )}
                               </div>
                             ))}
