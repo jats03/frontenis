@@ -36,9 +36,15 @@ export function avatarParts(playerId: number): AvatarParts {
   }
 }
 
-/** «Buenos días», «Buenas tardes» o «Buenas noches» según la hora local. */
+/** Hora (0-23) en Madrid, sea cual sea la zona horaria del dispositivo. */
+function madridHour(date: Date): number {
+  const h = Number(new Intl.DateTimeFormat('es-ES', { hour: '2-digit', hourCycle: 'h23', timeZone: 'Europe/Madrid' }).format(date))
+  return Number.isFinite(h) ? h : date.getHours()
+}
+
+/** «Buenos días», «Buenas tardes» o «Buenas noches» según la hora de Madrid. */
 export function greetingFor(date: Date): string {
-  const h = date.getHours()
+  const h = madridHour(date)
   if (h >= 6 && h < 14) return 'Buenos días'
   if (h >= 14 && h < 21) return 'Buenas tardes'
   return 'Buenas noches'
