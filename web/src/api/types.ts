@@ -32,6 +32,11 @@ export interface MatchDto {
   sets: SetScore[] | null; homeSets: number | null; awaySets: number | null
 }
 export interface SetScore { home: number; away: number }
+/** Resultado enviado que el administrador rechazó; se conserva por si se rechazó sin querer. */
+export interface RejectedResult {
+  id: number; matchId: number; competitionId: number; homeName: string | null; awayName: string | null
+  playerId: number; playerName: string; sets: SetScore[]; rejectedAtUtc: string
+}
 /** Resultado enviado por un jugador desde su dispositivo, pendiente de aprobación del administrador. */
 export interface PendingResult {
   id: number; matchId: number; competitionId: number; competitionName: string

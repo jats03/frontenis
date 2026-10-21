@@ -1,4 +1,4 @@
-import type { MatchDto } from '../api/types'
+import type { MatchDto, SetScore } from '../api/types'
 import { roundName } from '../labels'
 import MatchCard from './MatchCard'
 
@@ -8,7 +8,7 @@ interface Props {
   setsPerMatch: number
   onChanged: (m: MatchDto) => void
   /** Opciones extra de cada partido para jugadores identificados (abrir marcador, resultado pendiente). */
-  playProps?: (m: MatchDto) => { onOpen?: () => void; pending?: boolean }
+  playProps?: (m: MatchDto) => { onOpen?: () => void; pendingSets?: SetScore[] }
 }
 
 export default function Bracket({ matches, canEdit, setsPerMatch, onChanged, playProps }: Props) {

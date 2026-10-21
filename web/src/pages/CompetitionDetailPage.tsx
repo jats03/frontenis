@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { confirmDelete, notify, promptText } from '../alerts'
 import { api, responseCache } from '../api/client'
-import type { CompetitionDetail, GroupStandings, MatchDto, PendingResult, Player } from '../api/types'
+import type { CompetitionDetail, GroupStandings, MatchDto, PendingResult, Player, RejectedResult } from '../api/types'
 import { useAuth } from '../auth/AuthContext'
 import { useDevice } from '../useDevice'
 import ActionMenu from '../components/ActionMenu'
@@ -39,6 +39,7 @@ function CompetitionDetailView({ id }: { id: number }) {
   const { me } = useDevice()
   const playerId = me?.owner.id ?? null
   const [pending, setPending] = useState<PendingResult[]>([])
+  const [rejected, setRejected] = useState<RejectedResult[]>([])
   const cachedDetail = responseCache.peek<CompetitionDetail>(`/api/competitions/${id}`)
   const [detail, setDetail] = useState<CompetitionDetail | null>(cachedDetail?.data ?? null)
   const [standings, setStandings] = useState<GroupStandings[]>(
@@ -74,6 +75,7 @@ function CompetitionDetailView({ id }: { id: number }) {
   // Resultados enviados por jugadores pendientes de aprobar: solo los necesitan el administrador y los jugadores identificados.
   const loadPending = useCallback(async () => {
     if (!isAdmin && playerId === null) { setPending([]); return }
+    if (isAdmin) api.competitions.rejectedResults(id).then(setRejected).catch(() => undefined)
     try { setPending(await api.competitions.pendingResults(id)) } catch { /* es un extra: si falla, no se muestra */ }
   }, [id, isAdmin, playerId])
   useEffect(() => { void loadPending() }, [loadPending])
@@ -84,9 +86,9 @@ function CompetitionDetailView({ id }: { id: number }) {
 
   const { summary } = detail
   // Un jugador identificado puede abrir el cronómetro + marcador de un partido sin jugar y enviar el resultado.
-  const pendingMatchIds = new Set(pending.map(p => p.matchId))
+  const pendingSetsByMatch = new Map(pending.map(p => [p.matchId, p.sets]))
   const playProps = (m: MatchDto) => ({
-    pending: pendingMatchIds.has(m.id),
+    pendingSets: pendingSetsByMatch.get(m.id),
     onOpen: !isAdmin && playerId !== null && !m.isPlayed && (summary.status === 'GroupStage' || summary.status === 'Playoffs')
       ? () => navigate(`/competiciones/${id}/partidos/${m.id}`) : undefined,
   })
@@ -160,7 +162,7 @@ function CompetitionDetailView({ id }: { id: number }) {
           ]} />
         } />
       {error && <p className="error">{error}</p>}
-      {isAdmin && pending.length > 0 && <PendingResultsPanel pending={pending} onChanged={() => { void load(); void loadPending() }} />}
+      {isAdmin && (pending.length > 0 || rejected.length > 0) && <PendingResultsPanel pending={pending} rejected={rejected} onChanged={() => { void load(); void loadPending() }} />}
 
       {summary.status === 'Draft' && isAdmin && isRotating && <RotatingDrawPanel detail={detail} players={players}
         onChanged={load} onPlayersChanged={async () => { setPlayers(await api.players.list()); await load() }} />}

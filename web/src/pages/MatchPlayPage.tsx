@@ -80,7 +80,11 @@ export default function MatchPlayPage() {
       return next
     })
   }
-  function zero() { clearDraft(matchId); setPts(ZERO()); setError(null) }
+  async function zero() {
+    const ok = await confirmAction('¿Limpiar el marcador?', 'Se pondrán a cero todos los sets de este partido.', 'Sí, limpiar', 'Cancelar')
+    if (!ok) return
+    clearDraft(matchId); setPts(ZERO()); setError(null)
+  }
 
   const match: MatchDto | undefined = detail?.matches.find(m => m.id === matchId)
   const back = <p><Link to={`/competiciones/${competitionId}`}>← Volver a la competición</Link></p>
@@ -171,7 +175,7 @@ export default function MatchPlayPage() {
         {error && <p className="error">{error}</p>}
         <div className="row center">
           <button disabled={busy} onClick={() => void send()}>Enviar resultado</button>
-          <button className="secondary" disabled={busy || board.every(p => p.h === 0 && p.a === 0)} onClick={zero}>Poner a cero</button>
+          <button className="secondary" disabled={busy || board.every(p => p.h === 0 && p.a === 0)} onClick={() => void zero()}>Limpiar</button>
         </div>
         <p className="muted center">El marcador se guarda en este dispositivo mientras juegas. El administrador debe aprobar el resultado.</p>
       </section>

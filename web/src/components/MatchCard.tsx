@@ -11,8 +11,8 @@ interface Props {
   onChanged: (m: MatchDto) => void
   /** Jugador identificado: abre la pantalla de cronómetro + marcador del partido. */
   onOpen?: () => void
-  /** Hay un resultado enviado por un jugador pendiente de aprobación. */
-  pending?: boolean
+  /** Resultado enviado por un jugador, pendiente de aprobación: se muestra aunque aún no sea oficial. */
+  pendingSets?: SetScore[]
 }
 
 type Cell = { h: string; a: string }
@@ -27,11 +27,12 @@ function initial(match: MatchDto): Cell[] {
 
 const num = (v: string): number | null => (v.trim() !== '' && /^\d+$/.test(v.trim()) ? Number(v) : null)
 
-export default function MatchCard({ match, canEdit, setsPerMatch = 1, onChanged, onOpen, pending = false }: Props) {
+export default function MatchCard({ match, canEdit, setsPerMatch = 1, onChanged, onOpen, pendingSets }: Props) {
   const [cells, setCells] = useState<Cell[]>(() => initial(match))
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
 
+  const pending = !!pendingSets
   const ready = match.homeEntryId !== null && match.awayEntryId !== null
   const two = setsPerMatch === 2
 
@@ -117,7 +118,7 @@ export default function MatchCard({ match, canEdit, setsPerMatch = 1, onChanged,
       )}
       {!match.isPlayed && ready && (pending || onOpen) && (
         <div className="match-actions">
-          {pending && <span className="badge-pending">Pendiente de aprobación</span>}
+          {pending && <span className="badge-pending">Pendiente de aprobación: {pendingSets!.map(s => `${s.home}-${s.away}`).join(', ')}</span>}
           {onOpen && <button className="secondary" onClick={onOpen}>{pending ? 'Ver / modificar resultado' : 'Jugar / enviar resultado'}</button>}
         </div>
       )}

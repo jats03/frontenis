@@ -2,7 +2,7 @@ import type {
   CompetitionDetail, CompetitionSummary, CreateCompetition, GroupStandings, MatchDto,
   PairDto, PairingPreview, Player, PlayerHistory, PlayerHistoryRow, Position, SetScore,
   HistoryFilter, NewTrainingMatch, TrainingDetail, TrainingSuggestion, TrainingSummary,
-  AuditPage, AuditQuery, PendingResult, DeviceLink, DeviceMe, PlayerDelegateRow, PlayerRef, SaveSlot, SaveSlotTemplate, Slot, SlotTemplate,
+  AuditPage, AuditQuery, PendingResult, RejectedResult, DeviceLink, DeviceMe, PlayerDelegateRow, PlayerRef, SaveSlot, SaveSlotTemplate, Slot, SlotTemplate,
 } from './types'
 import { deviceHeaders, deviceToken, hasDeviceToken } from '../device'
 
@@ -126,6 +126,7 @@ export const api = {
     list: () => request<CompetitionSummary[]>('GET', '/api/competitions'),
     get: (id: number) => request<CompetitionDetail>('GET', `/api/competitions/${id}`),
     standings: (id: number) => request<GroupStandings[]>('GET', `/api/competitions/${id}/standings`),
+    rejectedResults: (id: number) => request<RejectedResult[]>('GET', `/api/competitions/${id}/rejected-results`),
     pendingResults: (id: number) => request<PendingResult[]>('GET', `/api/competitions/${id}/pending-results`),
     create: (c: CreateCompetition) => request<CompetitionSummary>('POST', '/api/competitions', c),
     setSetsPerMatch: (id: number, setsPerMatch: number) =>
@@ -276,5 +277,6 @@ export const api = {
   matchSubmissions: {
     approve: (id: number) => request<MatchDto>('POST', `/api/match-submissions/${id}/approve`),
     reject: (id: number) => request<void>('DELETE', `/api/match-submissions/${id}`),
+    restore: (id: number) => request<PendingResult>('POST', `/api/match-rejections/${id}/restore`),
   },
 }
