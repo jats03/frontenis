@@ -24,7 +24,7 @@ public sealed class DeviceLinkAdminCommands : IDeviceLinkAdminCommands
         var links = await _links.ListAsync(ct);
         var names = (await _players.GetByIdsAsync(links.Select(l => l.PlayerId).Distinct().ToList(), ct))
             .ToDictionary(p => p.Id, p => p.Name);
-        return links.Select(l => new DeviceLinkDto(l.PlayerId, names.GetValueOrDefault(l.PlayerId, "—"), l.LinkedAtUtc)).ToList();
+        return links.Select(l => new DeviceLinkDto(l.PlayerId, names.GetValueOrDefault(l.PlayerId, "—"), l.LinkedAtUtc, l.Id, l.DeviceHash)).ToList();
     }
 
     public async Task ReleaseAsync(int playerId, CancellationToken ct = default)

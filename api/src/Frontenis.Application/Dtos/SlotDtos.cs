@@ -32,6 +32,6 @@ public sealed record AttendanceRequest(int PlayerId);
 public sealed record PlayerRefDto(int Id, string Name);
 public sealed record DeviceMeDto(PlayerRefDto Owner, IReadOnlyList<PlayerRefDto> Delegates);
 public sealed record LinkDeviceRequest(int PlayerId);
-public sealed record DeviceLinkDto(int PlayerId, string PlayerName, DateTime LinkedAtUtc);
+public sealed record DeviceLinkDto(int PlayerId, string PlayerName, DateTime LinkedAtUtc, int Id, string DeviceHash);
 public sealed record PlayerDelegateDto(int OwnerId, string OwnerName, int DelegateId, string DelegateName);
 public sealed record AddPlayerDelegateRequest(int OwnerPlayerId, int DelegatePlayerId);

@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { api } from '../api/client'
 import type { AuditActor, AuditQuery } from '../api/types'
 import { ACTOR_LABEL, describeAction, statusClass } from '../auditView'
@@ -8,13 +8,15 @@ import LoadingBlock from '../components/LoadingBlock'
 import PageHeader from '../components/PageHeader'
 import { useAsync, useDocumentTitle } from '../hooks'
 import PlayerName from '../components/PlayerName'
+import IdentifiedPlayersTable from '../components/IdentifiedPlayersTable'
+import SubTabs from '../components/SubTabs'
 
 const PAGE_SIZE = 50
 const EMPTY: AuditQuery = { actor: '', text: '', method: '', from: '', to: '', page: 1 }
 const when = (iso: string) => new Date(iso).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'medium' })
 
 /** Registro de actividad: quién hizo qué (acciones que modifican datos), solo para el administrador. */
-export default function AuditPage() {
+function AuditLog() {
   useDocumentTitle('Registro de actividad')
   const { isAdmin } = useAuth()
   const [draft, setDraft] = useState<AuditQuery>(EMPTY)
@@ -105,6 +107,22 @@ export default function AuditPage() {
         </>
       )}
       <p><Link to="/mas">← Volver a Más</Link></p>
+    </>
+  )
+}
+
+/** Administración: registro de actividad y tabla de jugadores identificados (dispositivos vinculados). */
+export default function AuditPage() {
+  const { isAdmin } = useAuth()
+  const [params, setParams] = useSearchParams()
+  const tab = params.get('vista') === 'identificados' ? 'identificados' : 'registro'
+  if (!isAdmin) return <AuditLog />
+  return (
+    <>
+      <SubTabs label="Secciones" value={tab}
+        options={[{ key: 'registro', label: 'Registro de actividad' }, { key: 'identificados', label: 'Jugadores identificados' }]}
+        onChange={k => setParams(k === 'registro' ? {} : { vista: k }, { replace: true })} />
+      {tab === 'registro' ? <AuditLog /> : <IdentifiedPlayersTable />}
     </>
   )
 }

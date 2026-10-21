@@ -140,7 +140,7 @@ export interface SaveSlot { date: string; start: string; end: string; opensAt?: 
 export interface PlayerRef { id: number; name: string }
 /** Jugador titular de este dispositivo y los jugadores a los que además puede apuntar. */
 export interface DeviceMe { owner: PlayerRef; delegates: PlayerRef[] }
-export interface DeviceLink { playerId: number; playerName: string; linkedAtUtc: string }
+export interface DeviceLink { playerId: number; playerName: string; linkedAtUtc: string; id: number; deviceHash: string }
 export interface PlayerDelegateRow { ownerId: number; ownerName: string; delegateId: number; delegateName: string }
 
 /** Quién hace una acción registrada. */
