@@ -5,7 +5,6 @@ import { api } from '../api/client'
 import type { Player, SlotTemplate, WeekDay } from '../api/types'
 import { useAuth } from '../auth/AuthContext'
 import DelegatesPanel from '../components/DelegatesPanel'
-import DeviceLinksPanel from '../components/DeviceLinksPanel'
 import PageHeader from '../components/PageHeader'
 import SlotTemplateRow from '../components/SlotTemplateRow'
 import { addDaysIso, mondayOfIso, toApiTime, todayIso } from '../dates'
@@ -149,7 +148,6 @@ export default function ReservasGestionPage() {
         <div className="row"><button type="submit">Añadir franja</button></div>
       </form>
 
-      <DeviceLinksPanel onError={setError} />
       <DelegatesPanel players={players.data ?? []} onError={setError} />
     </>
   )
