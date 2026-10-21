@@ -29,7 +29,6 @@ export default function HomePage() {
       <>
         <PageHeader title="Club Frontenis Ciudad de Jaén" subtitle="Ligas, torneos y entrenamientos" />
         {device.me === null && <DeviceLinkPanel device={device} />}
-        <p className="muted center"><Link to="/acceso">Acceso de administración</Link></p>
       </>
     )
   }
