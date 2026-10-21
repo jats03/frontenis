@@ -56,4 +56,12 @@ public sealed class MatchSubmissionsController : ControllerBase
     [HttpPost("api/match-rejections/{id:int}/restore"), AdminOnly]
     public async Task<ActionResult<MatchSubmissionDto>> Restore(int id, CancellationToken ct) =>
         Ok(await _submissions.RestoreAsync(id, ct));
+
+    /// <summary>Elimina definitivamente un resultado rechazado (administrador).</summary>
+    [HttpDelete("api/match-rejections/{id:int}"), AdminOnly]
+    public async Task<IActionResult> DeleteRejected(int id, CancellationToken ct)
+    {
+        await _submissions.DeleteRejectedAsync(id, ct);
+        return NoContent();
+    }
 }

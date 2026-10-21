@@ -91,6 +91,13 @@ public sealed class MatchSubmissionService : IMatchSubmissionService
         }).ToList();
     }
 
+    public async Task DeleteRejectedAsync(int rejectedId, CancellationToken ct = default)
+    {
+        var rejected = await _submissions.GetRejectedAsync(rejectedId, ct) ?? throw new NotFoundException("Envío rechazado no encontrado.");
+        _submissions.RemoveRejected(rejected);
+        await _uow.SaveChangesAsync(ct);
+    }
+
     public async Task<MatchSubmissionDto> RestoreAsync(int rejectedId, CancellationToken ct = default)
     {
         var rejected = await _submissions.GetRejectedAsync(rejectedId, ct) ?? throw new NotFoundException("Envío rechazado no encontrado.");

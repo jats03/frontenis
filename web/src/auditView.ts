@@ -31,6 +31,7 @@ const RULES: [RegExp, string][] = [
   [/^PUT \/api\/matches\/(\d+)\/submission/, 'Envía el resultado del partido $1 (pendiente de aprobar)'],
   [/^POST \/api\/match-submissions\/(\d+)\/approve/, 'Aprueba el resultado enviado $1'],
   [/^DELETE \/api\/match-submissions\/(\d+)/, 'Rechaza el resultado enviado $1'],
+  [/^DELETE \/api\/match-rejections\/(\d+)/, 'Elimina el resultado rechazado $1'],
   [/^POST \/api\/match-rejections\/(\d+)\/restore/, 'Recupera el resultado rechazado $1'],
   [/^DELETE \/api\/matches\/(\d+)$/, 'Borra el partido $1 de su jornada'],
   [/^PUT \/api\/matches\/(\d+)\/swap/, 'Intercambia de jornada el partido $1 con otro'],

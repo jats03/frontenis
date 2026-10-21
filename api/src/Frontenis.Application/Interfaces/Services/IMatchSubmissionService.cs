@@ -25,4 +25,6 @@ public interface IMatchSubmissionService
     /// <summary>Recupera un envío rechazado y lo deja otra vez pendiente de aprobación.</summary>
     /// <exception cref="Frontenis.Domain.Exceptions.DomainException">El partido ya tiene resultado u otro envío pendiente.</exception>
     Task<MatchSubmissionDto> RestoreAsync(int rejectedId, CancellationToken ct = default);
+    /// <summary>Elimina definitivamente un envío rechazado de la lista de rechazados.</summary>
+    Task DeleteRejectedAsync(int rejectedId, CancellationToken ct = default);
 }

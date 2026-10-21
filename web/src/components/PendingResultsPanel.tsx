@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { confirmAction, notify } from '../alerts'
+import { confirmAction, confirmDelete, notify } from '../alerts'
 import { api } from '../api/client'
 import type { PendingResult, RejectedResult } from '../api/types'
 
@@ -34,6 +34,11 @@ export default function PendingResultsPanel({ pending, rejected = [], onChanged 
     if (ok) await run(() => api.matchSubmissions.restore(r.id), 'Resultado recuperado')
   }
 
+  async function removeRejected(r: RejectedResult) {
+    if (!(await confirmDelete('¿Eliminar este resultado rechazado?', 'Se borrará definitivamente y ya no se podrá recuperar.'))) return
+    await run(() => api.matchSubmissions.deleteRejected(r.id), 'Resultado eliminado')
+  }
+
   return (
     <section className="card pending-results">
       {error && <p className="error">{error}</p>}
@@ -64,6 +69,7 @@ export default function PendingResultsPanel({ pending, rejected = [], onChanged 
                 <div>{r.sets.map(s => `${s.home}-${s.away}`).join(', ')} <span className="muted">· enviado por {r.playerName}</span></div>
                 <div className="row">
                   <button className="secondary" disabled={busy} onClick={() => void restore(r)}>Recuperar</button>
+                  <button className="secondary" disabled={busy} onClick={() => void removeRejected(r)}>Eliminar</button>
                 </div>
               </li>
             ))}
