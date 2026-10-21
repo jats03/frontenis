@@ -70,8 +70,42 @@ public sealed class MatchSubmissionService : IMatchSubmissionService
     public async Task RejectAsync(int submissionId, CancellationToken ct = default)
     {
         var submission = await _submissions.GetAsync(submissionId, ct) ?? throw new NotFoundException("Envío no encontrado.");
+        var competition = await _competitions.GetDetailedByMatchOrThrowAsync(submission.MatchId, ct);
+        await _submissions.AddRejectedAsync(RejectedSubmission.From(submission, competition.Id, DateTime.UtcNow), ct);
         _submissions.Remove(submission);
         await _uow.SaveChangesAsync(ct);
+    }
+
+    public async Task<IReadOnlyList<RejectedResultDto>> ListRejectedAsync(int competitionId, CancellationToken ct = default)
+    {
+        var competition = await _competitions.GetDetailedOrThrowAsync(competitionId, ct);
+        var rejected = await _submissions.ListRejectedAsync(competitionId, ct);
+        var matches = competition.Matches.ToDictionary(m => m.Id);
+        var shown = rejected.Where(r => matches.TryGetValue(r.MatchId, out var m) && !m.IsPlayed).ToList();
+        var names = (await _players.GetByIdsAsync(shown.Select(r => r.PlayerId).Distinct().ToList(), ct)).ToDictionary(p => p.Id, p => p.Name);
+        return shown.Select(r =>
+        {
+            var m = matches[r.MatchId];
+            return new RejectedResultDto(r.Id, r.MatchId, competitionId, m.HomeEntry?.Pair.DisplayName, m.AwayEntry?.Pair.DisplayName,
+                r.PlayerId, names.GetValueOrDefault(r.PlayerId, "—"), r.Sets.Select(x => new SetScoreDto(x.Home, x.Away)).ToList(), r.RejectedAtUtc);
+        }).ToList();
+    }
+
+    public async Task<MatchSubmissionDto> RestoreAsync(int rejectedId, CancellationToken ct = default)
+    {
+        var rejected = await _submissions.GetRejectedAsync(rejectedId, ct) ?? throw new NotFoundException("Envío rechazado no encontrado.");
+        var competition = await _competitions.GetDetailedByMatchOrThrowAsync(rejected.MatchId, ct);
+        var match = competition.EnsureSubmittable(rejected.MatchId, rejected.Sets);
+        if (await _submissions.GetByMatchAsync(rejected.MatchId, ct) is not null)
+            throw new DomainException("Este partido ya tiene otro resultado pendiente de aprobación.");
+
+        var submission = MatchSubmission.Create(rejected.MatchId, rejected.PlayerId, rejected.Sets);
+        await _submissions.AddAsync(submission, ct);
+        _submissions.RemoveRejected(rejected);
+        await _uow.SaveChangesAsync(ct);
+
+        var player = await _players.GetOrThrowAsync(rejected.PlayerId, ct);
+        return ToDto(submission, competition, match, player.Name);
     }
 
     private static MatchSubmissionDto ToDto(MatchSubmission s, Competition c, Match m, string playerName) => new(

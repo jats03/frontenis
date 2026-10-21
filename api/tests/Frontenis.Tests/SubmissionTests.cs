@@ -54,4 +54,14 @@ public class SubmissionTests
         c.RecordResult(m.Id, s.Sets);
         Assert.True(m.IsPlayed);
     }
+
+    [Fact] public void Rejected_copy_keeps_all_sets()
+    {
+        var s = MatchSubmission.Create(4, 7, new[] { new SetScore(10, 5), new SetScore(3, 10), new SetScore(10, 9) });
+        var r = RejectedSubmission.From(s, 2, DateTime.UtcNow);
+        Assert.Equal(3, r.Sets.Count);
+        Assert.Equal(4, r.MatchId);
+        Assert.Equal(7, r.PlayerId);
+        Assert.Equal(9, r.Sets[2].Away);
+    }
 }

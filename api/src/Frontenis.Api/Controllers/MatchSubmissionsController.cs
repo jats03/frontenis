@@ -46,4 +46,14 @@ public sealed class MatchSubmissionsController : ControllerBase
         await _submissions.RejectAsync(id, ct);
         return NoContent();
     }
+
+    /// <summary>Resultados rechazados por error recuperables de una competición (administrador).</summary>
+    [HttpGet("api/competitions/{id:int}/rejected-results"), AdminOnly]
+    public async Task<ActionResult<IReadOnlyList<RejectedResultDto>>> Rejected(int id, CancellationToken ct) =>
+        Ok(await _submissions.ListRejectedAsync(id, ct));
+
+    /// <summary>Recupera un resultado rechazado y lo deja otra vez pendiente (administrador).</summary>
+    [HttpPost("api/match-rejections/{id:int}/restore"), AdminOnly]
+    public async Task<ActionResult<MatchSubmissionDto>> Restore(int id, CancellationToken ct) =>
+        Ok(await _submissions.RestoreAsync(id, ct));
 }

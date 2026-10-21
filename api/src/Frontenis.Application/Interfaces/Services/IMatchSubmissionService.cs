@@ -15,6 +15,14 @@ public interface IMatchSubmissionService
     Task<IReadOnlyList<MatchSubmissionDto>> ListAsync(int competitionId, CancellationToken ct = default);
     /// <summary>El administrador aprueba el envío: se registra como resultado oficial del partido.</summary>
     Task<MatchDto> ApproveAsync(int submissionId, CancellationToken ct = default);
-    /// <summary>El administrador rechaza el envío: se descarta y el jugador puede volver a enviarlo.</summary>
+    /// <summary>
+    /// El administrador rechaza el envío: deja de estar pendiente (el jugador puede volver a enviarlo) y se guarda
+    /// una copia aparte por si se rechazó sin querer.
+    /// </summary>
     Task RejectAsync(int submissionId, CancellationToken ct = default);
+    /// <summary>Envíos rechazados de una competición (solo de partidos aún sin resultado), los últimos primero.</summary>
+    Task<IReadOnlyList<RejectedResultDto>> ListRejectedAsync(int competitionId, CancellationToken ct = default);
+    /// <summary>Recupera un envío rechazado y lo deja otra vez pendiente de aprobación.</summary>
+    /// <exception cref="Frontenis.Domain.Exceptions.DomainException">El partido ya tiene resultado u otro envío pendiente.</exception>
+    Task<MatchSubmissionDto> RestoreAsync(int rejectedId, CancellationToken ct = default);
 }

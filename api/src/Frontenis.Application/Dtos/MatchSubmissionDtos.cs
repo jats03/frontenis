@@ -6,3 +6,7 @@ public sealed record SubmitResultRequest(IReadOnlyList<SetScoreDto> Sets);
 public sealed record MatchSubmissionDto(
     int Id, int MatchId, int CompetitionId, string CompetitionName, string? HomeName, string? AwayName,
     int PlayerId, string PlayerName, IReadOnlyList<SetScoreDto> Sets, DateTime SubmittedAtUtc);
+
+public sealed record RejectedResultDto(
+    int Id, int MatchId, int CompetitionId, string? HomeName, string? AwayName,
+    int PlayerId, string PlayerName, IReadOnlyList<SetScoreDto> Sets, DateTime RejectedAtUtc);

@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Frontenis.Infrastructure.Repositories;
 
-/// <summary>Repositorio EF Core de resultados enviados por jugadores pendientes de aprobación.</summary>
+/// <summary>Repositorio EF Core de resultados enviados por jugadores (pendientes y rechazados).</summary>
 public sealed class MatchSubmissionRepository : IMatchSubmissionRepository
 {
     private readonly FrontenisDbContext _db;
@@ -28,4 +28,16 @@ public sealed class MatchSubmissionRepository : IMatchSubmissionRepository
         await _db.MatchSubmissions.AddAsync(submission, ct);
 
     public void Remove(MatchSubmission submission) => _db.MatchSubmissions.Remove(submission);
+
+    public async Task AddRejectedAsync(RejectedSubmission rejected, CancellationToken ct = default) =>
+        await _db.RejectedSubmissions.AddAsync(rejected, ct);
+
+    public Task<RejectedSubmission?> GetRejectedAsync(int id, CancellationToken ct = default) =>
+        _db.RejectedSubmissions.FirstOrDefaultAsync(r => r.Id == id, ct);
+
+    public async Task<IReadOnlyList<RejectedSubmission>> ListRejectedAsync(int competitionId, CancellationToken ct = default) =>
+        await _db.RejectedSubmissions.AsNoTracking().Where(r => r.CompetitionId == competitionId)
+            .OrderByDescending(r => r.RejectedAtUtc).ThenByDescending(r => r.Id).ToListAsync(ct);
+
+    public void RemoveRejected(RejectedSubmission rejected) => _db.RejectedSubmissions.Remove(rejected);
 }

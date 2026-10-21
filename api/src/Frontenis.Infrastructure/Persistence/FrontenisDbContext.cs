@@ -25,6 +25,7 @@ public sealed class FrontenisDbContext : DbContext, IUnitOfWork
     public DbSet<DeviceLink> DeviceLinks => Set<DeviceLink>();
     public DbSet<PlayerDelegate> PlayerDelegates => Set<PlayerDelegate>();
     public DbSet<MatchSubmission> MatchSubmissions => Set<MatchSubmission>();
+    public DbSet<RejectedSubmission> RejectedSubmissions => Set<RejectedSubmission>();
 
     Task IUnitOfWork.SaveChangesAsync(CancellationToken ct) => SaveChangesAsync(ct);
 
@@ -165,6 +166,15 @@ public sealed class FrontenisDbContext : DbContext, IUnitOfWork
             e.HasIndex(x => x.MatchId).IsUnique();      // un único envío pendiente por partido
             e.HasOne<Match>().WithMany().HasForeignKey(x => x.MatchId).OnDelete(DeleteBehavior.Cascade);
             e.HasOne<Player>().WithMany().HasForeignKey(x => x.PlayerId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        b.Entity<RejectedSubmission>(e =>
+        {
+            e.ToTable("RejectedSubmissions");
+            e.HasKey(x => x.Id);
+            e.Ignore(x => x.Sets);
+            e.HasIndex(x => x.CompetitionId);
+            // Sin claves foráneas: es una copia de seguridad que debe sobrevivir aunque cambie el partido o el jugador.
         });
 
         b.Entity<PlayerDelegate>(e =>
