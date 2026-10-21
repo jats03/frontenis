@@ -22,12 +22,20 @@ export default function HomePage() {
   const drafts = (comps.data ?? []).filter(c => c.status === 'Draft')
   const lastTraining = trainings.data?.[0]
 
+  // Sin identificar (y sin ser administrador) solo se ve esta portada, con el selector «¿Quién eres?» bajo el título.
+  // El selector pide la lista de jugadores libres a la API (y a la base de datos) cada vez que se abre la portada.
+  if (!isAdmin && !device.me) {
+    return (
+      <>
+        <PageHeader title="Club Frontenis Ciudad de Jaén" subtitle="Ligas, torneos y entrenamientos" />
+        {device.me === null && <DeviceLinkPanel device={device} />}
+        <p className="muted center"><Link to="/acceso">Acceso de administración</Link></p>
+      </>
+    )
+  }
+
   return (
     <>
-      {/* Sin identificar, lo primero es elegir quién eres. El selector pide la lista de jugadores libres a la API
-          (y a la base de datos) cada vez que se abre la portada, sin usar copias guardadas. */}
-      {!isAdmin && device.me === null && <DeviceLinkPanel device={device} />}
-
       <PageHeader title="Club Frontenis Ciudad de Jaén" subtitle="Ligas, torneos y entrenamientos" />
 
       <ReservasButton label="Reservas Entrenamientos" />

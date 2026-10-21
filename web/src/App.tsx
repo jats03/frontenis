@@ -1,6 +1,8 @@
 import { useEffect, useRef } from 'react'
 import { logPageView } from './audit'
-import { Link, Route, Routes, useLocation } from 'react-router-dom'
+import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import { useAuth } from './auth/AuthContext'
+import { useDevice } from './useDevice'
 import ApiStatus from './components/ApiStatus'
 import AppNav from './components/AppNav'
 import LoadingSpinner from './components/LoadingSpinner'
@@ -33,6 +35,10 @@ export default function App() {
   }, [pathname])
   // Cada pantalla que se abre queda anotada en el registro del servidor.
   useEffect(() => { logPageView(pathname) }, [pathname])
+  const { isAdmin } = useAuth()
+  const { me } = useDevice()
+  // Sin identificar (y sin ser administrador) no se puede ver nada más que la portada.
+  const identified = isAdmin || me !== null
   return (
     <div className="app">
       <a className="skip-link" href="#contenido" onClick={e => { e.preventDefault(); main.current?.focus() }}>Saltar al contenido</a>
@@ -40,6 +46,13 @@ export default function App() {
       <ApiStatus />
       <LoadingSpinner />
       <main id="contenido" className="content" tabIndex={-1} ref={main}>
+        {!identified ? (
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/acceso" element={<LoginPage />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        ) : (
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/competiciones" element={<CompetitionsPage />} />
@@ -60,6 +73,7 @@ export default function App() {
           <Route path="/acceso" element={<LoginPage />} />
           <Route path="*" element={<><h1>Página no encontrada</h1><p><Link to="/">Volver al inicio</Link></p></>} />
         </Routes>
+        )}
       </main>
     </div>
   )

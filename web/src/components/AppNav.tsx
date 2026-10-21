@@ -20,6 +20,7 @@ const items: { to: string; label: string; short?: string; icon: ReactNode; end?:
 export default function AppNav() {
   const { isAdmin, logout, username } = useAuth()
   const { me } = useDevice()
+  const identified = isAdmin || me !== null // sin identificar solo se ve «Inicio»
   const [showCard, setShowCard] = useState(false)
   useEffect(() => startPresence(), []) // marca la app como «vista» para el cronómetro (regla de los 15 minutos)
   const firstName = me?.owner.name.trim().split(/\s+/)[0]
@@ -43,7 +44,7 @@ export default function AppNav() {
     </header>
     {showCard && me && <PlayerCard playerId={me.owner.id} onClose={() => setShowCard(false)} />}
     <nav aria-label="Principal" className="main-nav">
-      {items.map(i => (
+      {items.filter(i => identified || i.to === '/').map(i => (
         <NavLink key={i.to} to={i.to} end={i.end}>
           {i.icon}
           <span className="lbl-long">{i.label}</span>
