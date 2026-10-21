@@ -1,17 +1,20 @@
 import { Link } from 'react-router-dom'
 import { api } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
+import DeviceLinkPanel from '../components/DeviceLinkPanel'
 import EmptyState from '../components/EmptyState'
 import PageHeader from '../components/PageHeader'
 import ReservasButton from '../components/ReservasButton'
 import { useAsync, useDocumentTitle } from '../hooks'
 import { statusLabel, typeLabel } from '../labels'
 import { formatDate } from '../dates'
+import { useDevice } from '../useDevice'
 
 /** Portada: lo que está pasando ahora (competiciones en curso y último entrenamiento) y accesos rápidos. */
 export default function HomePage() {
   useDocumentTitle('Inicio')
   const { isAdmin } = useAuth()
+  const device = useDevice()
   const comps = useAsync(() => api.competitions.list(), [], '/api/competitions')
   const trainings = useAsync(() => api.trainings.list(), [], '/api/trainings')
 
@@ -21,9 +24,13 @@ export default function HomePage() {
 
   return (
     <>
+      {/* Sin identificar, lo primero es elegir quién eres. El selector pide la lista de jugadores libres a la API
+          (y a la base de datos) cada vez que se abre la portada, sin usar copias guardadas. */}
+      {!isAdmin && device.me === null && <DeviceLinkPanel device={device} />}
+
       <PageHeader title="Club Frontenis Ciudad de Jaén" subtitle="Ligas, torneos y entrenamientos" />
 
-      <ReservasButton label="Ver todas las reservas" />
+      <ReservasButton label="Reservas Entrenamientos" />
 
       <section aria-labelledby="h-entreno">
         <h2 id="h-entreno" className="section-title">Entrenamiento</h2>
