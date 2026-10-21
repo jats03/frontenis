@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import Disclosure from '../components/Disclosure'
 import ActionMenu from '../components/ActionMenu'
@@ -14,6 +14,7 @@ import SubTabs from '../components/SubTabs'
 import { useAsync, useDocumentTitle } from '../hooks'
 import LoadingBlock from '../components/LoadingBlock'
 import PlayerName from '../components/PlayerName'
+import { isDraftEmpty, loadDraft, saveDraft } from '../matchDraft'
 
 type Slots = [string, string, string, string]
 const EMPTY: Slots = ['', '', '', '']
@@ -61,16 +62,29 @@ export default function TrainingDetailPage() {
 
   const [tab, setTab] = useState<'pairs' | 'players'>('pairs')
   const [showMatches, setShowMatches] = useState(true)
-  const [formOpen, setFormOpen] = useState(false)
-  const [slots, setSlots] = useState<Slots>(EMPTY)
-  const [homeScore, setHomeScore] = useState('')
-  const [awayScore, setAwayScore] = useState('')
+  // Lo que se haya empezado a rellenar se conserva en el navegador (hasta guardar el partido o pulsar «Limpiar»).
+  const [draft0] = useState(() => loadDraft(id))
+  const [formOpen, setFormOpen] = useState(() => !isDraftEmpty(draft0))
+  const [slots, setSlots] = useState<Slots>(draft0.slots as Slots)
+  const [homeScore, setHomeScore] = useState(draft0.homeScore)
+  const [awayScore, setAwayScore] = useState(draft0.awayScore)
   const [formError, setFormError] = useState<string | null>(null)
   const [presentChosen, setPresentChosen] = useState<Set<number> | null>(null) // null = los que ya han jugado
   const [suggestions, setSuggestions] = useState<TrainingSuggestion[] | null>(null)
   const [suggestError, setSuggestError] = useState<string | null>(null)
 
   const list: Player[] = useMemo(() => players.data ?? [], [players.data])
+  const hasDraft = !isDraftEmpty({ slots, homeScore, awayScore })
+
+  useEffect(() => { saveDraft(id, { slots, homeScore, awayScore }) }, [id, slots, homeScore, awayScore])
+  // Si un jugador guardado en el borrador ya no existe (se borró), se quita de la selección.
+  useEffect(() => {
+    if (list.length === 0) return
+    const ids = new Set(list.map(p => String(p.id)))
+    setSlots(prev => (prev.every(v => v === '' || ids.has(v)) ? prev : prev.map(v => (ids.has(v) ? v : '')) as Slots))
+  }, [list])
+
+  function clearDraft() { setSlots(EMPTY); setHomeScore(''); setAwayScore(''); setFormError(null) }
   const nameOf = useMemo(() => new Map(list.map(p => [p.id, p.name])), [list])
 
   // Presentes por defecto: quienes ya han jugado en la sesión (hasta que se toque la selección).
@@ -173,7 +187,7 @@ export default function TrainingDetailPage() {
           {canRegister && formOpen && (
             <section className="card form" id="nuevo-partido" aria-label="Registrar partido">
               <h2>Registrar partido</h2>
-              <p className="muted">Pueden registrar partidos el administrador y los jugadores identificados; solo el administrador puede borrarlos.</p>
+              <p className="muted">Pueden registrar partidos el administrador y los jugadores identificados; solo el administrador puede borrarlos. Lo que rellenes se guarda en este móvil hasta que guardes el partido o pulses «Limpiar».</p>
               <div className="cols">
                 {slotSelect(0, 'Pareja A · jugador 1')}{slotSelect(1, 'Pareja A · jugador 2')}
               </div>
@@ -187,7 +201,8 @@ export default function TrainingDetailPage() {
               {formError && <p className="error">{formError}</p>}
               <div className="row">
                 <button onClick={() => void addMatch()}>Guardar partido</button>
-                <button className="secondary" onClick={() => { setFormOpen(false); setFormError(null) }}>Cancelar</button>
+                {hasDraft && <button className="secondary" onClick={clearDraft}>Limpiar</button>}
+                <button className="secondary" onClick={() => { setFormOpen(false); setFormError(null) }}>Cerrar</button>
               </div>
             </section>
           )}
