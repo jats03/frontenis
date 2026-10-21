@@ -45,7 +45,7 @@ function madridHour(date: Date): number {
 /** «Buenos días», «Buenas tardes» o «Buenas noches» según la hora de Madrid. */
 export function greetingFor(date: Date): string {
   const h = madridHour(date)
-  if (h >= 6 && h < 14) return 'Buenos días'
-  if (h >= 14 && h < 21) return 'Buenas tardes'
+  if (h >= 6 && h < 12) return 'Buenos días'
+  if (h >= 12 && h < 22) return 'Buenas tardes'
   return 'Buenas noches'
 }
