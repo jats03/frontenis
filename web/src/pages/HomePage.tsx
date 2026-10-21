@@ -16,25 +16,30 @@ export default function HomePage() {
   useDocumentTitle('Inicio')
   const { isAdmin } = useAuth()
   const device = useDevice()
-  const comps = useAsync(() => api.competitions.list(), [], '/api/competitions')
-  const trainings = useAsync(() => api.trainings.list(), [], '/api/trainings')
-
-  const active = (comps.data ?? []).filter(c => c.status !== 'Finished' && c.status !== 'Draft')
-  const drafts = (comps.data ?? []).filter(c => c.status === 'Draft')
-  const lastTraining = trainings.data?.[0]
-
   // Sin identificar (y sin ser administrador) solo se ve esta portada, con el selector «¿Quién eres?» bajo el título.
-  // El selector pide la lista de jugadores libres a la API (y a la base de datos) cada vez que se abre la portada.
+  // No se pide nada más a la API: ni competiciones ni entrenos.
   if (!isAdmin && !device.me) {
     // Mientras se comprueba quién eres (al recargar), un aviso de carga en vez de una portada vacía.
     if (device.me === undefined) return <LoadingBlock />
     return (
       <>
         <PageHeader title="Club Frontenis Ciudad de Jaén" subtitle="Ligas, torneos y entrenamientos" />
-        {device.me === null && <DeviceLinkPanel device={device} />}
+        <DeviceLinkPanel device={device} />
       </>
     )
   }
+  return <HomeContent />
+}
+
+function HomeContent() {
+  useDocumentTitle('Inicio')
+  const { isAdmin } = useAuth()
+  const comps = useAsync(() => api.competitions.list(), [], '/api/competitions')
+  const trainings = useAsync(() => api.trainings.list(), [], '/api/trainings')
+
+  const active = (comps.data ?? []).filter(c => c.status !== 'Finished' && c.status !== 'Draft')
+  const drafts = (comps.data ?? []).filter(c => c.status === 'Draft')
+  const lastTraining = trainings.data?.[0]
 
   return (
     <>

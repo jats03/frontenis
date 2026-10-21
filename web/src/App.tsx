@@ -5,6 +5,7 @@ import { useAuth } from './auth/AuthContext'
 import { useDevice } from './useDevice'
 import ApiStatus from './components/ApiStatus'
 import AppNav from './components/AppNav'
+import LoadingBlock from './components/LoadingBlock'
 import LoadingSpinner from './components/LoadingSpinner'
 import CompetitionDetailPage from './pages/CompetitionDetailPage'
 import CompetitionNewPage from './pages/CompetitionNewPage'
@@ -47,7 +48,9 @@ export default function App() {
       <ApiStatus />
       <LoadingSpinner />
       <main id="contenido" className="content" tabIndex={-1} ref={main}>
-        {!identified ? (
+        {me === undefined && !isAdmin && pathname !== '/' ? (
+          <LoadingBlock /> // aún no se sabe quién eres: no se abre ninguna pantalla con sus datos
+        ) : !identified ? (
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/acceso" element={<LoginPage />} />
