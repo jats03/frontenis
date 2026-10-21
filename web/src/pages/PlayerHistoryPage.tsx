@@ -29,7 +29,7 @@ export default function PlayerHistoryPage() {
   const { data, error, loading } = useAsync(() => api.players.history(filter), [query])
 
   const rows = useMemo(() => {
-    const list = [...(data ?? [])]
+    const list = (data ?? []).filter(r => r.played > 0) // solo jugadores que han jugado partidos
     list.sort((a: PlayerHistoryRow, b: PlayerHistoryRow) => {
       const r = sort === 'name' ? a.name.localeCompare(b.name) : (a[sort] as number) - (b[sort] as number)
       return (desc ? -r : r) || a.name.localeCompare(b.name)
@@ -52,6 +52,7 @@ export default function PlayerHistoryPage() {
       {loading && !data && <LoadingBlock />}
       {data && (
         <section className="card">
+          {rows.length === 0 && <p className="muted">Todavía no ha jugado ningún partido nadie con este filtro.</p>}
           <div className="table-wrap">
             <table className="standings">
               <caption className="sr-only">Histórico de jugadores</caption>
