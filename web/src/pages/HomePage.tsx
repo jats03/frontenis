@@ -3,6 +3,7 @@ import { api } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
 import DeviceLinkPanel from '../components/DeviceLinkPanel'
 import EmptyState from '../components/EmptyState'
+import LoadingBlock from '../components/LoadingBlock'
 import PageHeader from '../components/PageHeader'
 import ReservasButton from '../components/ReservasButton'
 import { useAsync, useDocumentTitle } from '../hooks'
@@ -25,6 +26,8 @@ export default function HomePage() {
   // Sin identificar (y sin ser administrador) solo se ve esta portada, con el selector «¿Quién eres?» bajo el título.
   // El selector pide la lista de jugadores libres a la API (y a la base de datos) cada vez que se abre la portada.
   if (!isAdmin && !device.me) {
+    // Mientras se comprueba quién eres (al recargar), un aviso de carga en vez de una portada vacía.
+    if (device.me === undefined) return <LoadingBlock />
     return (
       <>
         <PageHeader title="Club Frontenis Ciudad de Jaén" subtitle="Ligas, torneos y entrenamientos" />
