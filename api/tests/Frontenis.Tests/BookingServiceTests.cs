@@ -166,7 +166,7 @@ public class BookingServiceTests
     }
 
     [Fact]
-    public async Task Public_listing_shows_this_week_and_open_slots_but_the_admin_sees_everything()
+    public async Task Public_listing_shows_this_week_next_week_and_open_slots_but_the_admin_sees_everything()
     {
         var w = new BookingWorld();
         w.Clock.Now = new DateTime(2026, 10, 14, 12, 0, 0); // miércoles; la semana del 19 abre el viernes 16
@@ -182,10 +182,10 @@ public class BookingServiceTests
         var publicIds = (await w.Queries().ListAsync(range.Item1, range.Item2)).Select(s => s.Id);
         var adminIds = (await w.Queries().ListAsync(range.Item1, range.Item2, SlotAudience.Admin)).Select(s => s.Id);
 
-        Assert.Equal(new[] { 1, 2, 4 }, publicIds);
+        Assert.Equal(new[] { 1, 2, 3, 4 }, publicIds); // la próxima semana se ve aunque no esté abierta (la 5, lejana y sin abrir, no)
         Assert.Equal(new[] { 1, 2, 3, 4, 5 }, adminIds);
 
-        w.Clock.Now = new DateTime(2026, 10, 16, 19, 0, 0); // se abre la semana del 19
+        w.Clock.Now = new DateTime(2026, 10, 16, 19, 0, 0); // se abre la semana del 19: sigue igual, ahora ya se puede uno apuntar
         Assert.Equal(new[] { 1, 2, 3, 4 }, (await w.Queries().ListAsync(range.Item1, range.Item2)).Select(s => s.Id));
     }
 
