@@ -34,10 +34,13 @@ export default function ReservasPage() {
   // El administrador gestiona desde aquí; el resto de personas se identifican con su dispositivo.
   const device = useDevice()
 
-  // Franjas agrupadas por semana (lunes a domingo) y, dentro de cada una, por día.
+  // Franjas agrupadas por semana (lunes a domingo) y, dentro de cada una, por día. Los días que ya han pasado
+  // se ocultan (si hoy es miércoles, el martes ya no aparece); una semana sin días por venir tampoco.
   const weeks = useMemo(() => {
     const byWeek = new Map<string, Map<string, Slot[]>>()
+    const today = todayIso()
     for (const s of slots.data ?? []) {
+      if (s.date < today) continue
       const monday = mondayOfIso(s.date)
       const days = byWeek.get(monday) ?? new Map<string, Slot[]>()
       days.set(s.date, [...(days.get(s.date) ?? []), s])
@@ -85,6 +88,10 @@ export default function ReservasPage() {
           action={isAdmin ? <Link className="button" to="/reservas/gestion">Crear la plantilla y generar franjas</Link> : undefined}>
           {isAdmin ? 'Define la plantilla semanal y genera las franjas de las próximas semanas.' : 'Cuando el club publique los entrenos los verás aquí.'}
         </EmptyState>
+      )}
+
+      {slots.data && slots.data.length > 0 && weeks.length === 0 && (
+        <EmptyState title="No quedan entrenos por venir">Cuando el club publique nuevas franjas las verás aquí.</EmptyState>
       )}
 
       {weeks.map(({ monday, days }) => {
