@@ -2,7 +2,7 @@ import type {
   CompetitionDetail, CompetitionSummary, CreateCompetition, GroupStandings, MatchDto,
   PairDto, PairingPreview, Player, PlayerHistory, PlayerHistoryRow, Position, SetScore,
   HistoryFilter, NewTrainingMatch, TrainingDetail, TrainingSuggestion, TrainingSummary,
-  AuditPage, AuditQuery, DeviceLink, DeviceMe, PlayerDelegateRow, PlayerRef, SaveSlot, SaveSlotTemplate, Slot, SlotTemplate,
+  AuditPage, AuditQuery, PendingResult, DeviceLink, DeviceMe, PlayerDelegateRow, PlayerRef, SaveSlot, SaveSlotTemplate, Slot, SlotTemplate,
 } from './types'
 import { deviceHeaders, deviceToken, hasDeviceToken } from '../device'
 
@@ -126,6 +126,7 @@ export const api = {
     list: () => request<CompetitionSummary[]>('GET', '/api/competitions'),
     get: (id: number) => request<CompetitionDetail>('GET', `/api/competitions/${id}`),
     standings: (id: number) => request<GroupStandings[]>('GET', `/api/competitions/${id}/standings`),
+    pendingResults: (id: number) => request<PendingResult[]>('GET', `/api/competitions/${id}/pending-results`),
     create: (c: CreateCompetition) => request<CompetitionSummary>('POST', '/api/competitions', c),
     setSetsPerMatch: (id: number, setsPerMatch: number) =>
       request<CompetitionSummary>('PUT', `/api/competitions/${id}/sets-per-match`, { setsPerMatch }),
@@ -267,5 +268,13 @@ export const api = {
     swapWith: (id: number, otherMatchId: number) =>
       request<CompetitionDetail>('PUT', `/api/matches/${id}/swap`, { otherMatchId }),
     clearResult: (id: number) => request<MatchDto>('DELETE', `/api/matches/${id}/result`),
+    /** Un jugador identificado envía el resultado; queda pendiente de que lo apruebe el administrador. */
+    submitResult: (id: number, sets: SetScore[]) =>
+      request<PendingResult>('PUT', `/api/matches/${id}/submission`, { sets }),
+  },
+
+  matchSubmissions: {
+    approve: (id: number) => request<MatchDto>('POST', `/api/match-submissions/${id}/approve`),
+    reject: (id: number) => request<void>('DELETE', `/api/match-submissions/${id}`),
   },
 }

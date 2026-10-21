@@ -33,6 +33,15 @@ export async function promptText(title: string, value: string, label: string): P
   return r.isConfirmed ? String(r.value).trim() : null
 }
 
+/** Confirmación genérica de una acción (no destructiva). Devuelve true si el usuario acepta. */
+export async function confirmAction(title: string, text: string, confirmText = 'Aceptar', cancelText = 'Cancelar'): Promise<boolean> {
+  const r = await Swal.fire({
+    icon: 'question', title, text, showCancelButton: true,
+    confirmButtonText: confirmText, cancelButtonText: cancelText, confirmButtonColor: '#0f766e',
+  })
+  return r.isConfirmed
+}
+
 /** Confirmación previa a cualquier eliminación. Devuelve true si el usuario acepta. */
 export async function confirmDelete(title: string, text = 'Esta acción no se puede deshacer.'): Promise<boolean> {
   const r = await Swal.fire({

@@ -9,6 +9,10 @@ interface Props {
   /** 1 o 2 sets por partido (con 2, el 3.º solo si hay empate a 1). */
   setsPerMatch?: number
   onChanged: (m: MatchDto) => void
+  /** Jugador identificado: abre la pantalla de cronómetro + marcador del partido. */
+  onOpen?: () => void
+  /** Hay un resultado enviado por un jugador pendiente de aprobación. */
+  pending?: boolean
 }
 
 type Cell = { h: string; a: string }
@@ -23,7 +27,7 @@ function initial(match: MatchDto): Cell[] {
 
 const num = (v: string): number | null => (v.trim() !== '' && /^\d+$/.test(v.trim()) ? Number(v) : null)
 
-export default function MatchCard({ match, canEdit, setsPerMatch = 1, onChanged }: Props) {
+export default function MatchCard({ match, canEdit, setsPerMatch = 1, onChanged, onOpen, pending = false }: Props) {
   const [cells, setCells] = useState<Cell[]>(() => initial(match))
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
@@ -109,6 +113,12 @@ export default function MatchCard({ match, canEdit, setsPerMatch = 1, onChanged 
         <div className="score">
           {readOnly}
           {multi && <small className="muted sets-detail"> ({match.sets!.map(s => `${s.home}-${s.away}`).join(', ')})</small>}
+        </div>
+      )}
+      {!match.isPlayed && ready && (pending || onOpen) && (
+        <div className="match-actions">
+          {pending && <span className="badge-pending">Pendiente de aprobación</span>}
+          {onOpen && <button className="secondary" onClick={onOpen}>{pending ? 'Ver / modificar resultado' : 'Jugar / enviar resultado'}</button>}
         </div>
       )}
       {error && <p className="error">{error}</p>}

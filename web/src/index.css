@@ -492,6 +492,18 @@ button.secondary.fut-close { background: var(--card); }
 
 .audit-device { font-size: .8rem; color: var(--muted); }
 
+/* Marcador de un partido de competición (jugador identificado) */
+.board-set { margin: .8rem 0; }
+.board-sides { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
+.board-side { display: grid; justify-items: center; gap: .3rem; padding: .5rem; border: 1px solid var(--border); border-radius: .6rem; }
+.board-team { font-weight: 600; text-align: center; }
+.board-pts { font-size: clamp(2.6rem, 14vw, 4.5rem); line-height: 1; font-variant-numeric: tabular-nums; }
+.board-arrow { width: 100%; text-align: center; display: flex; justify-content: center; font-size: 1.3rem; padding: .6rem 0; }
+.timer-compact .timer-display { font-size: clamp(3rem, 16vw, 5rem); }
+.notice { background: color-mix(in srgb, var(--link) 12%, transparent); border: 1px solid var(--link); border-radius: .5rem; padding: .6rem .8rem; }
+.match-actions { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
+.badge-pending { font-size: .8rem; padding: .1rem .5rem; border-radius: 999px; background: var(--warn, #b45309); color: #fff; }
+
 /* Nombre de jugador con su logo de perfil a la izquierda */
 .pname { display: inline-flex; align-items: center; gap: .4rem; vertical-align: middle; }
 .pname-faces { display: inline-flex; flex: none; }

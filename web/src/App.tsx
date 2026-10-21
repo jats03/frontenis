@@ -21,6 +21,7 @@ import TrainingsPage from './pages/TrainingsPage'
 import AuditPage from './pages/AuditPage'
 import WhatsappPage from './pages/WhatsappPage'
 import TimerPage from './pages/TimerPage'
+import MatchPlayPage from './pages/MatchPlayPage'
 
 export default function App() {
   const { pathname } = useLocation()
@@ -47,6 +48,7 @@ export default function App() {
           <Route path="/registro" element={<AuditPage />} />
           <Route path="/competiciones/nueva" element={<CompetitionNewPage />} />
           <Route path="/competiciones/:id" element={<CompetitionDetailPage />} />
+          <Route path="/competiciones/:id/partidos/:matchId" element={<MatchPlayPage />} />
           <Route path="/jugadores" element={<PlayersRoute />} />
           <Route path="/jugadores/historico" element={<PlayerHistoryPage />} />
           <Route path="/jugadores/:id" element={<PlayerDetailPage />} />
