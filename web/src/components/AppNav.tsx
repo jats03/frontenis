@@ -1,7 +1,8 @@
-import { useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { NavLink } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import { greetingFor } from '../avatar'
+import { startPresence } from '../timerStore'
 import { useDevice } from '../useDevice'
 import PlayerAvatar from './PlayerAvatar'
 import PlayerCard, { askMotionPermission } from './PlayerCard'
@@ -20,6 +21,7 @@ export default function AppNav() {
   const { isAdmin, logout, username } = useAuth()
   const { me } = useDevice()
   const [showCard, setShowCard] = useState(false)
+  useEffect(() => startPresence(), []) // marca la app como «vista» para el cronómetro (regla de los 15 minutos)
   const firstName = me?.owner.name.trim().split(/\s+/)[0]
   return (
     <>
