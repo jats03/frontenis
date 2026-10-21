@@ -200,7 +200,6 @@ export const api = {
     create: (s: SaveSlot) => request<Slot>('POST', '/api/slots', s),
     update: (id: number, s: SaveSlot) => request<Slot>('PUT', `/api/slots/${id}`, s),
     cancel: (id: number) => request<Slot>('POST', `/api/slots/${id}/cancel`),
-    deleteRejected: (id: number) => request<void>('DELETE', `/api/match-rejections/${id}`),
     restore: (id: number) => request<Slot>('POST', `/api/slots/${id}/restore`),
     openNow: (id: number) => request<Slot>('POST', `/api/slots/${id}/open`),
     closeSignUps: (id: number) => request<Slot>('POST', `/api/slots/${id}/close`),
@@ -278,6 +277,7 @@ export const api = {
   matchSubmissions: {
     approve: (id: number) => request<MatchDto>('POST', `/api/match-submissions/${id}/approve`),
     reject: (id: number) => request<void>('DELETE', `/api/match-submissions/${id}`),
+    deleteRejected: (id: number) => request<void>('DELETE', `/api/match-rejections/${id}`),
     restore: (id: number) => request<PendingResult>('POST', `/api/match-rejections/${id}/restore`),
   },
 }
