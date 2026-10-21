@@ -65,6 +65,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAuditRepository, AuditRepository>();
         services.AddScoped<IDeviceLinkRepository, DeviceLinkRepository>();
         services.AddScoped<IPlayerDelegateRepository, PlayerDelegateRepository>();
+        services.AddScoped<IMatchSubmissionRepository, MatchSubmissionRepository>();
 
         services.AddScoped<SchemaUpdater>();
         services.AddScoped<AdminUserSeeder>();
@@ -125,6 +126,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IAuditQueries, AuditQueries>();
         services.AddScoped<IDeviceLinkService, DeviceLinkService>();
         services.AddScoped<IDeviceLinkAdminCommands, DeviceLinkAdminCommands>();
+        services.AddScoped<IMatchSubmissionService, MatchSubmissionService>();
         services.AddScoped<IDeviceAttendanceCommands, DeviceAttendanceCommands>();
         services.AddScoped<PlayerDelegateService>();
         services.AddScoped<IPlayerDelegateQueries>(sp => sp.GetRequiredService<PlayerDelegateService>());

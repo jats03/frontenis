@@ -32,6 +32,12 @@ export interface MatchDto {
   sets: SetScore[] | null; homeSets: number | null; awaySets: number | null
 }
 export interface SetScore { home: number; away: number }
+/** Resultado enviado por un jugador desde su dispositivo, pendiente de aprobación del administrador. */
+export interface PendingResult {
+  id: number; matchId: number; competitionId: number; competitionName: string
+  homeName: string | null; awayName: string | null
+  playerId: number; playerName: string; sets: SetScore[]; submittedAtUtc: string
+}
 export interface CompetitionDetail {
   summary: CompetitionSummary; groups: Group[]; pairs: PairDto[]; matches: MatchDto[]
 }

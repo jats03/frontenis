@@ -2,12 +2,14 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { confirmDelete, notify, promptText } from '../alerts'
 import { api, responseCache } from '../api/client'
-import type { CompetitionDetail, GroupStandings, Player } from '../api/types'
+import type { CompetitionDetail, GroupStandings, MatchDto, PendingResult, Player } from '../api/types'
 import { useAuth } from '../auth/AuthContext'
+import { useDevice } from '../useDevice'
 import ActionMenu from '../components/ActionMenu'
 import Bracket from '../components/Bracket'
 import PageHeader from '../components/PageHeader'
 import MatchCard from '../components/MatchCard'
+import PendingResultsPanel from '../components/PendingResultsPanel'
 import RegistrationPanel from '../components/RegistrationPanel'
 import RotatingDrawPanel from '../components/RotatingDrawPanel'
 import RotatingAddPlayer from '../components/RotatingAddPlayer'
@@ -34,6 +36,9 @@ export default function CompetitionDetailPage() {
 function CompetitionDetailView({ id }: { id: number }) {
   const navigate = useNavigate()
   const { isAdmin } = useAuth()
+  const { me } = useDevice()
+  const playerId = me?.owner.id ?? null
+  const [pending, setPending] = useState<PendingResult[]>([])
   const cachedDetail = responseCache.peek<CompetitionDetail>(`/api/competitions/${id}`)
   const [detail, setDetail] = useState<CompetitionDetail | null>(cachedDetail?.data ?? null)
   const [standings, setStandings] = useState<GroupStandings[]>(
@@ -66,11 +71,25 @@ function CompetitionDetailView({ id }: { id: number }) {
   useEffect(() => { void load() }, [load])
   useEffect(() => { if (isAdmin) api.players.list().then(setPlayers).catch(() => undefined) }, [isAdmin])
 
+  // Resultados enviados por jugadores pendientes de aprobar: solo los necesitan el administrador y los jugadores identificados.
+  const loadPending = useCallback(async () => {
+    if (!isAdmin && playerId === null) { setPending([]); return }
+    try { setPending(await api.competitions.pendingResults(id)) } catch { /* es un extra: si falla, no se muestra */ }
+  }, [id, isAdmin, playerId])
+  useEffect(() => { void loadPending() }, [loadPending])
+
   useDocumentTitle(detail?.summary.name ?? 'Competición')
   if (error && !detail) return <p className="error">{error}</p>
   if (!detail) return <LoadingBlock />
 
   const { summary } = detail
+  // Un jugador identificado puede abrir el cronómetro + marcador de un partido sin jugar y enviar el resultado.
+  const pendingMatchIds = new Set(pending.map(p => p.matchId))
+  const playProps = (m: MatchDto) => ({
+    pending: pendingMatchIds.has(m.id),
+    onOpen: !isAdmin && playerId !== null && !m.isPlayed && (summary.status === 'GroupStage' || summary.status === 'Playoffs')
+      ? () => navigate(`/competiciones/${id}/partidos/${m.id}`) : undefined,
+  })
   const isTournament = summary.type === 'Tournament'
   const isRotating = summary.type === 'RotatingLeague'
   const groupMatches = detail.matches.filter(m => m.phase === 'Group')
@@ -141,6 +160,7 @@ function CompetitionDetailView({ id }: { id: number }) {
           ]} />
         } />
       {error && <p className="error">{error}</p>}
+      {isAdmin && pending.length > 0 && <PendingResultsPanel pending={pending} onChanged={() => { void load(); void loadPending() }} />}
 
       {summary.status === 'Draft' && isAdmin && isRotating && <RotatingDrawPanel detail={detail} players={players}
         onChanged={load} onPlayersChanged={async () => { setPlayers(await api.players.list()); await load() }} />}
@@ -226,7 +246,7 @@ function CompetitionDetailView({ id }: { id: number }) {
                             </div>
                             {list.filter(m => m.round === r).map(m => (
                               <div key={m.id}>
-                                <MatchCard match={m} canEdit={isAdmin} setsPerMatch={summary.setsPerMatch} onChanged={() => void load()} />
+                                <MatchCard match={m} canEdit={isAdmin} setsPerMatch={summary.setsPerMatch} onChanged={() => void load()} {...playProps(m)} />
                                 {canEditRounds && !m.isPlayed && (
                                   <MatchRoundMover match={m} groupMatches={list} onChanged={load} />
                                 )}
@@ -267,7 +287,7 @@ function CompetitionDetailView({ id }: { id: number }) {
                             <div key={g.id}>
                               {detail.groups.length > 1 && <h3>{g.name}</h3>}
                               {list.map(m => (
-                                <MatchCard key={m.id} match={m} canEdit={isAdmin} setsPerMatch={summary.setsPerMatch} onChanged={() => void load()} />
+                                <MatchCard key={m.id} match={m} canEdit={isAdmin} setsPerMatch={summary.setsPerMatch} onChanged={() => void load()} {...playProps(m)} />
                               ))}
                             </div>
                           )
@@ -284,7 +304,7 @@ function CompetitionDetailView({ id }: { id: number }) {
             <RotatingAddPlayer detail={detail} players={players} onChanged={load} />
           )}
 
-          {tab === 'playoffs' && <Bracket matches={detail.matches} canEdit={isAdmin} setsPerMatch={summary.setsPerMatch} onChanged={() => void load()} />}
+          {tab === 'playoffs' && <Bracket matches={detail.matches} canEdit={isAdmin} setsPerMatch={summary.setsPerMatch} onChanged={() => void load()} playProps={playProps} />}
         </>
       )}
 
