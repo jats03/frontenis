@@ -42,7 +42,7 @@ export default function TrainingsPage() {
         <form className="card form" onSubmit={create}>
           <h2>Nueva sesión</h2>
           <div className="cols">
-            <label>Nombre (opcional)<input value={name} maxLength={150} onChange={e => setName(e.target.value)} placeholder="Martes 13 de octubre" /></label>
+            <label>Nombre (opcional)<input value={name} maxLength={150} onChange={e => setName(e.target.value)} placeholder="Martes, 13 de octubre" /></label>
             <label>Fecha<input type="date" value={date} onChange={e => setDate(e.target.value)} required /></label>
           </div>
           <div className="cols">

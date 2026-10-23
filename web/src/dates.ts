@@ -12,12 +12,12 @@ export const parseDate = (iso: string) => new Date(iso.length === 10 ? `${iso}T0
 export const formatDate = (iso: string) =>
   parseDate(iso).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
 
-/** Nombre por defecto de un entreno: «Jueves 22 de octubre». */
+/** Nombre por defecto de un entreno: «Jueves, 22 de octubre». */
 export const trainingTitle = (iso: string) => {
   const d = parseDate(iso)
   const weekday = d.toLocaleDateString('es-ES', { weekday: 'long' })
   const rest = d.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' })
-  return `${weekday.charAt(0).toUpperCase()}${weekday.slice(1)} ${rest}`
+  return `${weekday.charAt(0).toUpperCase()}${weekday.slice(1)}, ${rest}`
 }
 
 export const formatShortDate = (iso: string) =>
