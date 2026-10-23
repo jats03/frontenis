@@ -43,7 +43,13 @@ public sealed class DeviceLinkService : IDeviceLinkService
         return (await _players.ListAsync(ct)).Where(p => !taken.Contains(p.Id)).Select(p => new PlayerRefDto(p.Id, p.Name)).ToList();
     }
 
-    public async Task<DeviceMeDto> LinkAsync(string? deviceToken, int playerId, CancellationToken ct = default)
+    public async Task<IReadOnlyList<DevicePlayerDto>> ListSelectablePlayersAsync(CancellationToken ct = default)
+    {
+        var taken = (await _links.ListAsync(ct)).Select(l => l.PlayerId).ToHashSet();
+        return (await _players.ListAsync(ct)).Select(p => new DevicePlayerDto(p.Id, p.Name, taken.Contains(p.Id))).ToList();
+    }
+
+    public async Task<DeviceMeDto> LinkAsync(string? deviceToken, int playerId, bool replace = false, CancellationToken ct = default)
     {
         if (!_hasher.IsValid(deviceToken)) throw new DomainException("Identificador de dispositivo no válido.");
         var hash = _hasher.Hash(deviceToken!);
@@ -57,8 +63,14 @@ public sealed class DeviceLinkService : IDeviceLinkService
         }
         else
         {
-            if (await _links.GetByPlayerAsync(playerId, ct) is not null)
-                throw new DomainException("Este jugador ya está vinculado a otro dispositivo. Pide al administrador que lo libere.");
+            var other = await _links.GetByPlayerAsync(playerId, ct);
+            if (other is not null)
+            {
+                if (!replace)
+                    throw new DomainException("Este jugador ya está vinculado a otro dispositivo. Confirma que eres tú para quedarte con él.");
+                _links.Remove(other); // el móvil anterior (o este mismo con los datos borrados) deja de estar identificado
+                await _uow.SaveChangesAsync(ct);
+            }
             await _links.AddAsync(DeviceLink.Create(hash, playerId), ct);
             await _uow.SaveChangesAsync(ct);
         }

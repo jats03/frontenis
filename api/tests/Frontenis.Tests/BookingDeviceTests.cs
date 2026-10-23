@@ -63,6 +63,29 @@ public class BookingDeviceTests
     }
 
     [Fact]
+    public async Task All_players_are_listed_marking_the_linked_ones()
+    {
+        var w = new BookingWorld();
+        await w.Links().LinkAsync(PhoneA, 2);
+        var all = await w.Links().ListSelectablePlayersAsync();
+        Assert.Equal(new[] { 1, 2, 3, 4, 5 }, all.Select(p => p.Id));
+        Assert.Equal(new[] { 2 }, all.Where(p => p.Linked).Select(p => p.Id));
+    }
+
+    [Fact]
+    public async Task A_linked_player_can_be_claimed_from_a_new_device_only_when_confirmed()
+    {
+        var w = new BookingWorld();
+        await w.Links().LinkAsync(PhoneA, 1);
+        await Assert.ThrowsAsync<DomainException>(() => w.Links().LinkAsync(PhoneB, 1));        // sin confirmar
+        var me = await w.Links().LinkAsync(PhoneB, 1, replace: true);
+        Assert.Equal(1, me.Owner.Id);
+        Assert.Null(await w.Links().GetMeAsync(PhoneA));                                         // el móvil anterior ya no está identificado
+        Assert.NotNull(await w.Links().GetMeAsync(PhoneB));
+        Assert.Single(await w.LinkAdmin().ListAsync());
+    }
+
+    [Fact]
     public async Task Admin_can_list_and_release_devices()
     {
         var w = new BookingWorld();

@@ -32,10 +32,15 @@ public sealed class DeviceController : ControllerBase
     public async Task<ActionResult<IReadOnlyList<PlayerRefDto>>> AvailablePlayers(CancellationToken ct) =>
         Ok(await _devices.ListAvailablePlayersAsync(ct));
 
+    /// <summary>Todos los jugadores para identificarse, marcando los que ya tienen dispositivo vinculado.</summary>
+    [HttpGet("players")]
+    public async Task<ActionResult<IReadOnlyList<DevicePlayerDto>>> SelectablePlayers(CancellationToken ct) =>
+        Ok(await _devices.ListSelectablePlayersAsync(ct));
+
     /// <summary>Vincula este dispositivo con el jugador elegido.</summary>
     [HttpPost("link"), EnableRateLimiting(RateLimitPolicies.PublicWrite)]
     public async Task<ActionResult<DeviceMeDto>> Link([FromHeader(Name = TokenHeader)] string? token, LinkDeviceRequest request, CancellationToken ct) =>
-        Ok(await _devices.LinkAsync(token, request.PlayerId, ct));
+        Ok(await _devices.LinkAsync(token, request.PlayerId, request.Replace, ct));
 
     /// <summary>Desvincula este dispositivo («no soy yo»).</summary>
     [HttpDelete("link"), EnableRateLimiting(RateLimitPolicies.PublicWrite)]
