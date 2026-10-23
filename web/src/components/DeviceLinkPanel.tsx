@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { notify } from '../alerts'
+import { confirmAction, notify } from '../alerts'
 import { api } from '../api/client'
 import { useAsync } from '../hooks'
 import PlayerAvatar from './PlayerAvatar'
@@ -37,6 +37,8 @@ function Pick({ device }: { device: Device }) {
   async function link() {
     setError(null)
     const chosen = players.data?.find(p => p.id === Number(playerId))
+    // Solo si el servidor indica que ese nombre ya estaba identificado se pide confirmar.
+    if (chosen?.linked && !(await confirmAction(`¿Estás seguro de que eres ${chosen.name}?`, '', 'Sí, soy yo', 'No'))) return
     try { await device.link(Number(playerId), chosen?.linked ?? false); notify('¡Listo! Ya puedes apuntarte') }
     catch (e) { setError(e instanceof Error ? e.message : 'Error') }
   }
