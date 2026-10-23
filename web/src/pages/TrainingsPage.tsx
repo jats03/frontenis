@@ -6,7 +6,7 @@ import { useAuth } from '../auth/AuthContext'
 import EmptyState from '../components/EmptyState'
 import PageHeader from '../components/PageHeader'
 import ReservasButton from '../components/ReservasButton'
-import { formatDate, todayIso } from '../dates'
+import { formatDate, todayIso, trainingTitle } from '../dates'
 import { useAsync, useDocumentTitle } from '../hooks'
 import LoadingBlock from '../components/LoadingBlock'
 
@@ -26,7 +26,7 @@ export default function TrainingsPage() {
     e.preventDefault()
     setFormError(null)
     try {
-      const t = await api.trainings.create(name.trim() || `Entrenamiento ${formatDate(date)}`, date, win, loss)
+      const t = await api.trainings.create(name.trim() || trainingTitle(date), date, win, loss)
       notify('Entrenamiento creado')
       navigate(`/entrenamientos/${t.id}`)
     } catch (err) { setFormError(err instanceof Error ? err.message : 'Error') }
