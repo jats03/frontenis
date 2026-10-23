@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { confirmAction, notify } from '../alerts'
+import { notify } from '../alerts'
 import { api } from '../api/client'
 import { useAsync } from '../hooks'
 import PlayerAvatar from './PlayerAvatar'
@@ -37,13 +37,6 @@ function Pick({ device }: { device: Device }) {
   async function link() {
     setError(null)
     const chosen = players.data?.find(p => p.id === Number(playerId))
-    // Un nombre ya vinculado es el de alguien que perdió los datos de su navegador (o ha cambiado de móvil): se pide confirmar.
-    if (chosen?.linked) {
-      const ok = await confirmAction(`¿Eres ${chosen.name}?`,
-        'Este nombre ya estaba identificado en otro móvil o navegador. Si continúas, ese otro dejará de estar identificado.',
-        'Sí, soy yo', 'Cancelar')
-      if (!ok) return
-    }
     try { await device.link(Number(playerId), chosen?.linked ?? false); notify('¡Listo! Ya puedes apuntarte') }
     catch (e) { setError(e instanceof Error ? e.message : 'Error') }
   }
@@ -57,13 +50,12 @@ function Pick({ device }: { device: Device }) {
         <label className="grow">Mi nombre
           <select value={playerId} onChange={e => setPlayerId(e.target.value)}>
             <option value="">Elegir…</option>
-            {players.data?.map(p => <option key={p.id} value={p.id}>{p.name}{p.linked ? ' (ya identificado)' : ''}</option>)}
+            {players.data?.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
         </label>
         <button type="button" disabled={!playerId} onClick={() => void link()}>Soy yo</button>
       </div>
       {error && <p className="error" role="alert">{error}</p>}
-      <p className="muted">Si tu nombre aparece como «ya identificado» pero este móvil es el tuyo (por ejemplo, perdiste los datos del navegador), elígelo igualmente y confirma.</p>
     </section>
   )
 }
