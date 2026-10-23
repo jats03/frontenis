@@ -15,9 +15,19 @@ export const formatDate = (iso: string) =>
 export const formatShortDate = (iso: string) =>
   parseDate(iso).toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
 
-/** Hora (hora de Madrid) de un instante UTC con «Z»: «19:42». */
+/**
+ * Instante UTC que manda la API. La base de datos lo devuelve sin zona («2026-10-21T10:00:00»): sin la «Z» el navegador lo
+ * tomaría como hora local y saldría desplazado (2 horas menos en Madrid en verano, 1 en invierno).
+ */
+export const parseUtc = (iso: string) => new Date(/(Z|[+-]\d\d:?\d\d)$/i.test(iso) ? iso : `${iso}Z`)
+
+/** «21/10/26, 12:00:00» a partir de un instante UTC, en hora de Madrid. */
+export const formatDateTimeMadrid = (isoUtc: string) =>
+  parseUtc(isoUtc).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'medium', timeZone: 'Europe/Madrid' })
+
+/** Hora (hora de Madrid) de un instante UTC: «19:42». */
 export const formatClock = (isoUtc: string) =>
-  new Date(isoUtc).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Madrid' })
+  parseUtc(isoUtc).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Madrid' })
 
 /** «18:00:00» → «18:00». */
 export const formatTime = (time: string) => time.slice(0, 5)

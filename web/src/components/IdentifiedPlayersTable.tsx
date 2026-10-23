@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { confirmAction, notify } from '../alerts'
 import { api } from '../api/client'
+import { formatDateTimeMadrid } from '../dates'
 import { useDocumentTitle, useAsync } from '../hooks'
 import LoadingBlock from './LoadingBlock'
 import PageHeader from './PageHeader'
 import PlayerName from './PlayerName'
 
-const when = (iso: string) => new Date(iso).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'medium', timeZone: 'Europe/Madrid' })
+const when = formatDateTimeMadrid
 
 /** Administrador: todo lo que guarda la tabla de dispositivos vinculados (jugadores identificados). */
 export default function IdentifiedPlayersTable() {

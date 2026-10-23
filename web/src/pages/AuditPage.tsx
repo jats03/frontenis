@@ -6,6 +6,7 @@ import { ACTOR_LABEL, describeAction, statusClass } from '../auditView'
 import { useAuth } from '../auth/AuthContext'
 import LoadingBlock from '../components/LoadingBlock'
 import PageHeader from '../components/PageHeader'
+import { formatDateTimeMadrid } from '../dates'
 import { useAsync, useDocumentTitle } from '../hooks'
 import PlayerName from '../components/PlayerName'
 import IdentifiedPlayersTable from '../components/IdentifiedPlayersTable'
@@ -13,7 +14,7 @@ import SubTabs from '../components/SubTabs'
 
 const PAGE_SIZE = 50
 const EMPTY: AuditQuery = { actor: '', text: '', method: '', from: '', to: '', page: 1 }
-const when = (iso: string) => new Date(iso).toLocaleString('es-ES', { dateStyle: 'short', timeStyle: 'medium' })
+const when = formatDateTimeMadrid
 
 /** Registro de actividad: quién hizo qué (acciones que modifican datos), solo para el administrador. */
 function AuditLog() {
