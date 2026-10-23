@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { notify } from '../alerts'
+import { confirmAction, notify } from '../alerts'
 import { api } from '../api/client'
 import { useAsync } from '../hooks'
 import PlayerAvatar from './PlayerAvatar'
@@ -14,14 +14,9 @@ export default function DeviceLinkPanel({ device }: { device: Device }) {
   return me ? <Linked device={device} /> : <Pick device={device} />
 }
 
+/** Una vez identificado no hay botón para dejar de serlo: solo el administrador libera el dispositivo (o el propio jugador, borrando los datos del navegador). */
 function Linked({ device }: { device: Device }) {
-  const [error, setError] = useState<string | null>(null)
   const me = device.me!
-  async function unlink() {
-    setError(null)
-    try { await device.unlink(); notify('Dispositivo desvinculado', 'info') }
-    catch (e) { setError(e instanceof Error ? e.message : 'Error') }
-  }
   return (
     <div className="row between device-bar">
       <span className="device-who">
@@ -30,20 +25,26 @@ function Linked({ device }: { device: Device }) {
         {me.delegates.length > 0 && <span className="muted"> · también puedes apuntar a {me.delegates.map(d => d.name).join(', ')}</span>}
         </span>
       </span>
-      <button type="button" className="secondary" onClick={() => void unlink()}>No soy yo</button>
-      {error && <p className="error" role="alert">{error}</p>}
     </div>
   )
 }
 
 function Pick({ device }: { device: Device }) {
-  const players = useAsync(() => api.device.availablePlayers(), [])
+  const players = useAsync(() => api.device.players(), [])
   const [playerId, setPlayerId] = useState('')
   const [error, setError] = useState<string | null>(null)
 
   async function link() {
     setError(null)
-    try { await device.link(Number(playerId)); notify('¡Listo! Ya puedes apuntarte') }
+    const chosen = players.data?.find(p => p.id === Number(playerId))
+    // Un nombre ya vinculado es el de alguien que perdió los datos de su navegador (o ha cambiado de móvil): se pide confirmar.
+    if (chosen?.linked) {
+      const ok = await confirmAction(`¿Eres ${chosen.name}?`,
+        'Este nombre ya estaba identificado en otro móvil o navegador. Si continúas, ese otro dejará de estar identificado.',
+        'Sí, soy yo', 'Cancelar')
+      if (!ok) return
+    }
+    try { await device.link(Number(playerId), chosen?.linked ?? false); notify('¡Listo! Ya puedes apuntarte') }
     catch (e) { setError(e instanceof Error ? e.message : 'Error') }
   }
 
@@ -56,13 +57,13 @@ function Pick({ device }: { device: Device }) {
         <label className="grow">Mi nombre
           <select value={playerId} onChange={e => setPlayerId(e.target.value)}>
             <option value="">Elegir…</option>
-            {players.data?.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+            {players.data?.map(p => <option key={p.id} value={p.id}>{p.name}{p.linked ? ' (ya identificado)' : ''}</option>)}
           </select>
         </label>
         <button type="button" disabled={!playerId} onClick={() => void link()}>Soy yo</button>
       </div>
       {error && <p className="error" role="alert">{error}</p>}
-      <p className="muted">¿No sale tu nombre? Puede que ya esté vinculado a otro móvil: pídele al administrador que lo libere.</p>
+      <p className="muted">Si tu nombre aparece como «ya identificado» pero este móvil es el tuyo (por ejemplo, perdiste los datos del navegador), elígelo igualmente y confirma.</p>
     </section>
   )
 }

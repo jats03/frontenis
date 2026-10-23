@@ -9,7 +9,7 @@ export interface DeviceState {
   me: DeviceMe | null | undefined
   error: string | null
   reload: () => Promise<void>
-  link: (playerId: number) => Promise<void>
+  link: (playerId: number, replace?: boolean) => Promise<void>
   unlink: () => Promise<void>
 }
 

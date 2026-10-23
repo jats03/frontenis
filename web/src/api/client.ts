@@ -2,7 +2,7 @@ import type {
   CompetitionDetail, CompetitionSummary, CreateCompetition, GroupStandings, MatchDto,
   PairDto, PairingPreview, Player, PlayerHistory, PlayerHistoryRow, Position, SetScore,
   HistoryFilter, NewTrainingMatch, TrainingDetail, TrainingSuggestion, TrainingSummary,
-  AuditPage, AuditQuery, PendingResult, RejectedResult, DeviceLink, DeviceMe, PlayerDelegateRow, PlayerRef, SaveSlot, SaveSlotTemplate, Slot, SlotTemplate,
+  AuditPage, AuditQuery, PendingResult, RejectedResult, DeviceLink, DeviceMe, DevicePlayer, PlayerDelegateRow, SaveSlot, SaveSlotTemplate, Slot, SlotTemplate,
 } from './types'
 import { deviceHeaders, deviceToken, hasDeviceToken } from '../device'
 
@@ -223,8 +223,9 @@ export const api = {
   device: {
     /** `undefined` (204) si este dispositivo aún no está vinculado a ningún jugador. */
     me: () => request<DeviceMe | undefined>('GET', '/api/device/me', undefined, deviceHeaders()),
-    availablePlayers: () => request<PlayerRef[]>('GET', '/api/device/available-players'),
-    link: (playerId: number) => request<DeviceMe>('POST', '/api/device/link', { playerId }, deviceHeaders()),
+    players: () => request<DevicePlayer[]>('GET', '/api/device/players'),
+    /** `replace`: el jugador ya tenía otro dispositivo y se confirma que eres tú (el otro deja de estar identificado). */
+    link: (playerId: number, replace = false) => request<DeviceMe>('POST', '/api/device/link', { playerId, replace }, deviceHeaders()),
     unlink: () => request<void>('DELETE', '/api/device/link', undefined, deviceHeaders()),
   },
 

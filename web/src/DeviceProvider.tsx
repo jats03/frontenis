@@ -38,7 +38,7 @@ export function DeviceProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => { void reload() }, [reload])
 
-  const link = useCallback(async (playerId: number) => { const m = await api.device.link(playerId); cacheMe(m); setMe(m) }, [])
+  const link = useCallback(async (playerId: number, replace = false) => { const m = await api.device.link(playerId, replace); cacheMe(m); setMe(m) }, [])
   const unlink = useCallback(async () => { await api.device.unlink(); cacheMe(null); setMe(null) }, [])
 
   const value = useMemo(() => ({ me, error, reload, link, unlink }), [me, error, reload, link, unlink])
