@@ -6,7 +6,6 @@ import type { Player, Slot } from '../api/types'
 import { useAuth } from '../auth/AuthContext'
 import EmptyState from '../components/EmptyState'
 import PageHeader from '../components/PageHeader'
-import DeviceLinkPanel from '../components/DeviceLinkPanel'
 import SlotAdminActions from '../components/SlotAdminActions'
 import SlotCard from '../components/SlotCard'
 import ShareReminderButton from '../components/ShareReminderButton'
@@ -77,7 +76,9 @@ export default function ReservasPage() {
     <>
       <PageHeader title="Reservas de entrenos" subtitle="Franjas de las próximas semanas"
         actions={isAdmin && <Link className="button" to="/reservas/gestion">Gestionar</Link>} />
-      {!isAdmin && <DeviceLinkPanel device={device} />}
+      {!isAdmin && device.me && device.me.delegates.length > 0 && (
+        <p className="muted">Tienes permitido apuntar a los siguientes jugadores: {device.me.delegates.map(d => d.name).join(', ')}</p>
+      )}
       {error && <p className="error" role="alert">{error}</p>}
       <p className="sr-only" role="status" aria-live="polite">{announcement}</p>
       {slots.error && !slots.data && <p className="error">{slots.error}</p>}
