@@ -1,8 +1,5 @@
-import Swal from 'sweetalert2'
-
-const toast = Swal.mixin({
-  toast: true, position: 'top-end', showConfirmButton: false, timer: 2800, timerProgressBar: true,
-})
+// sweetalert2 se descarga la primera vez que hace falta un aviso, no con la portada.
+const loadSwal = () => import('sweetalert2').then(m => m.default)
 
 // Mientras se muestra algún «Cargando…» (las raquetas) no sale ningún aviso: se guarda y se enseña al terminar.
 let loadersShown = 0
@@ -17,7 +14,11 @@ export function loaderHidden() {
 
 /** Aviso breve tras crear, generar o eliminar algo. Si hay una carga en pantalla, espera a que termine. */
 export function notify(title: string, icon: 'success' | 'info' = 'success') {
-  const show = () => { void toast.fire({ icon, title }) }
+  const show = () => {
+    void loadSwal()
+      .then(Swal => Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 2800, timerProgressBar: true }).fire({ icon, title }))
+      .catch(e => console.error('No se pudo cargar sweetalert2', e))
+  }
   if (loadersShown > 0) waiting = show // solo se conserva el último aviso pendiente
   else show()
 }
@@ -26,6 +27,7 @@ export function notify(title: string, icon: 'success' | 'info' = 'success') {
 export async function promptText(
   title: string, value: string, label: string, validate?: (value: string) => string | null, maxLength = 150,
 ): Promise<string | null> {
+  const Swal = await loadSwal()
   const r = await Swal.fire({
     title, input: 'text', inputValue: value, inputLabel: label, showCancelButton: true,
     confirmButtonText: 'Guardar', cancelButtonText: 'Cancelar', confirmButtonColor: '#0f766e',
@@ -37,6 +39,7 @@ export async function promptText(
 
 /** Confirmación genérica de una acción (no destructiva). Devuelve true si el usuario acepta. */
 export async function confirmAction(title: string, text: string, confirmText = 'Aceptar', cancelText = 'Cancelar'): Promise<boolean> {
+  const Swal = await loadSwal()
   const r = await Swal.fire({
     icon: 'question', title, text, showCancelButton: true,
     confirmButtonText: confirmText, cancelButtonText: cancelText, confirmButtonColor: '#0f766e',
@@ -46,6 +49,7 @@ export async function confirmAction(title: string, text: string, confirmText = '
 
 /** Confirmación previa a cualquier eliminación. Devuelve true si el usuario acepta. */
 export async function confirmDelete(title: string, text = 'Esta acción no se puede deshacer.'): Promise<boolean> {
+  const Swal = await loadSwal()
   const r = await Swal.fire({
     icon: 'warning', title, text, showCancelButton: true, focusCancel: true,
     confirmButtonText: 'Sí, eliminar', cancelButtonText: 'Cancelar', confirmButtonColor: '#b91c1c',
