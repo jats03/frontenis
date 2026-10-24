@@ -1,0 +1,2 @@
+Peso del logo de la cabecera: antes logo.png 66.319 bytes (256x256) -> despues logo-128.png 8.133 bytes (128x128, paleta de 128 colores)
+Prueba: servidor local que retrasa 6 s las peticiones de logo*.png (red lenta simulada).
