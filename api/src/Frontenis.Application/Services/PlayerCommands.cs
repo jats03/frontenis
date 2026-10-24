@@ -5,6 +5,7 @@ using Frontenis.Application.Interfaces.Services;
 using Frontenis.Application.Mapping;
 using Frontenis.Domain.Entities;
 using Frontenis.Domain.Exceptions;
+using Frontenis.Domain.Services;
 
 namespace Frontenis.Application.Services;
 
@@ -22,7 +23,9 @@ public sealed class PlayerCommands : IPlayerCommands
 
     public async Task<PlayerDto> CreateAsync(PlayerRequest request, CancellationToken ct = default)
     {
-        var player = new Player(request.Name, request.Position, request.GroupNumber);
+        var name = PlayerNameRules.Validate(request.Name);
+        await EnsureNameIsFreeAsync(name, null, ct);
+        var player = new Player(name, request.Position, request.GroupNumber);
         await _players.AddAsync(player, ct);
         await _uow.SaveChangesAsync(ct);
         return player.ToDto();
@@ -31,9 +34,25 @@ public sealed class PlayerCommands : IPlayerCommands
     public async Task<PlayerDto> UpdateAsync(int id, PlayerRequest request, CancellationToken ct = default)
     {
         var player = await _players.GetOrThrowAsync(id, ct);
-        player.Update(request.Name, request.Position, request.GroupNumber);
+        var name = PlayerNameRules.Validate(request.Name);
+        // Solo se comprueba si el nombre cambia de verdad (cambiar de posición o de grupo reenvía el mismo nombre);
+        // corregir mayúsculas, tildes o espacios del propio nombre tampoco choca con nadie.
+        if (!PlayerNameRules.Same(name, player.Name)) await EnsureNameIsFreeAsync(name, player.Id, ct);
+        player.Update(name, request.Position, request.GroupNumber);
         await _uow.SaveChangesAsync(ct);
         return player.ToDto();
+    }
+
+    /// <summary>Lanza un error si otro jugador (o el jugador reserva) ya se llama así, sin contar espacios, mayúsculas ni tildes.</summary>
+    private async Task EnsureNameIsFreeAsync(string name, int? exceptId, CancellationToken ct)
+    {
+        if (PlayerNameRules.Same(name, Player.ReserveName))
+            throw new DomainException($"El nombre «{Player.ReserveName}» está reservado.");
+        var clash = (await _players.ListAsync(ct)).FirstOrDefault(p => p.Id != exceptId && PlayerNameRules.Same(p.Name, name));
+        if (clash is not null)
+            throw new DomainException(clash.Name == name
+                ? $"Ya existe un jugador llamado «{clash.Name}»."
+                : $"Ya existe un jugador llamado «{clash.Name}» (no se distinguen espacios, mayúsculas, tildes ni guiones).");
     }
 
     public async Task DeleteAsync(int id, CancellationToken ct = default)

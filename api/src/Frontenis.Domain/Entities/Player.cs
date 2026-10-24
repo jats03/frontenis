@@ -43,9 +43,5 @@ public sealed class Player
         return g;
     }
 
-    private static string Validate(string name)
-    {
-        if (string.IsNullOrWhiteSpace(name)) throw new DomainException("El nombre del jugador es obligatorio.");
-        return name.Trim();
-    }
+    private static string Validate(string name) => Services.PlayerNameRules.Validate(name);
 }
