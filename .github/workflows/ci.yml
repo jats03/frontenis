@@ -70,6 +70,12 @@ jobs:
       - name: "Web: instalar dependencias"
         run: npm ci
 
+      # React y react-dom deben tener exactamente la misma versión: si no, la app queda en blanco en producción.
+      - name: "Web: react y react-dom con la misma versión"
+        run: >
+          node -e "const a=require('react/package.json').version,b=require('react-dom/package.json').version;
+          if(a!==b){console.error('react '+a+' != react-dom '+b);process.exit(1)}; console.log('react y react-dom '+a)"
+
       - name: "Web: lint"
         run: npm run lint
 
