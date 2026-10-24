@@ -20,7 +20,12 @@ export default defineConfig({
           { src: 'icon-512.png', sizes: '512x512', type: 'image/png' },
         ],
       },
-      workbox: { navigateFallback: '/index.html', navigateFallbackDenylist: [/^\/api/] },
+      workbox: {
+        navigateFallback: '/index.html',
+        navigateFallbackDenylist: [/^\/api/],
+        // El logo de la cabecera se guarda en la precaché para que salga sin red desde la segunda visita.
+        globPatterns: ['**/*.{js,css,html,svg,webmanifest}', 'logo-128.png'],
+      },
     }),
   ],
   server: { port: 5173 },
