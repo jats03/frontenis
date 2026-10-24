@@ -1,0 +1,5 @@
+Servidor local que responde 404 al trozo TimerPage-*.js (como tras un despliegue en el que ya no existe) y API simulada para quitar el velo de carga.
+1) Fallo: se muestra "No se pudo cargar esta pantalla" y el boton Reintentar.
+2) ANTES (boton con setState): con el servidor ya recuperado (el trozo responde 200), pulsar Reintentar deja el mismo error, porque React.lazy recuerda el fallo.
+3) DESPUES (boton con location.reload): al pulsar Reintentar la pagina se recarga (navigation type = reload), el trozo responde 200 y se ve el Cronometro.
+Nota: mientras haya peticiones a la API en curso, el velo global de carga (spinner-overlay) cubre la pantalla e impide pulsar el boton.
