@@ -20,6 +20,14 @@ public sealed class Player
     public PlayerPosition Position { get; private set; }
     /// <summary>Grupo de jugadores al que pertenece (1, 2, 3…) para seleccionarlos juntos; null = sin grupo.</summary>
     public int? GroupNumber { get; private set; }
+    /// <summary>Jugador comodín «Jugador reserva»: cubre la ausencia de un jugador en un partido. No es un jugador real, no puntúa ni aparece en listas.</summary>
+    public bool IsReserve { get; private set; }
+
+    /// <summary>Nombre con el que se muestra al jugador reserva.</summary>
+    public const string ReserveName = "Jugador reserva";
+
+    /// <summary>Crea el jugador comodín que ocupa el hueco de un jugador ausente.</summary>
+    public static Player CreateReserve() => new(ReserveName, PlayerPosition.Delantero) { IsReserve = true };
 
     /// <summary>Modifica nombre, posición y número de grupo (1-99, opcional).</summary>
     public void Update(string name, PlayerPosition position, int? groupNumber = null)

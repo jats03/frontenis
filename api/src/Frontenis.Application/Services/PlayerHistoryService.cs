@@ -44,6 +44,8 @@ public sealed class PlayerHistoryService : IPlayerHistoryService
         var stats = _calculator.Calculate(playerId, matches);
 
         string Name(int id) => names.GetValueOrDefault(id, "—");
+        // Un lado con un solo jugador es que el otro hueco lo cubrió el «Jugador reserva».
+        IEnumerable<string> Reserve(int count) => count < 2 ? new[] { Domain.Entities.Player.ReserveName } : Array.Empty<string>();
         RelationDto Rel(RelationStat r) =>
             new(r.PlayerId, Name(r.PlayerId), r.Played, r.Won, r.Lost, r.WinRate, r.TantosFor, r.TantosAgainst);
 
@@ -56,8 +58,8 @@ public sealed class PlayerHistoryService : IPlayerHistoryService
             var sets = m.Sets.Select(s => home ? new SetScoreDto(s.Home, s.Away) : new SetScoreDto(s.Away, s.Home)).ToList();
             return new RecentMatchDto(
                 m.MatchId, m.CompetitionId, m.CompetitionName,
-                string.Join(" / ", mine.Where(x => x != playerId).Select(Name)),
-                string.Join(" / ", theirs.Select(Name)),
+                string.Join(" / ", mine.Where(x => x != playerId).Select(Name).Concat(Reserve(mine.Count))),
+                string.Join(" / ", theirs.Select(Name).Concat(Reserve(theirs.Count))),
                 sets, home == m.HomeWon, m.IsTraining);
         }).ToList();
 

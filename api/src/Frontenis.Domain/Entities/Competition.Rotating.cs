@@ -102,6 +102,7 @@ public sealed partial class Competition
         _entries
             .Where(e => e.Group == group || (e.GroupId.HasValue && e.GroupId == group.Id))
             .SelectMany(e => new[] { e.Pair.Player1, e.Pair.Player2 })
+            .Where(p => !p.IsReserve)
             .Concat(group.Members.Select(m => m.Player))
             .GroupBy(p => p.Id)
             .Select(g => g.First())
@@ -112,10 +113,14 @@ public sealed partial class Competition
         _matches
             .Where(m => m.Phase == MatchPhase.Group && m.IsPlayed && (m.Group == group || m.GroupId == group.Id))
             .Select(m => new TeamOutcome(
-                new[] { m.HomeEntry!.Pair.Player1Id, m.HomeEntry.Pair.Player2Id },
-                new[] { m.AwayEntry!.Pair.Player1Id, m.AwayEntry.Pair.Player2Id },
+                RealPlayerIds(m.HomeEntry!.Pair),
+                RealPlayerIds(m.AwayEntry!.Pair),
                 m.HomeScore!.Value, m.AwayScore!.Value, m.HomeSets, m.AwaySets))
             .ToList();
+
+    // El jugador reserva juega el partido pero no puntúa: se deja fuera del resultado por equipos.
+    private static int[] RealPlayerIds(Pair pair) =>
+        new[] { pair.Player1, pair.Player2 }.Where(p => !p.IsReserve).Select(p => p.Id).ToArray();
 
     /// <summary>Clasificación individual de cada grupo de una liga rotatoria (grupos por orden de creación).</summary>
     public IReadOnlyList<GroupStandings> RotatingStandings(IIndividualStandingsCalculator calculator) =>

@@ -73,6 +73,9 @@ internal static class SchemaScripts
         "CREATE UNIQUE INDEX IF NOT EXISTS \"IX_PlayerDelegates_OwnerPlayerId_DelegatePlayerId\" ON \"PlayerDelegates\"(\"OwnerPlayerId\", \"DelegatePlayerId\");",
         "CREATE INDEX IF NOT EXISTS \"IX_PlayerDelegates_DelegatePlayerId\" ON \"PlayerDelegates\"(\"DelegatePlayerId\");",
 
+        // Jugador comodín «Jugador reserva» (cubre a un jugador ausente en un partido de liga rotatoria).
+        "ALTER TABLE \"Players\" ADD COLUMN IF NOT EXISTS \"IsReserve\" boolean NOT NULL DEFAULT false;",
+
         // Ligas rotatorias con jornadas manuales: los grupos guardan sus jugadores aunque aún no tengan partidos.
         "ALTER TABLE \"Competitions\" ADD COLUMN IF NOT EXISTS \"ManualRounds\" boolean NOT NULL DEFAULT false;",
         """

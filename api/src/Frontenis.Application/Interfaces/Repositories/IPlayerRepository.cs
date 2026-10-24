@@ -11,6 +11,8 @@ public interface IPlayerRepository
     Task<IReadOnlyList<Player>> GetByIdsAsync(IReadOnlyCollection<int> ids, CancellationToken ct = default);
     /// <summary>Devuelve el jugador o <c>null</c> si no existe.</summary>
     Task<Player?> GetByIdAsync(int id, CancellationToken ct = default);
+    /// <summary>Devuelve el jugador comodín «Jugador reserva», creándolo si todavía no existe.</summary>
+    Task<Player> GetOrCreateReserveAsync(CancellationToken ct = default);
     /// <summary>Añade un jugador nuevo.</summary>
     Task AddAsync(Player player, CancellationToken ct = default);
     /// <summary>Marca el jugador para su eliminación.</summary>

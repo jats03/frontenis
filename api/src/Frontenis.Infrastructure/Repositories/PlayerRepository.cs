@@ -15,7 +15,7 @@ public sealed class PlayerRepository : IPlayerRepository
     {
         // PostgreSQL ordena según la colación de la BD (en Neon, por código de carácter: mayúsculas antes que
         // minúsculas y acentos al final). Ordenamos en memoria, sin distinguir mayúsculas ni acentos.
-        var players = await _db.Players.AsNoTracking().ToListAsync(ct);
+        var players = await _db.Players.AsNoTracking().Where(p => !p.IsReserve).ToListAsync(ct);
         return players.OrderBy(p => SortKey(p.Name), StringComparer.Ordinal).ThenBy(p => p.Id).ToList();
     }
 
@@ -32,6 +32,15 @@ public sealed class PlayerRepository : IPlayerRepository
 
     public Task<Player?> GetByIdAsync(int id, CancellationToken ct = default) =>
         _db.Players.FirstOrDefaultAsync(p => p.Id == id, ct);
+
+    public async Task<Player> GetOrCreateReserveAsync(CancellationToken ct = default)
+    {
+        var reserve = await _db.Players.FirstOrDefaultAsync(p => p.IsReserve, ct);
+        if (reserve is not null) return reserve;
+        reserve = Player.CreateReserve();
+        await _db.Players.AddAsync(reserve, ct);
+        return reserve;
+    }
 
     public async Task AddAsync(Player player, CancellationToken ct = default) => await _db.Players.AddAsync(player, ct);
 

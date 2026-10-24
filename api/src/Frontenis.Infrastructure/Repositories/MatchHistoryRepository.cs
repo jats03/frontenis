@@ -51,12 +51,16 @@ public sealed class MatchHistoryRepository : IMatchHistoryRepository
             .Select(c => new { c.Id, c.Name, c.PointsPerWin, c.PointsPerLoss, c.CreatedAtUtc })
             .ToDictionaryAsync(c => c.Id, ct);
 
+        // El «Jugador reserva» juega pero no cuenta en estadísticas ni historial de nadie.
+        var reserves = await _db.Players.AsNoTracking().Where(p => p.IsReserve).Select(p => p.Id).ToListAsync(ct);
+
         return rows.Select(r =>
         {
             var c = comps[r.CompetitionId];
             return new PlayedMatch(
                 r.Id, r.CompetitionId, c.Name, r.Phase == MatchPhase.Group, c.PointsPerWin, c.PointsPerLoss,
-                new[] { r.H1, r.H2 }, new[] { r.A1, r.A2 },
+                new[] { r.H1, r.H2 }.Where(id => !reserves.Contains(id)).ToArray(),
+                new[] { r.A1, r.A2 }.Where(id => !reserves.Contains(id)).ToArray(),
                 SetScore.FromColumns(r.Set1Home, r.Set1Away, r.Set2Home, r.Set2Away, r.Set3Home, r.Set3Away,
                     r.HomeScore, r.AwayScore),
                 false, c.CreatedAtUtc);

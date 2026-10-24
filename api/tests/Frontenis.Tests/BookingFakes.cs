@@ -66,6 +66,12 @@ internal sealed class FakePlayers : IPlayerRepository
     public Task AddAsync(Player player, CancellationToken ct = default) { Items.Add(player); return Task.CompletedTask; }
     public void Remove(Player player) => Items.Remove(player);
     public Task<bool> IsInUseAsync(int playerId, CancellationToken ct = default) => Task.FromResult(false);
+    public Task<Player> GetOrCreateReserveAsync(CancellationToken ct = default)
+    {
+        var reserve = Items.FirstOrDefault(p => p.IsReserve);
+        if (reserve is null) { reserve = Player.CreateReserve(); Items.Add(reserve); }
+        return Task.FromResult(reserve);
+    }
 }
 
 

@@ -42,6 +42,7 @@ public sealed class FrontenisDbContext : DbContext, IUnitOfWork
             e.HasKey(x => x.Id);
             e.Property(x => x.Name).HasMaxLength(100).IsRequired();
             e.Property(x => x.Position).HasConversion<byte>();
+            e.Property(x => x.IsReserve).HasDefaultValue(false);
         });
 
         b.Entity<Pair>(e =>

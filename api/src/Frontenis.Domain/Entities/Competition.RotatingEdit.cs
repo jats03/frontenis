@@ -99,15 +99,19 @@ public sealed partial class Competition
     /// vale aunque la jornada ya tenga partidos jugados, aunque algún jugador ya juegue en ella o aunque la liga
     /// estuviera terminada (en ese caso vuelve a estar en juego). Los cuatro jugadores deben ser distintos y del grupo.
     /// </summary>
-    public Match AddMatchToRound(int groupId, int round, int home1Id, int home2Id, int away1Id, int away2Id)
+    public Match AddMatchToRound(int groupId, int round, int home1Id, int home2Id, int away1Id, int away2Id, Player? reserve = null)
     {
         if (!IsRotating) throw new DomainException("Solo las ligas rotatorias admiten este cambio.");
         if (Status == CompetitionStatus.Draft) throw new DomainException("La liga aún no se ha sorteado.");
         var group = _groups.FirstOrDefault(g => g.Id == groupId) ?? throw new NotFoundException("Grupo no encontrado.");
 
+        // El id 0 es el «Jugador reserva» (como mucho uno por partido): ocupa el hueco de un jugador ausente.
         var ids = new[] { home1Id, home2Id, away1Id, away2Id };
         if (ids.Distinct().Count() != 4) throw new DomainException("Elige cuatro jugadores distintos.");
+        var usesReserve = ids.Contains(0);
+        if (usesReserve && (reserve is null || !reserve.IsReserve)) throw new DomainException("Falta el jugador reserva.");
         var players = GroupPlayers(group).ToDictionary(p => p.Id);
+        if (usesReserve) players[0] = reserve!;
         if (ids.Any(id => !players.ContainsKey(id))) throw new DomainException("Los cuatro jugadores deben ser de este grupo.");
 
         var inGroup = GroupMatches(group);

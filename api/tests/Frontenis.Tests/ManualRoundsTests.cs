@@ -118,4 +118,32 @@ public class ManualRoundsTests
         Assert.DoesNotContain(c.Matches, m => m.HomeEntry!.Pair.Contains(5) || m.AwayEntry!.Pair.Contains(5));
         Assert.Equal(4, c.GroupPlayers(c.Groups.Single()).Count);
     }
+
+    [Fact]
+    public void Reserve_player_fills_a_slot_but_is_not_a_group_player_and_does_not_score()
+    {
+        var c = Manual(1);
+        var g = c.Groups.Single();
+        var reserve = Player.CreateReserve().WithId(99);
+        var m = c.AddMatchToRound(g.Id, 1, 1, 2, 3, 0, reserve);   // el 4.º jugador es el reserva
+        m.WithId(1);
+        Assert.Equal(4, c.GroupPlayers(g).Count);
+        Assert.DoesNotContain(c.GroupPlayers(g), p => p.IsReserve);
+        c.RecordResult(1, 10, 5);
+        var rows = c.RotatingStandings(new IndividualStandingsCalculator()).Single().Rows;
+        Assert.Equal(4, rows.Count);
+        Assert.DoesNotContain(rows, r => r.EntryId == 99);
+        Assert.Equal(1, rows.Single(r => r.EntryId == 1).Played);
+        Assert.Equal(0, rows.Single(r => r.EntryId == 4).Played);   // el ausente no juega
+    }
+
+    [Fact]
+    public void Reserve_requires_a_reserve_player_and_only_one_per_match()
+    {
+        var c = Manual(1);
+        var g = c.Groups.Single();
+        Assert.Throws<DomainException>(() => c.AddMatchToRound(g.Id, 1, 1, 2, 3, 0));                                   // sin comodín
+        Assert.Throws<DomainException>(() => c.AddMatchToRound(g.Id, 1, 1, 2, 0, 0, Player.CreateReserve().WithId(99))); // dos reservas
+        Assert.Throws<DomainException>(() => c.AddMatchToRound(g.Id, 1, 1, 2, 3, 0, new Player("Otro", PlayerPosition.Delantero).WithId(98)));
+    }
 }
