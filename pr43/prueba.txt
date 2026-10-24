@@ -1,0 +1,6 @@
+Prueba con el build de la rama servido en local (puerto 5178) y un arnes (harness.html) que simula una pagina ya controlada por un service worker y muestra la consola en pantalla.
+Limitacion: el navegador integrado no registra service workers en localhost, asi que los eventos controllerchange y vite:preloadError se simulan sobre el codigo compilado real (src/autoUpdate.ts).
+
+1) controllerchange sin haber tocado la app -> "Recargando para aplicar la version nueva (service worker nuevo)" y recarga.
+2) controllerchange con la app en uso -> "Version nueva lista ...: se aplicara al salir de la app"; al pasar a segundo plano -> recarga.
+3) vite:preloadError -> recarga una vez; un segundo evento en menos de un minuto -> "Recarga automatica omitida ... ya se recargo hace menos de un minuto" (sin bucle).
