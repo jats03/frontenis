@@ -16,6 +16,13 @@ public sealed class Group
     /// <summary>Jugadores asignados al grupo (solo en ligas con jornadas manuales; en las demás salen de los partidos).</summary>
     public IReadOnlyCollection<GroupMember> Members => _members;
 
+    /// <summary>Quita a un jugador de la lista del grupo (si estaba).</summary>
+    public void RemoveMember(int playerId)
+    {
+        var member = _members.FirstOrDefault(m => m.PlayerId == playerId);
+        if (member is not null) _members.Remove(member);
+    }
+
     /// <summary>Asigna un jugador al grupo si no estaba ya.</summary>
     public void AddMember(Player player)
     {

@@ -45,6 +45,32 @@ public sealed partial class Competition
     }
 
     /// <summary>
+    /// Saca a un jugador de un grupo siempre que no haya jugado ningún partido: se borran sus partidos pendientes (con sus
+    /// jornadas vacías, que se renumeran) y el resto del grupo sigue igual. El grupo conserva al menos 4 jugadores.
+    /// Devuelve las parejas que han quedado sin partido, para que quien persiste las elimine.
+    /// </summary>
+    /// <exception cref="DomainException">Liga sin sortear o terminada, jugador que no es del grupo, que ya ha jugado, o grupo que quedaría con menos de 4.</exception>
+    public IReadOnlyList<Pair> RemovePlayerFromGroup(int groupId, int playerId)
+    {
+        EnsureRotatingInProgress();
+        var group = _groups.FirstOrDefault(g => g.Id == groupId) ?? throw new NotFoundException("Grupo no encontrado.");
+        var players = GroupPlayers(group);
+        if (players.All(p => p.Id != playerId)) throw new DomainException("Ese jugador no está en este grupo.");
+
+        bool Involves(Match m) => m.HomeEntry!.Pair.Contains(playerId) || m.AwayEntry!.Pair.Contains(playerId);
+        if (GroupMatches(group).Any(m => m.IsPlayed && Involves(m)))
+            throw new DomainException("No se puede quitar a un jugador que ya ha jugado algún partido.");
+        if (players.Count <= 4) throw new DomainException("Cada grupo necesita al menos 4 jugadores.");
+
+        var removed = RemoveGroupMatches(group, Involves);
+        group.RemoveMember(playerId);
+        CompactRounds(group);
+        PairCount--;
+        RefreshStatus();
+        return removed;
+    }
+
+    /// <summary>
     /// Mueve un partido pendiente a otra jornada de su grupo (o a una nueva al final). Da igual que algún jugador del
     /// partido ya juegue en esa jornada. Si la jornada de origen se queda vacía, desaparece y las siguientes se renumeran.
     /// </summary>

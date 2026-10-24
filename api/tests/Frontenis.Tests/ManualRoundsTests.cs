@@ -78,4 +78,44 @@ public class ManualRoundsTests
         Assert.False(c.ManualRounds);
         Assert.NotEmpty(c.Matches);
     }
+
+    [Fact]
+    public void Removing_a_player_from_a_manual_group_keeps_at_least_four()
+    {
+        var c = Manual(1, 5);
+        var g = c.Groups.Single();
+        c.RemovePlayerFromGroup(g.Id, 5);
+        Assert.Equal(4, c.GroupPlayers(g).Count);
+        Assert.Throws<DomainException>(() => c.RemovePlayerFromGroup(g.Id, 4));   // quedarían 3
+        Assert.Throws<DomainException>(() => c.RemovePlayerFromGroup(g.Id, 5));   // ya no está
+    }
+
+    [Fact]
+    public void A_player_who_has_played_cannot_be_removed_but_one_without_matches_played_can()
+    {
+        var c = Manual(1, 6);
+        var g = c.Groups.Single();
+        var m1 = c.AddMatchToRound(g.Id, 1, 1, 2, 3, 4); m1.WithId(1);
+        var m2 = c.AddMatchToRound(g.Id, 2, 5, 6, 1, 2); m2.WithId(2);
+        c.RecordResult(1, 10, 5);
+        Assert.Throws<DomainException>(() => c.RemovePlayerFromGroup(g.Id, 1));   // jugó el partido 1
+        var removed = c.RemovePlayerFromGroup(g.Id, 6);                            // solo estaba en el partido pendiente 2
+        Assert.Equal(2, removed.Count);
+        Assert.Single(c.Matches);
+        Assert.DoesNotContain(c.GroupPlayers(g), p => p.Id == 6);
+    }
+
+    [Fact]
+    public void Removing_a_player_from_an_automatic_league_drops_only_their_pending_matches()
+    {
+        var c = Competition.Create(new CompetitionSettings("Liga", CompetitionType.RotatingLeague, 0, 1, 4, 2, 0, false, 0));
+        c.DrawRotating(Players(5), Rnd(), Planner());
+        var gid = 1; foreach (var gr in c.Groups) gr.WithId(gid++);
+        var mid = 1; foreach (var m in c.Matches) m.WithId(mid++);
+        var before = c.Matches.Count;
+        c.RemovePlayerFromGroup(1, 5);
+        Assert.True(c.Matches.Count < before);
+        Assert.DoesNotContain(c.Matches, m => m.HomeEntry!.Pair.Contains(5) || m.AwayEntry!.Pair.Contains(5));
+        Assert.Equal(4, c.GroupPlayers(c.Groups.Single()).Count);
+    }
 }
