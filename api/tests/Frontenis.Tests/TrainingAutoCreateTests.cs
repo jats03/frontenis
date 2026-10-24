@@ -30,9 +30,9 @@ public class TrainingAutoCreateTests
 
     // 2026-10-13 es martes; 2026-10-15, jueves; 2026-10-14, miércoles.
     [Fact]
-    public async Task Creates_the_empty_training_on_tuesday_after_nine_with_the_default_name()
+    public async Task Creates_the_empty_training_on_tuesday_from_eight_with_the_default_name()
     {
-        var (svc, repo, _, uow) = Setup(new DateTime(2026, 10, 13, 9, 0, 0));
+        var (svc, repo, _, uow) = Setup(new DateTime(2026, 10, 13, 8, 0, 0));
         Assert.True(await svc.EnsureTodayAsync());
         var s = Assert.Single(repo.Items);
         Assert.Equal("Martes, 13 de octubre", s.Name);
@@ -51,12 +51,12 @@ public class TrainingAutoCreateTests
     }
 
     [Theory]
-    [InlineData(2026, 10, 13, 8, 59)]   // martes antes de las 9:00
+    [InlineData(2026, 10, 13, 7, 59)]   // martes antes de las 8:00
     [InlineData(2026, 10, 14, 12, 0)]   // miércoles
     [InlineData(2026, 10, 12, 12, 0)]   // lunes
     [InlineData(2026, 10, 17, 12, 0)]   // sábado
     [InlineData(2026, 10, 18, 12, 0)]   // domingo
-    public async Task Does_nothing_on_other_days_or_before_nine(int y, int m, int d, int h, int min)
+    public async Task Does_nothing_on_other_days_or_before_eight(int y, int m, int d, int h, int min)
     {
         var (svc, repo, _, uow) = Setup(new DateTime(y, m, d, h, min, 0));
         Assert.False(await svc.EnsureTodayAsync());
@@ -87,6 +87,18 @@ public class TrainingAutoCreateTests
         Assert.Single(repo.Items);
         Assert.Contains(new DateTime(2026, 10, 13), repo.Runs);
     }
+
+    [Theory]
+    [InlineData("2026-10-13T07:00", "2026-10-13T08:00")]   // martes antes de las 8
+    [InlineData("2026-10-13T08:00", "2026-10-13T13:00")]   // cada 5 horas: 8, 13, 18, 23
+    [InlineData("2026-10-13T13:00", "2026-10-13T18:00")]
+    [InlineData("2026-10-13T20:30", "2026-10-13T23:00")]
+    [InlineData("2026-10-13T23:00", "2026-10-15T08:00")]   // tras el martes, el jueves
+    [InlineData("2026-10-14T12:00", "2026-10-15T08:00")]   // miércoles
+    [InlineData("2026-10-15T23:30", "2026-10-20T08:00")]   // tras el jueves, el martes siguiente
+    [InlineData("2026-10-17T10:00", "2026-10-20T08:00")]   // sábado
+    public void Next_check_follows_the_every_five_hours_schedule(string now, string expected) =>
+        Assert.Equal(DateTime.Parse(expected), TrainingAutoCreator.NextCheck(DateTime.Parse(now)));
 
     [Theory]
     [InlineData(2026, 1, 1, "Jueves, 1 de enero")]

@@ -1,15 +1,17 @@
 using Frontenis.Application.Interfaces.Services;
+using Frontenis.Application.Services;
+using Frontenis.Domain.Interfaces;
 
 namespace Frontenis.Api.HostedServices;
 
 /// <summary>
-/// Cada martes y jueves, en cuanto es posible a partir de las 9:00 (hora de Madrid), crea el entreno de ese día vacío.
-/// Revisa cada 3 horas (y al arrancar): si el servidor estaba dormido a las 9:00, lo crea al despertar ese mismo día.
+/// Cada martes y jueves, a partir de las 8:00 (hora de Madrid), crea el entreno de ese día vacío. Revisa al arrancar y
+/// luego los martes y jueves a las 8:00, 13:00, 18:00 y 23:00 (cada 5 horas): si el servidor estaba dormido a las 8:00,
+/// lo crea al despertar ese mismo día.
 /// </summary>
 public sealed class TrainingAutoCreateService : BackgroundService
 {
     private static readonly TimeSpan FirstRun = TimeSpan.FromMinutes(1);
-    private static readonly TimeSpan Every = TimeSpan.FromHours(3);
 
     private readonly IServiceScopeFactory _scopes;
     private readonly ILogger<TrainingAutoCreateService> _logger;
@@ -28,10 +30,18 @@ public sealed class TrainingAutoCreateService : BackgroundService
             while (!stoppingToken.IsCancellationRequested)
             {
                 await RunAsync(stoppingToken);
-                await Task.Delay(Every, stoppingToken);
+                await Task.Delay(TimeUntilNextCheck(), stoppingToken);
             }
         }
         catch (OperationCanceledException) { /* apagado */ }
+    }
+
+    private TimeSpan TimeUntilNextCheck()
+    {
+        using var scope = _scopes.CreateScope();
+        var now = scope.ServiceProvider.GetRequiredService<IClock>().Now;
+        var wait = TrainingAutoCreator.NextCheck(now) - now;
+        return wait < TimeSpan.FromMinutes(1) ? TimeSpan.FromMinutes(1) : wait;
     }
 
     private async Task RunAsync(CancellationToken ct)
