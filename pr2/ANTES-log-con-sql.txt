@@ -1,0 +1,12 @@
+ANTES (API sin la PR, Development): lineas 'Executed DbCommand' en el log tras arrancar y hacer unas peticiones = 35
+      Executed DbCommand (4ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT d."Id", d."DeviceHash", d."LinkedAtUtc", d."PlayerId"
+      FROM "DeviceLinks" AS d
+--
+      Executed DbCommand (3ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT p."Id", p."GroupNumber", p."IsReserve", p."Name", p."Position"
+      FROM "Players" AS p
+--
+      Executed DbCommand (5ms) [Parameters=[@__ToLower_0='?'], CommandType='Text', CommandTimeout='30']
+      SELECT u."Id", u."PasswordHash", u."Role", u."Username"
+      FROM "Users" AS u

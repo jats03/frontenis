@@ -1,0 +1,4 @@
+DESPUES (origin/main con la PR): lineas 'Executed DbCommand' tras arrancar y hacer peticiones = 0
+Errores y avisos que siguen apareciendo:
+warn: Frontenis.Api.Controllers.AuthController[0]
+      Inicio de sesión rechazado (UnauthorizedAppException) desde ::1.

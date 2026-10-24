@@ -1,0 +1,28 @@
+
+> web@0.0.0 test
+> vitest run --coverage
+
+
+ RUN  v3.2.7 C:/Users/JoseAlejandro/Desktop/Projects/frontenis/.claude/worktrees/elegant-mirzakhani-ac7e38/web
+      Coverage enabled with v8
+
+ ✓ src/cardStats.test.ts (6 tests) 29ms
+ ✓ src/auditView.test.ts (12 tests) 34ms
+ ✓ src/dates.test.ts (10 tests) 153ms
+ ✓ src/avatar.test.ts (9 tests) 212ms
+
+ Test Files  4 passed (4)
+      Tests  37 passed (37)
+   Start at  23:03:21
+   Duration  1.87s (transform 287ms, setup 0ms, collect 640ms, tests 428ms, environment 2ms, prepare 1.89s)
+
+ % Coverage report from v8
+--------------|---------|----------|---------|---------|-------------------
+File          | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+--------------|---------|----------|---------|---------|-------------------
+All files     |   98.76 |    97.05 |    93.1 |   98.76 |                   
+ auditView.ts |     100 |     90.9 |     100 |     100 | 59                
+ avatar.ts    |     100 |     90.9 |     100 |     100 | 42                
+ cardStats.ts |     100 |      100 |     100 |     100 |                   
+ dates.ts     |      95 |      100 |   88.23 |      95 | 13,24             
+--------------|---------|----------|---------|---------|-------------------

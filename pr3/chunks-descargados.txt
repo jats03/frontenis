@@ -1,0 +1,15 @@
+Chunks de /assets descargados (performance.getEntriesByType('resource'), vite preview de la rama feat/9-carga-diferida)
+
+1) Portada (/) y /acceso:
+   index-JoxxDcvp.js, rolldown-runtime-hePW80VL.js, hooks-CHfAwK0t.js, preload-helper-BLdHbfdN.js, index-BeSo0PF6.css
+   -> sin paginas de administracion ni sweetalert2
+
+2) /competiciones/nueva (administrador):
+   + CompetitionNewPage-DeFTaqdf.js
+   -> solo el chunk de la ruta visitada
+
+3) Tras crear la competicion (primer aviso) y abrir /competiciones/1:
+   + sweetalert2.all-DR-ETznc.js   (se descarga en el primer aviso)
+   + CompetitionDetailPage-2uIL67ub.js, SubTabs-BgyLKqZ4.js, ActionMenu-CYpsEjwv.js, Disclosure-DtXexqrP.js, PlayerName-eAbuVLBC.js
+
+Tamano del chunk de entrada: antes 510,65 kB (gzip 150,62) -> despues 284,72 kB (gzip 90,81)

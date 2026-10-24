@@ -1,0 +1,5 @@
+Correctas Frontenis.Tests.IpAnonymizerTests.Hides_the_tail_of_the_address(ip: "::ffff:10.20.30.40", expected: "10.20.30.0") [8 ms]
+Correctas Frontenis.Tests.IpAnonymizerTests.Hides_the_tail_of_the_address(ip: "2001:db8:abcd:1234:5678:9abc:def0:1234", expected: "2001:db8:abcd::") [< 1 ms]
+Correctas Frontenis.Tests.IpAnonymizerTests.Hides_the_tail_of_the_address(ip: "192.168.1.57", expected: "192.168.1.0") [< 1 ms]
+Correctas Frontenis.Tests.IpAnonymizerTests.Unknown_address_is_reported_as_such [< 1 ms]
+Correctas Frontenis.Tests.SuggestionRateLimitTests.The_21st_call_in_a_minute_is_rejected_with_429_and_Retry_After [219 ms]

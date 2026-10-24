@@ -1,0 +1,3 @@
+API (build y tests)	pass	31s	https://github.com/jats03/frontenis/actions/runs/40131421462/job/120983747008	
+Seguridad (dependencias vulnerables)	pass	27s	https://github.com/jats03/frontenis/actions/runs/40131421462/job/120983746856	
+Web (lint, tests y build)	pass	17s	https://github.com/jats03/frontenis/actions/runs/40131421462/job/120983747118	

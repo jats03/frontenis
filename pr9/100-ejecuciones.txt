@@ -1,0 +1,1 @@
+100 ejecuciones seguidas de ReadCacheTests (5 tests cada una): correctas=100, con error=0
