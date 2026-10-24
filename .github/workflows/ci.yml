@@ -82,3 +82,43 @@ jobs:
 
       - name: "Web: build"
         run: npm run build
+
+  seguridad:
+    name: Seguridad (dependencias vulnerables)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # «dotnet list package --vulnerable» siempre termina con código 0: se falla si el informe menciona paquetes vulnerables.
+      - name: "Seguridad API: paquetes NuGet vulnerables"
+        env:
+          DOTNET_CLI_UI_LANGUAGE: en
+        run: |
+          dotnet list api/Frontenis.sln package --vulnerable --include-transitive | tee nuget-vulnerables.txt
+          if grep -q "has the following vulnerable packages" nuget-vulnerables.txt; then
+            echo "::error::Hay paquetes NuGet con vulnerabilidades conocidas (ver el informe de este paso)."
+            exit 1
+          fi
+
+      # Falla con vulnerabilidades de gravedad alta o crítica; las bajas y moderadas solo se muestran.
+      - name: "Seguridad web: npm audit"
+        working-directory: web
+        run: npm audit --audit-level=high
+
+      - name: "Seguridad: resumen"
+        if: always()
+        run: |
+          {
+            echo "### Seguridad de dependencias"
+            echo '```'
+            cat nuget-vulnerables.txt 2>/dev/null || echo "Sin informe NuGet."
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
