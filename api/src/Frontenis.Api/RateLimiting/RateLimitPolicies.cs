@@ -8,4 +8,7 @@ public static class RateLimitPolicies
 
     /// <summary>Altas públicas (sin sesión), como registrar un partido de entrenamiento.</summary>
     public const string PublicWrite = "public-write";
+
+    /// <summary>Sugerencia de partidos: lectura pública pero costosa (búsqueda combinatoria), con límite propio.</summary>
+    public const string Suggestions = "suggestions";
 }
