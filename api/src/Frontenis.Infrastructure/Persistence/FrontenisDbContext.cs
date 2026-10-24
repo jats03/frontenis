@@ -124,6 +124,13 @@ public sealed class FrontenisDbContext : DbContext, IUnitOfWork
             e.Navigation(x => x.Matches).UsePropertyAccessMode(PropertyAccessMode.Field);
         });
 
+        b.Entity<AutoTrainingRun>(e =>
+        {
+            e.ToTable("AutoTrainingRuns");
+            e.HasKey(x => x.Date);
+            e.Property(x => x.Date).HasColumnType("date").ValueGeneratedNever();
+        });
+
         b.Entity<TrainingMatch>(e =>
         {
             e.ToTable("TrainingMatches");

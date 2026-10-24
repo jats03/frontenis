@@ -60,6 +60,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IMatchHistoryRepository, MatchHistoryRepository>();
         services.AddScoped<ITrainingRepository, TrainingRepository>();
+        services.AddScoped<ITrainingAutoCreator, TrainingAutoCreator>();
         services.AddScoped<ISlotRepository, SlotRepository>();
         services.AddScoped<ISlotTemplateRepository, SlotTemplateRepository>();
         services.AddScoped<IAuditRepository, AuditRepository>();

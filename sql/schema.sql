@@ -11,6 +11,10 @@ CREATE TABLE IF NOT EXISTS "Players" (
     "IsReserve" boolean NOT NULL DEFAULT false  -- true = comodín «Jugador reserva» (no es un jugador real)
 );
 
+CREATE TABLE IF NOT EXISTS "AutoTrainingRuns" (
+    "Date" date NOT NULL PRIMARY KEY          -- día cuyo entreno automático (martes/jueves) ya se gestionó
+);
+
 -- Los nombres de jugador no pueden pasar de 40 caracteres.
 DO $$
 BEGIN

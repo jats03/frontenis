@@ -1,0 +1,55 @@
+using Frontenis.Application.Interfaces.Repositories;
+using Frontenis.Application.Interfaces.Services;
+using Frontenis.Domain.Entities;
+using Frontenis.Domain.Interfaces;
+
+namespace Frontenis.Application.Services;
+
+/// <summary>Implementación de <see cref="ITrainingAutoCreator"/>.</summary>
+public sealed class TrainingAutoCreator : ITrainingAutoCreator
+{
+    public static readonly TimeSpan From = TimeSpan.FromHours(9);
+    public const int PointsPerWin = 3;
+    public const int PointsPerLoss = 0;
+
+    private static readonly string[] Weekdays = { "Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado" };
+    private static readonly string[] Months =
+        { "enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre" };
+
+    private readonly ITrainingRepository _trainings;
+    private readonly IClock _clock;
+    private readonly IUnitOfWork _uow;
+
+    public TrainingAutoCreator(ITrainingRepository trainings, IClock clock, IUnitOfWork uow)
+    {
+        _trainings = trainings;
+        _clock = clock;
+        _uow = uow;
+    }
+
+    /// <summary>Días con entreno automático: martes y jueves.</summary>
+    public static bool IsTrainingDay(DateTime date) => date.DayOfWeek is DayOfWeek.Tuesday or DayOfWeek.Thursday;
+
+    /// <summary>Nombre por defecto de un entreno, el mismo que pone la web al dejar el nombre vacío: «Jueves, 22 de octubre».</summary>
+    public static string DefaultName(DateTime date) =>
+        $"{Weekdays[(int)date.DayOfWeek]}, {date.Day} de {Months[date.Month - 1]}";
+
+    public async Task<bool> EnsureTodayAsync(CancellationToken ct = default)
+    {
+        var now = _clock.Now;
+        var today = now.Date;
+        if (!IsTrainingDay(today) || now.TimeOfDay < From) return false;
+        if (await _trainings.AutoRunExistsAsync(today, ct)) return false;
+
+        var created = false;
+        // Si ya hay un entreno ese día (lo creó el administrador) no se duplica, pero el día se da por gestionado.
+        if (!await _trainings.ExistsOnAsync(today, ct))
+        {
+            await _trainings.AddAsync(TrainingSession.Create(DefaultName(today), today, PointsPerWin, PointsPerLoss), ct);
+            created = true;
+        }
+        await _trainings.AddAutoRunAsync(today, ct);
+        await _uow.SaveChangesAsync(ct);
+        return created;
+    }
+}

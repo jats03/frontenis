@@ -24,6 +24,7 @@ builder.Services.AddHostedService<DatabaseInitializationService>();
 builder.Services.AddMemoryCache();
 builder.Services.AddScoped<IActorResolver, ActorResolver>();
 builder.Services.AddHostedService<AuditPurgeService>();
+builder.Services.AddHostedService<TrainingAutoCreateService>();
 
 var app = builder.Build();
 

@@ -73,6 +73,13 @@ internal static class SchemaScripts
         "CREATE UNIQUE INDEX IF NOT EXISTS \"IX_PlayerDelegates_OwnerPlayerId_DelegatePlayerId\" ON \"PlayerDelegates\"(\"OwnerPlayerId\", \"DelegatePlayerId\");",
         "CREATE INDEX IF NOT EXISTS \"IX_PlayerDelegates_DelegatePlayerId\" ON \"PlayerDelegates\"(\"DelegatePlayerId\");",
 
+        // Entrenos que se crean solos los martes y jueves: un registro por día ya gestionado.
+        """
+        CREATE TABLE IF NOT EXISTS "AutoTrainingRuns" (
+            "Date" date NOT NULL PRIMARY KEY
+        );
+        """,
+
         // Los nombres de jugador no pueden pasar de 40 caracteres.
         """
         DO $$
