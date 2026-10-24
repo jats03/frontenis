@@ -33,37 +33,44 @@ public class RotatingLeagueEditTests
     private static void Play(Competition c, Match m) => c.RecordResult(m.Id, 10, 5);
 
     [Fact]
-    public void Adding_a_player_puts_them_in_the_last_group_and_replans_it()
+    public void Adding_a_player_puts_them_in_the_last_group_without_touching_any_match()
     {
         var c = Started();
         var last = Last(c);
-        var firstGroupBefore = InGroup(c, c.Groups.First()).Select(m => m.Id).ToList();
+        var before = c.Matches.Select(m => m.Id).ToList();
 
-        var removed = c.AddPlayerToLastGroup(TestHelpers.Player(99, "Nuevo", PlayerPosition.Delantero), Planner());
+        c.AddPlayerToLastGroup(TestHelpers.Player(99, "Nuevo", PlayerPosition.Delantero));
 
         Assert.Equal(5, c.GroupPlayers(last).Count);
         Assert.Contains(c.GroupPlayers(last), p => p.Id == 99);
-        Assert.Equal(firstGroupBefore, InGroup(c, c.Groups.First()).Select(m => m.Id).ToList()); // el otro grupo no cambia
-        Assert.NotEmpty(removed);                                                              // parejas viejas a eliminar
+        Assert.Equal(before, c.Matches.Select(m => m.Id).ToList());   // no se crea ni se borra ningún partido
         Assert.Equal(9, c.PairCount);
         Assert.Equal(CompetitionStatus.GroupStage, c.Status);
-        // 5 jugadores: juegan 4 y descansa 1 en cada jornada; todos juegan alguna vez
-        var playedIn = InGroup(c, last).SelectMany(m => new[] { m.HomeEntry!.Pair.Player1Id, m.HomeEntry.Pair.Player2Id, m.AwayEntry!.Pair.Player1Id, m.AwayEntry.Pair.Player2Id }).Distinct().Count();
-        Assert.Equal(5, playedIn);
-        Assert.Equal(RotationMath.FullRounds(5), InGroup(c, last).Select(m => m.Round).Distinct().Count());
     }
 
     [Fact]
-    public void Cannot_add_a_player_once_a_match_of_the_last_group_was_played()
+    public void After_a_match_was_played_a_new_player_joins_without_touching_the_matches()
     {
         var c = Started();
         var last = Last(c);
         Play(c, InGroup(c, last).First());
         var before = InGroup(c, last).Select(m => m.Id).ToList();
 
-        Assert.Throws<DomainException>(() => c.AddPlayerToLastGroup(TestHelpers.Player(99, "Nuevo", PlayerPosition.Zaguero), Planner()));
-        Assert.Equal(before, InGroup(c, last).Select(m => m.Id).ToList());
-        Assert.Equal(4, c.GroupPlayers(last).Count);
+        c.AddPlayerToLastGroup(TestHelpers.Player(99, "Nuevo", PlayerPosition.Zaguero));
+        Assert.Equal(before, InGroup(c, last).Select(m => m.Id).ToList());   // no se recalcula nada
+        Assert.Equal(5, c.GroupPlayers(last).Count);
+    }
+
+    [Fact]
+    public void A_player_can_be_added_to_any_group_and_not_twice()
+    {
+        var c = Started();
+        var first = c.Groups.OrderBy(g => g.Id).First();
+        c.AddPlayerToGroup(first.Id, TestHelpers.Player(98, "Otro", PlayerPosition.Delantero));
+        Assert.Equal(5, c.GroupPlayers(first).Count);
+        Assert.Contains(c.GroupPlayers(first), p => p.Id == 98);
+        Assert.Throws<DomainException>(() => c.AddPlayerToGroup(Last(c).Id, TestHelpers.Player(98, "Otro", PlayerPosition.Delantero)));
+        Assert.Throws<NotFoundException>(() => c.AddPlayerToGroup(999, TestHelpers.Player(97, "X", PlayerPosition.Delantero)));
     }
 
     [Fact]
@@ -71,33 +78,18 @@ public class RotatingLeagueEditTests
     {
         var c = Started();
         Play(c, InGroup(c, c.Groups.First()).First());
-        c.AddPlayerToLastGroup(TestHelpers.Player(99, "Nuevo", PlayerPosition.Zaguero), Planner());
+        c.AddPlayerToLastGroup(TestHelpers.Player(99, "Nuevo", PlayerPosition.Zaguero));
         Assert.Equal(5, c.GroupPlayers(Last(c)).Count);
-    }
-
-    [Fact]
-    public void Adding_a_player_gives_a_full_round_robin_even_if_the_league_had_fixed_rounds()
-    {
-        var c = Started(groups: 1, perGroup: 4, rounds: 3);
-        var g = Last(c);
-        c.AddPlayerToLastGroup(TestHelpers.Player(99, "Nuevo", PlayerPosition.Delantero), Planner());
-        var ms = InGroup(c, g);
-        Assert.Equal(RotationMath.FullRounds(5), ms.Select(m => m.Round).Distinct().Count());
-        var seen = new HashSet<(int, int)>();
-        foreach (var m in ms)
-            foreach (var p in new[] { m.HomeEntry!.Pair, m.AwayEntry!.Pair })
-                seen.Add((Math.Min(p.Player1Id, p.Player2Id), Math.Max(p.Player1Id, p.Player2Id)));
-        Assert.Equal(10, seen.Count); // 5 jugadores: las 10 parejas posibles
     }
 
     [Fact]
     public void Cannot_add_a_player_who_already_plays_or_before_the_draw()
     {
         var c = Started();
-        Assert.Throws<DomainException>(() => c.AddPlayerToLastGroup(TestHelpers.Player(3, "J3", PlayerPosition.Delantero), Planner()));
+        Assert.Throws<DomainException>(() => c.AddPlayerToLastGroup(TestHelpers.Player(3, "J3", PlayerPosition.Delantero)));
 
         var draft = Competition.Create(new CompetitionSettings("Liga", CompetitionType.RotatingLeague, 0, 1, 4, 2, 0, false, 0));
-        Assert.Throws<DomainException>(() => draft.AddPlayerToLastGroup(TestHelpers.Player(99, "N", PlayerPosition.Delantero), Planner()));
+        Assert.Throws<DomainException>(() => draft.AddPlayerToLastGroup(TestHelpers.Player(99, "N", PlayerPosition.Delantero)));
     }
 
     [Fact]
@@ -106,7 +98,7 @@ public class RotatingLeagueEditTests
         var c = Started(groups: 1);
         foreach (var m in c.Matches.ToList()) Play(c, m);
         Assert.Equal(CompetitionStatus.Finished, c.Status);
-        Assert.Throws<DomainException>(() => c.AddPlayerToLastGroup(TestHelpers.Player(99, "N", PlayerPosition.Delantero), Planner()));
+        Assert.Throws<DomainException>(() => c.AddPlayerToLastGroup(TestHelpers.Player(99, "N", PlayerPosition.Delantero)));
     }
 
     [Fact]

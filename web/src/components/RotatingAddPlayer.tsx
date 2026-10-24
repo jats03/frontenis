@@ -9,26 +9,28 @@ interface Props {
   onChanged: () => Promise<void> | void
 }
 
-/** Añade un jugador a una liga rotatoria en marcha: entra en el último grupo y se recalculan sus partidos pendientes. */
+/** Añade un jugador a cualquier grupo de una liga rotatoria en marcha. Solo entra en el grupo: no se crea ni se cambia ningún partido. */
 export default function RotatingAddPlayer({ detail, players, onChanged }: Props) {
+  const groups = [...detail.groups].sort((a, b) => a.id - b.id)
   const [playerId, setPlayerId] = useState('')
+  const [groupId, setGroupId] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const taken = new Set(detail.pairs.flatMap(p => [p.player1.id, p.player2.id]))
+  const taken = new Set([
+    ...detail.pairs.flatMap(p => [p.player1.id, p.player2.id]),
+    ...groups.flatMap(g => (g.players ?? []).map(p => p.id)),
+  ])
   const available = players.filter(p => !taken.has(p.id)).sort((a, b) => a.name.localeCompare(b.name, 'es'))
-  const lastGroup = [...detail.groups].sort((a, b) => a.id - b.id).at(-1)
-
-  const locked = lastGroup !== undefined &&
-    detail.matches.some(m => m.groupId === lastGroup.id && m.isPlayed)
+  const target = groupId || String(groups.at(-1)?.id ?? '')
 
   async function add() {
-    if (!playerId) return
+    if (!playerId || !target) return
     setBusy(true)
     setError(null)
     try {
-      await api.competitions.addRotatingPlayer(detail.summary.id, Number(playerId))
-      notify('Jugador añadido; partidos del grupo recalculados')
+      await api.competitions.addRotatingPlayer(detail.summary.id, Number(playerId), Number(target))
+      notify('Jugador añadido al grupo')
       setPlayerId('')
       await onChanged()
     } catch (e) {
@@ -42,13 +44,10 @@ export default function RotatingAddPlayer({ detail, players, onChanged }: Props)
     <section className="card">
       <h2>Añadir jugador</h2>
       <p className="muted">
-        Entra en {lastGroup ? lastGroup.name : 'el último grupo'} y se vuelven a calcular todos sus partidos.
-        Solo es posible mientras en ese grupo no se haya jugado ninguno.
+        El jugador entra en el grupo que elijas, sin partidos: los partidos nuevos los añades tú en «Añadir partido».
       </p>
       {error && <p className="error" role="alert">{error}</p>}
-      {locked
-        ? <p className="muted">Ya se ha jugado algún partido en {lastGroup?.name}: no se pueden añadir más jugadores.</p>
-        : available.length === 0
+      {available.length === 0
         ? <p className="muted">No quedan jugadores fuera de esta liga.</p>
         : (
           <div className="row">
@@ -56,6 +55,11 @@ export default function RotatingAddPlayer({ detail, players, onChanged }: Props)
               <option value="">Elige un jugador…</option>
               {available.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
+            {groups.length > 1 && (
+              <select aria-label="Grupo" value={target} onChange={e => setGroupId(e.target.value)} disabled={busy}>
+                {groups.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
+              </select>
+            )}
             <button onClick={() => void add()} disabled={!playerId || busy}>Añadir</button>
           </div>
         )}

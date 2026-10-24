@@ -148,8 +148,8 @@ export const api = {
       request<CompetitionDetail>('POST', `/api/competitions/${id}/draw-rotating-manual`, { groups }),
     drawRotating: (id: number, playerIds: number[]) =>
       request<CompetitionDetail>('POST', `/api/competitions/${id}/draw-rotating`, { playerIds }),
-    addRotatingPlayer: (id: number, playerId: number) =>
-      request<CompetitionDetail>('POST', `/api/competitions/${id}/rotating/players`, { playerId }),
+    addRotatingPlayer: (id: number, playerId: number, groupId?: number) =>
+      request<CompetitionDetail>('POST', `/api/competitions/${id}/rotating/players`, { playerId, groupId }),
     addMatch: (id: number, groupId: number, m: { round: number; home1Id: number; home2Id: number; away1Id: number; away2Id: number }) =>
       request<CompetitionDetail>('POST', `/api/competitions/${id}/groups/${groupId}/matches`, m),
     removePlayer: (id: number, groupId: number, playerId: number) =>

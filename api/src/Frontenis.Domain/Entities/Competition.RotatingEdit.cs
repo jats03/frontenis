@@ -9,43 +9,32 @@ namespace Frontenis.Domain.Entities;
 /// <summary>Cambios en una liga rotatoria ya sorteada: añadir un jugador, mover partidos de jornada y quitar jornadas.</summary>
 public sealed partial class Competition
 {
+    /// <summary>Añade un jugador al último grupo. Ver <see cref="AddPlayerToGroup"/>.</summary>
+    public void AddPlayerToLastGroup(Player player)
+    {
+        EnsureRotatingInProgress();
+        AddPlayerToGroup(_groups.OrderBy(g => g.Id).Last().Id, player);
+    }
+
     /// <summary>
-    /// Añade un jugador al último grupo (el de menos nivel) y vuelve a planificar por completo las jornadas de ese grupo.
-    /// Solo se permite si en ese grupo no se ha jugado ningún partido: así el reparto de compañeros y rivales sigue
-    /// siendo equilibrado. Devuelve las parejas que han quedado sin partido, para que quien persiste las elimine.
+    /// Añade un jugador a cualquier grupo. Solo entra en el grupo: no se crea ni se recalcula ningún partido (los nuevos los
+    /// añade el administrador a mano).
     /// </summary>
-    /// <exception cref="DomainException">Liga no sorteada o terminada, jugador que ya participa o grupo con partidos jugados.</exception>
-    public IReadOnlyList<Pair> AddPlayerToLastGroup(Player player, IRotationPlanner planner)
+    /// <exception cref="DomainException">Liga no sorteada o terminada, grupo inexistente o jugador que ya participa.</exception>
+    public void AddPlayerToGroup(int groupId, Player player)
     {
         EnsureRotatingInProgress();
         if (_entries.Any(e => e.Pair.Contains(player.Id)) || _groups.Any(g => g.Members.Any(m => m.PlayerId == player.Id)))
             throw new DomainException("Ese jugador ya participa en la liga.");
 
-        var group = _groups.OrderBy(g => g.Id).Last();
-        if (ManualRounds)
-        {
-            // Jornadas a mano: basta con asignarlo al grupo; sus partidos los crea el administrador.
-            group.AddMember(player);
-            PairCount++;
-            return Array.Empty<Pair>();
-        }
-        if (GroupMatches(group).Any(m => m.IsPlayed))
-            throw new DomainException("Solo se puede añadir un jugador si en el último grupo no se ha jugado ningún partido.");
-
-        var players = GroupPlayers(group).Append(player).ToList();
-        var removed = RemoveGroupMatches(group, _ => true);
-
-        // Todos contra todos: las jornadas necesarias para que cada jugador sea compañero de todos los demás del grupo,
-        // aunque la liga se hubiera creado con menos jornadas fijas (con un jugador más ya no bastarían).
-        AppendRounds(group, planner.Plan(players, RotationMath.FullRounds(players.Count)), 0);
-
+        var group = _groups.FirstOrDefault(g => g.Id == groupId) ?? throw new NotFoundException("Grupo no encontrado.");
+        group.AddMember(player);
         PairCount++;
         RefreshStatus();
-        return removed;
     }
 
     /// <summary>
-    /// Saca a un jugador de un grupo siempre que no haya jugado ningún partido: se borran sus partidos pendientes (con sus
+    /// Saca a un jugador de un grupo siempre que no haya jugado ningún partido: se borran automáticamente todos sus partidos (pendientes) (con sus
     /// jornadas vacías, que se renumeran) y el resto del grupo sigue igual. El grupo conserva al menos 4 jugadores.
     /// Devuelve las parejas que han quedado sin partido, para que quien persiste las elimine.
     /// </summary>

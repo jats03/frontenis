@@ -12,7 +12,7 @@ public sealed class RotatingLeagueController : ControllerBase
     private readonly IRotatingLeagueCommands _commands;
     public RotatingLeagueController(IRotatingLeagueCommands commands) { _commands = commands; }
 
-    /// <summary>Añade un jugador al último grupo y recalcula los partidos pendientes de ese grupo.</summary>
+    /// <summary>Añade un jugador a un grupo (por defecto el último) sin crear ni recalcular partidos.</summary>
     [HttpPost("api/competitions/{id:int}/rotating/players")]
     public async Task<ActionResult<CompetitionDetailDto>> AddPlayer(int id, AddRotatingPlayerRequest request, CancellationToken ct) =>
         Ok(await _commands.AddPlayerAsync(id, request, ct));

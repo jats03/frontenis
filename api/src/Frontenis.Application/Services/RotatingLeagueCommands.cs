@@ -28,8 +28,9 @@ public sealed class RotatingLeagueCommands : IRotatingLeagueCommands
     {
         var competition = await _competitions.GetDetailedOrThrowAsync(competitionId, ct);
         var player = await _players.GetOrThrowAsync(request.PlayerId, ct);
-        var removed = competition.AddPlayerToLastGroup(player, _planner);
-        return await SaveAsync(competition, removed, ct);
+        if (request.GroupId.HasValue) competition.AddPlayerToGroup(request.GroupId.Value, player);
+        else competition.AddPlayerToLastGroup(player);
+        return await SaveAsync(competition, Array.Empty<Pair>(), ct);
     }
 
     public async Task<CompetitionDetailDto> RemovePlayerAsync(int competitionId, int groupId, int playerId, CancellationToken ct = default)

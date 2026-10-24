@@ -63,11 +63,10 @@ public class ManualRoundsTests
     public void Adding_a_player_to_a_manual_league_only_assigns_them_to_the_last_group()
     {
         var c = Manual();
-        var removed = c.AddPlayerToLastGroup(TestHelpers.Player(99, "Nuevo", PlayerPosition.Delantero), Planner());
-        Assert.Empty(removed);
+        c.AddPlayerToLastGroup(TestHelpers.Player(99, "Nuevo", PlayerPosition.Delantero));
         Assert.Empty(c.Matches);
         Assert.Contains(c.GroupPlayers(c.Groups.Last()), p => p.Id == 99);
-        Assert.Throws<DomainException>(() => c.AddPlayerToLastGroup(TestHelpers.Player(99, "Nuevo", PlayerPosition.Delantero), Planner()));
+        Assert.Throws<DomainException>(() => c.AddPlayerToLastGroup(TestHelpers.Player(99, "Nuevo", PlayerPosition.Delantero)));
     }
 
     [Fact]
