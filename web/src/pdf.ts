@@ -24,7 +24,7 @@ export async function exportStandingsPdf(competitionName: string, standings: Gro
   doc.text(competitionName, logo ? 40 : 14, 19)
   doc.setFontSize(10)
   doc.setTextColor(100)
-  doc.text(`Clasificación · ${new Date().toLocaleDateString('es-ES')}`, logo ? 40 : 14, 26)
+  doc.text('Clasificación', logo ? 40 : 14, 26)
   doc.setTextColor(0)
 
   let y = 38
