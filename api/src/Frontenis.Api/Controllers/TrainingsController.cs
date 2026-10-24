@@ -16,10 +16,12 @@ public sealed class TrainingsController : ControllerBase
     private readonly ITrainingCommands _commands;
     private readonly ITrainingSuggestionService _suggestions;
     private readonly IDeviceAccessResolver _devices;
+    private readonly ILogger<TrainingsController> _logger;
 
     public TrainingsController(ITrainingQueries queries, ITrainingCommands commands, ITrainingSuggestionService suggestions,
-        IDeviceAccessResolver devices)
+        IDeviceAccessResolver devices, ILogger<TrainingsController> logger)
     {
+        _logger = logger;
         _queries = queries;
         _commands = commands;
         _suggestions = suggestions;
@@ -69,7 +71,13 @@ public sealed class TrainingsController : ControllerBase
         Ok(await _commands.RemoveMatchAsync(id, matchId, ct));
 
     /// <summary>Solo lectura (no guarda nada): propone los próximos partidos entre los jugadores presentes.</summary>
-    [HttpPost("{id:int}/suggestions")]
-    public async Task<ActionResult<IReadOnlyList<TrainingSuggestionDto>>> Suggest(int id, TrainingSuggestRequest request, CancellationToken ct) =>
-        Ok(await _suggestions.SuggestAsync(id, request, ct));
+    [HttpPost("{id:int}/suggestions"), EnableRateLimiting(RateLimitPolicies.Suggestions)]
+    public async Task<ActionResult<IReadOnlyList<TrainingSuggestionDto>>> Suggest(int id, TrainingSuggestRequest request, CancellationToken ct)
+    {
+        var started = System.Diagnostics.Stopwatch.GetTimestamp();
+        var result = await _suggestions.SuggestAsync(id, request, ct);
+        _logger.LogInformation("Sugerencia de partidos del entreno {TrainingId}: {Players} jugadores evaluados, {Count} propuestas en {Elapsed:0} ms",
+            id, request.PlayerIds?.Distinct().Count() ?? 0, result.Count, System.Diagnostics.Stopwatch.GetElapsedTime(started).TotalMilliseconds);
+        return Ok(result);
+    }
 }

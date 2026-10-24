@@ -6,6 +6,7 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="8.0.10" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
     <PackageReference Include="xunit" Version="2.9.2" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
@@ -14,5 +15,6 @@
     <ProjectReference Include="..\..\src\Frontenis.Domain\Frontenis.Domain.csproj" />
     <ProjectReference Include="..\..\src\Frontenis.Application\Frontenis.Application.csproj" />
     <ProjectReference Include="..\..\src\Frontenis.Infrastructure\Frontenis.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Frontenis.Api\Frontenis.Api.csproj" />
   </ItemGroup>
 </Project>
