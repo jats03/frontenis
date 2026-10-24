@@ -61,9 +61,13 @@ export async function exportMatchesPdf(competitionName: string, matches: MatchDt
         head: [['Pareja A', 'Resultado', 'Pareja B', 'Sets']],
         body: list.map(m => [m.homeName ?? '', resultText(m), m.awayName ?? '', setsText(m)]),
         headStyles: { fillColor: [30, 58, 138] },
-        columnStyles: { 1: { halign: 'center' } },
+        // Mismas columnas (ancho fijo) en todas las tablas; si un nombre no cabe, baja a la línea siguiente y la fila crece.
+        tableWidth: 182,
+        columnStyles: {
+          0: { cellWidth: 62 }, 1: { cellWidth: 24, halign: 'center' }, 2: { cellWidth: 62 }, 3: { cellWidth: 34 },
+        },
         // Todo alineado a la izquierda salvo el resultado, que va centrado (también su cabecera).
-        styles: { halign: 'left', fontSize: 10 },
+        styles: { halign: 'left', valign: 'middle', fontSize: 10, cellPadding: 2.5, overflow: 'linebreak' },
         margin: { left: 14, right: 14 },
       } as Parameters<typeof autoTable>[1])
       y = lastY() + 6
@@ -79,7 +83,6 @@ export async function exportStandingsPdf(competitionName: string, standings: Gro
     import('jspdf'), import('jspdf-autotable'), loadLogo(),
   ])
   const doc = new jsPDF({ unit: 'mm', format: 'a4' })
-  const pageWidth = doc.internal.pageSize.getWidth()
 
   if (logo) doc.addImage(logo, 'PNG', 14, 10, 22, 22)
   doc.setFontSize(18)
@@ -101,17 +104,22 @@ export async function exportStandingsPdf(competitionName: string, standings: Gro
         r.pointsDiff > 0 ? `+${r.pointsDiff}` : r.pointsDiff, r.classificationPoints,
       ]),
       headStyles: { fillColor: [30, 58, 138] },
-      columnStyles: { 1: { halign: 'left' } },
+      // Mismas columnas (ancho fijo) en todos los grupos; los nombres largos bajan a la línea siguiente.
+      tableWidth: 182,
+      columnStyles: {
+        0: { cellWidth: 10 }, 1: { halign: 'left', cellWidth: 70 }, 2: { cellWidth: 12 }, 3: { cellWidth: 12 }, 4: { cellWidth: 12 },
+        5: { cellWidth: 16 }, 6: { cellWidth: 16 }, 7: { cellWidth: 16 }, 8: { cellWidth: 18 },
+      },
       // Liga rotatoria terminada: en verde quien sube y en rojo quien baja.
       didParseCell: data => {
+        if (data.section === 'head' && data.column.index === 1) data.cell.styles.halign = 'left'
         if (data.section !== 'body') return
         const movement = g.rows[data.row.index]?.movement ?? 0
         if (movement > 0) { data.cell.styles.fillColor = [209, 250, 229]; data.cell.styles.textColor = [6, 95, 70] }
         else if (movement < 0) { data.cell.styles.fillColor = [254, 226, 226]; data.cell.styles.textColor = [153, 27, 27] }
       },
-      styles: { halign: 'center', fontSize: 10 },
+      styles: { halign: 'center', valign: 'middle', fontSize: 10, cellPadding: 2.5, overflow: 'linebreak' },
       margin: { left: 14, right: 14 },
-      width: pageWidth,
     } as Parameters<typeof autoTable>[1])
     y = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10
     if (y > 260) { doc.addPage(); y = 20 }

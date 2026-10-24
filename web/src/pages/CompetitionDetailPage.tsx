@@ -157,12 +157,8 @@ function CompetitionDetailView({ id }: { id: number }) {
           <ActionMenu items={[
             { label: 'Exportar clasificación a PDF', hidden: standings.length === 0,
               onSelect: () => void exportStandingsPdf(summary.name, standings, isRotating) },
-            { label: 'Exportar partidos a PDF', hidden: groupMatches.length === 0,
-              onSelect: () => void exportMatchesPdf(summary.name, detail.matches, detail.groups) },
             { label: 'Guardar clasificación como imagen', hidden: standings.length === 0,
               onSelect: () => void exportStandingsImage(summary.name, standings, isRotating) },
-            { label: 'Guardar partidos como imagen', hidden: groupMatches.length === 0,
-              onSelect: () => void exportMatchesImage(summary.name, detail.matches, detail.groups) },
             { label: 'Editar nombre', hidden: !isAdmin, onSelect: () => void rename() },
             { label: `Pasar a ${summary.setsPerMatch === 2 ? '1 set' : '2 sets'} por partido`,
               hidden: !isAdmin || detail.matches.some(m => m.isPlayed), onSelect: () => void changeSets() },
