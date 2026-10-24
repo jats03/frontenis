@@ -34,7 +34,8 @@ public sealed class PlayerCommands : IPlayerCommands
     public async Task<PlayerDto> UpdateAsync(int id, PlayerRequest request, CancellationToken ct = default)
     {
         var player = await _players.GetOrThrowAsync(id, ct);
-        var name = PlayerNameRules.Validate(request.Name);
+        var name = PlayerNameRules.Normalize(request.Name);
+        if (name != player.Name) name = PlayerNameRules.Validate(name);   // un nombre antiguo ya guardado no se revalida
         // Solo se comprueba si el nombre cambia de verdad (cambiar de posición o de grupo reenvía el mismo nombre);
         // corregir mayúsculas, tildes o espacios del propio nombre tampoco choca con nadie.
         if (!PlayerNameRules.Same(name, player.Name)) await EnsureNameIsFreeAsync(name, player.Id, ct);

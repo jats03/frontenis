@@ -10,7 +10,8 @@ namespace Frontenis.Domain.Services;
 /// </summary>
 public static class PlayerNameRules
 {
-    public const int MaxLength = 100;
+    /// <summary>Longitud máxima del nombre (también la limita la BD con <c>CK_Players_NameLength</c>).</summary>
+    public const int MaxLength = 40;
 
     /// <summary>
     /// Nombre limpio para guardar y mostrar: sin caracteres de control ni invisibles (espacio de ancho cero, marcas de

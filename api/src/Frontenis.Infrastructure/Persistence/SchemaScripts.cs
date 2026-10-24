@@ -73,6 +73,21 @@ internal static class SchemaScripts
         "CREATE UNIQUE INDEX IF NOT EXISTS \"IX_PlayerDelegates_OwnerPlayerId_DelegatePlayerId\" ON \"PlayerDelegates\"(\"OwnerPlayerId\", \"DelegatePlayerId\");",
         "CREATE INDEX IF NOT EXISTS \"IX_PlayerDelegates_DelegatePlayerId\" ON \"PlayerDelegates\"(\"DelegatePlayerId\");",
 
+        // Los nombres de jugador no pueden pasar de 40 caracteres.
+        """
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'CK_Players_NameLength') THEN
+        -- Si ya hubiera nombres más largos, la restricción se crea sin revisarlos (solo vale para los nuevos).
+        IF EXISTS (SELECT 1 FROM "Players" WHERE char_length("Name") > 40) THEN
+            ALTER TABLE "Players" ADD CONSTRAINT "CK_Players_NameLength" CHECK (char_length("Name") <= 40) NOT VALID;
+        ELSE
+            ALTER TABLE "Players" ADD CONSTRAINT "CK_Players_NameLength" CHECK (char_length("Name") <= 40);
+        END IF;
+    END IF;
+END $$;
+        """,
+
         // Jugador comodín «Jugador reserva» (cubre a un jugador ausente en un partido de liga rotatoria).
         "ALTER TABLE \"Players\" ADD COLUMN IF NOT EXISTS \"IsReserve\" boolean NOT NULL DEFAULT false;",
 

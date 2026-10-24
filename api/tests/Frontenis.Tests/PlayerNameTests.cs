@@ -57,7 +57,28 @@ public class PlayerNameTests
     }
 
     [Fact]
-    public void Too_long_names_are_rejected() => Assert.Throws<DomainException>(() => PlayerNameRules.Validate(new string('a', 101)));
+    public void Too_long_names_are_rejected()
+    {
+        Assert.Equal(40, PlayerNameRules.MaxLength);
+        PlayerNameRules.Validate(new string('a', 40));
+        Assert.Throws<DomainException>(() => PlayerNameRules.Validate(new string('a', 41)));
+        Assert.Throws<DomainException>(() => PlayerNameRules.Validate("Maria de los Angeles Fernandez de la Torre Alvarez"));
+    }
+
+    [Fact]
+    public async Task A_legacy_long_name_can_be_kept_but_not_lengthened_or_set_again()
+    {
+        var long41 = new string('b', 41);
+        var players = new FakePlayers();
+        var legacy = TestHelpers.Player(1, "x", PlayerPosition.Delantero);
+        typeof(Player).GetProperty(nameof(Player.Name))!.SetValue(legacy, long41);   // simula un nombre guardado antes del límite
+        players.Items.Add(legacy);
+        players.Items.Add(TestHelpers.Player(2, "Ana", PlayerPosition.Delantero));
+        var cmd = new PlayerCommands(players, new FakeUow());
+        await cmd.UpdateAsync(1, new PlayerRequest(long41, PlayerPosition.Zaguero, 3));          // mismo nombre: solo cambia la posición
+        await Assert.ThrowsAsync<DomainException>(() => cmd.UpdateAsync(1, new PlayerRequest(long41 + "c", PlayerPosition.Zaguero)));
+        await Assert.ThrowsAsync<DomainException>(() => cmd.UpdateAsync(2, new PlayerRequest(long41, PlayerPosition.Delantero)));
+    }
 
     [Fact]
     public void A_player_stores_the_clean_name() =>

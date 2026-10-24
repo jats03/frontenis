@@ -32,7 +32,9 @@ public sealed class Player
     /// <summary>Modifica nombre, posición y número de grupo (1-99, opcional).</summary>
     public void Update(string name, PlayerPosition position, int? groupNumber = null)
     {
-        Name = Validate(name);
+        // Un nombre antiguo que ya no cumple el límite de longitud se puede conservar (al cambiar posición o grupo).
+        var clean = Services.PlayerNameRules.Normalize(name);
+        Name = clean == Name ? Name : Validate(name);
         Position = position;
         GroupNumber = ValidateGroup(groupNumber);
     }
