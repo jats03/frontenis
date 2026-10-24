@@ -18,7 +18,8 @@ export default function RotatingDrawPanel({ detail, players, onChanged, onPlayer
   const [selected, setSelected] = useState<Set<number>>(new Set())
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
-  const [manual, setManual] = useState(false)
+  const manualRounds = !!summary.manualRounds
+  const [manual, setManual] = useState(manualRounds)
   const [swapping, setSwapping] = useState<Set<number>>(new Set())
 
   const needed = summary.pairCount
@@ -54,8 +55,10 @@ export default function RotatingDrawPanel({ detail, players, onChanged, onPlayer
       <p className="muted">
         Elige al menos {needed} jugadores ({summary.groupCount} grupo(s) de {summary.pairsPerGroup}); si hay más,
         los sobrantes van al último grupo.
-        Se reparten al azar entre los grupos y en cada jornada se forman parejas nuevas
-        (da igual el puesto) hasta que todos hayan jugado con todos{summary.rounds > 0 ? `, con ${summary.rounds} jornadas` : ''}.
+        {manualRounds
+          ? ' Los grupos los formas tú a mano y no se crea ningún partido: las jornadas las añades después.'
+          : ` Se reparten al azar entre los grupos y en cada jornada se forman parejas nuevas
+        (da igual el puesto) hasta que todos hayan jugado con todos${summary.rounds > 0 ? `, con ${summary.rounds} jornadas` : ''}.`}
       </p>
       <PlayerPicker players={players} selected={selected} onChange={setSelected}
         onSwap={p => void swap(p)} swappingIds={swapping} />
@@ -63,16 +66,18 @@ export default function RotatingDrawPanel({ detail, players, onChanged, onPlayer
         Seleccionados: {chosen.length} (mínimo {needed}) · {forwards} delanteros · {backs} zagueros
       </p>
       {error && <p className="error">{error}</p>}
-      <button disabled={busy || chosen.length < needed} onClick={() => void draw()}>
-        Sortear grupos y jornadas
-      </button>{' '}
-      <button className="secondary" disabled={busy || chosen.length < needed} onClick={() => setManual(v => !v)}>
-        ✋ {manual ? 'Cancelar grupos manuales' : 'Formar grupos a mano'}
-      </button>
+      {!manualRounds && <>
+        <button disabled={busy || chosen.length < needed} onClick={() => void draw()}>
+          Sortear grupos y jornadas
+        </button>{' '}
+        <button className="secondary" disabled={busy || chosen.length < needed} onClick={() => setManual(v => !v)}>
+          ✋ {manual ? 'Cancelar grupos manuales' : 'Formar grupos a mano'}
+        </button>
+      </>}
       {manual && chosen.length >= needed && (
         <ManualGroups items={chosen.map(p => ({ id: p.id, label: `${p.name} (${p.position})` }))}
           groupCount={summary.groupCount} minPerGroup={4} noun="jugador(es)" busy={busy}
-          submitLabel="Crear grupos y jornadas" onSubmit={g => void drawManual(g)} />
+          submitLabel={manualRounds ? 'Crear grupos' : 'Crear grupos y jornadas'} onSubmit={g => void drawManual(g)} />
       )}
     </section>
   )

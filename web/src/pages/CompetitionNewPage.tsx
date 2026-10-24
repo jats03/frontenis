@@ -21,6 +21,7 @@ export default function CompetitionNewPage() {
   const [qualifiers, setQualifiers] = useState(2)
   const [rounds, setRounds] = useState(0) // 0 = automático (la mitad de jugadores por grupo)
   const [setsPerMatch, setSetsPerMatch] = useState(1)
+  const [manualRounds, setManualRounds] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   // Mantiene coherentes los tres parámetros: parejas = grupos × parejas por grupo.
@@ -43,7 +44,7 @@ export default function CompetitionNewPage() {
       const rotating = type === 'RotatingLeague'
       const created = await api.competitions.create({
         name, type, pairCount: rotating ? groupCount * pairsPerGroup : pairCount, groupCount,
-        rounds: rotating ? rounds : 0, setsPerMatch,
+        rounds: rotating && !manualRounds ? rounds : 0, setsPerMatch, manualRounds: rotating && manualRounds,
         pairsPerGroup: rotating || groupCount * pairsPerGroup === pairCount ? pairsPerGroup : 0,
         pointsPerWin, pointsPerLoss, doubleRound: rotating ? false : doubleRound,
         qualifiersPerGroup: type === 'Tournament' ? qualifiers : 0,
@@ -76,11 +77,18 @@ export default function CompetitionNewPage() {
               <input type="number" min={4} value={Number.isNaN(pairsPerGroup) ? '' : pairsPerGroup}
                 onChange={e => setPairsPerGroup(e.target.valueAsNumber)} />
             </label>
-            <label>Jornadas (0 = todos con todos)
+            {!manualRounds && <label>Jornadas (0 = todos con todos)
               <input type="number" min={0} value={Number.isNaN(rounds) ? '' : rounds}
                 onChange={e => setRounds(e.target.valueAsNumber)} />
-            </label>
+            </label>}
           </div>
+          <label className="check">
+            <input type="checkbox" checked={manualRounds} onChange={e => setManualRounds(e.target.checked)} />
+            Crear las jornadas a mano (sin generar partidos)
+          </label>
+          {manualRounds && <p className="muted">
+            Los grupos se forman siempre a mano y no se crea ningún partido: las jornadas y las parejas las añades tú después, partido a partido.
+          </p>}
           <p className="muted">
             {groupCount} grupo(s) × {pairsPerGroup} jugadores = {groupCount * pairsPerGroup} jugadores como mínimo; si hay más, los sobrantes van al último grupo (si un grupo no es múltiplo de 4, en cada jornada descansan por turnos los que sobran).
             En cada jornada las parejas se sortean de nuevo y todos juegan con todos como compañeros (aunque coincidan dos delanteros o dos zagueros). La clasificación es individual.

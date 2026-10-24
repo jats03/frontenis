@@ -20,8 +20,14 @@ export interface CompetitionSummary {
   rounds: number; nextCompetitionId: number | null
   /** 1 o 2 sets por partido (con 2, un 3.º de desempate). */
   setsPerMatch: number
+  /** Liga rotatoria con jornadas manuales: el sorteo solo forma grupos y las jornadas las crea el administrador. */
+  manualRounds?: boolean
 }
-export interface Group { id: number; name: string }
+export interface Group {
+  id: number; name: string
+  /** Jugadores del grupo (solo en la liga rotatoria). */
+  players?: PlayerRef[]
+}
 export interface MatchDto {
   id: number; phase: MatchPhase; groupId: number | null; groupName: string | null
   round: number; order: number
@@ -58,6 +64,7 @@ export interface CreateCompetition {
   name: string; type: CompetitionType; pairCount: number; groupCount: number
   pairsPerGroup: number; pointsPerWin: number; pointsPerLoss: number
   doubleRound: boolean; qualifiersPerGroup: number; rounds: number; setsPerMatch: number
+  manualRounds?: boolean
 }
 
 export interface PlayerHistoryRow {

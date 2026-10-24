@@ -152,6 +152,8 @@ export const api = {
       request<CompetitionDetail>('POST', `/api/competitions/${id}/rotating/players`, { playerId }),
     addMatch: (id: number, groupId: number, m: { round: number; home1Id: number; home2Id: number; away1Id: number; away2Id: number }) =>
       request<CompetitionDetail>('POST', `/api/competitions/${id}/groups/${groupId}/matches`, m),
+    removePlayer: (id: number, groupId: number, playerId: number) =>
+      request<CompetitionDetail>('DELETE', `/api/competitions/${id}/groups/${groupId}/players/${playerId}`),
     swapRounds: (id: number, groupId: number, roundA: number, roundB: number) =>
       request<CompetitionDetail>('PUT', `/api/competitions/${id}/groups/${groupId}/rounds/swap`, { roundA, roundB }),
     removeRound: (id: number, groupId: number, round: number) =>

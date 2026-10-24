@@ -1,34 +1,43 @@
 import { useState } from 'react'
 import { notify } from '../alerts'
 import { api } from '../api/client'
-import type { PairDto, Player } from '../api/types'
+import type { PlayerRef } from '../api/types'
 
 interface Props {
   competitionId: number
   groupId: number
   /** Jornadas que ya tiene el grupo. */
   rounds: number[]
-  /** Parejas de la liga; de ellas salen los jugadores del grupo. */
-  pairs: PairDto[]
+  /** Jugadores del grupo. */
+  players: PlayerRef[]
   onChanged: () => Promise<void> | void
 }
 
 const NEW_ROUND = 'new'
+/** Id que entiende la API como «Jugador reserva» (un comodín que no es ningún jugador de la app). */
+const RESERVE = '0'
 
-/** Formulario para añadir un partido a cualquier jornada de un grupo (o a una nueva), sin más condiciones. */
-export default function AddMatchForm({ competitionId, groupId, rounds, pairs, onChanged }: Props) {
+/**
+ * Formulario para añadir un partido a cualquier jornada de un grupo (o a una nueva), sin más condiciones.
+ * En un hueco se puede poner el «Jugador reserva» (cuando falta un jugador): juega, pero no puntúa ni cuenta en nada.
+ */
+export default function AddMatchForm({ competitionId, groupId, rounds, players, onChanged }: Props) {
   const last = rounds.length ? Math.max(...rounds) : 0
   const [open, setOpen] = useState(false)
-  const [round, setRound] = useState(String(rounds[0] ?? 1))
+  const [round, setRound] = useState(rounds.length ? String(rounds[0]) : NEW_ROUND)
   const [sel, setSel] = useState<string[]>(['', '', '', ''])
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const players: Player[] = [...new Map(pairs.filter(p => p.groupId === groupId)
-    .flatMap(p => [p.player1, p.player2]).map(p => [p.id, p])).values()]
-    .sort((a, b) => a.name.localeCompare(b.name, 'es'))
+  const sorted = [...players].sort((a, b) => a.name.localeCompare(b.name, 'es'))
   const chosen = sel.filter(Boolean)
   const ready = chosen.length === 4 && new Set(chosen).size === 4
+
+  function show(newRound: boolean) {
+    setRound(newRound || rounds.length === 0 ? NEW_ROUND : String(rounds[0]))
+    setError(null)
+    setOpen(true)
+  }
 
   async function submit() {
     setBusy(true)
@@ -49,12 +58,19 @@ export default function AddMatchForm({ competitionId, groupId, rounds, pairs, on
     }
   }
 
-  if (!open) return <button type="button" className="secondary small" onClick={() => setOpen(true)}>Añadir partido</button>
+  if (!open) {
+    return (
+      <div className="row">
+        <button type="button" className="secondary small" onClick={() => show(false)}>Añadir partido</button>
+        <button type="button" className="secondary small" onClick={() => show(true)}>Nueva jornada</button>
+      </div>
+    )
+  }
 
   const labels = ['Pareja A · jugador 1', 'Pareja A · jugador 2', 'Pareja B · jugador 1', 'Pareja B · jugador 2']
   return (
     <div className="add-match">
-      <h3>Añadir partido</h3>
+      <h3>{round === NEW_ROUND ? `Nueva jornada (${last + 1})` : 'Añadir partido'}</h3>
       {error && <p className="error" role="alert">{error}</p>}
       <label>Jornada{' '}
         <select value={round} onChange={e => setRound(e.target.value)} disabled={busy}>
@@ -67,12 +83,14 @@ export default function AddMatchForm({ competitionId, groupId, rounds, pairs, on
           <label key={label}>{label}
             <select value={sel[i]} disabled={busy} onChange={e => setSel(prev => prev.map((v, k) => (k === i ? e.target.value : v)))}>
               <option value="">Elige…</option>
-              {players.filter(p => !sel.includes(String(p.id)) || sel[i] === String(p.id))
+              {(!sel.includes(RESERVE) || sel[i] === RESERVE) && <option value={RESERVE}>Jugador reserva</option>}
+              {sorted.filter(p => !sel.includes(String(p.id)) || sel[i] === String(p.id))
                 .map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
           </label>
         ))}
       </div>
+      <p className="muted">Si falta un jugador, elige «Jugador reserva»: juega el partido pero no puntúa ni cuenta en la clasificación.</p>
       <div className="row">
         <button type="button" disabled={!ready || busy} onClick={() => void submit()}>Añadir</button>
         <button type="button" className="secondary" disabled={busy} onClick={() => setOpen(false)}>Cancelar</button>

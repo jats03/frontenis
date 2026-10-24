@@ -17,6 +17,7 @@ import MatchRoundMover from '../components/MatchRoundMover'
 import RemoveRoundButton from '../components/RemoveRoundButton'
 import SwapRoundSelect from '../components/SwapRoundSelect'
 import AddMatchForm from '../components/AddMatchForm'
+import GroupPlayersAdmin from '../components/GroupPlayersAdmin'
 import RemoveMatchButton from '../components/RemoveMatchButton'
 import SubTabs from '../components/SubTabs'
 import StandingsTable from '../components/StandingsTable'
@@ -232,6 +233,7 @@ function CompetitionDetailView({ id }: { id: number }) {
                     return (
                       <section className="card" key={g.id}>
                         <h2>{g.name}</h2>
+                        {rounds.length === 0 && <p className="muted">Este grupo todavía no tiene jornadas: añade el primer partido.</p>}
                         {rounds.map(r => (
                           <div key={r}>
                             <div className="round-head">
@@ -262,8 +264,9 @@ function CompetitionDetailView({ id }: { id: number }) {
                           </div>
                         ))}
                         {canAddMatches && (
-                          <AddMatchForm competitionId={id} groupId={g.id} rounds={rounds} pairs={detail.pairs} onChanged={load} />
+                          <AddMatchForm competitionId={id} groupId={g.id} rounds={rounds} players={g.players ?? []} onChanged={load} />
                         )}
+                        {canEditRounds && <GroupPlayersAdmin detail={detail} group={g} onChanged={load} onError={setError} />}
                       </section>
                     )
                   })}
