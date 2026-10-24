@@ -14,6 +14,9 @@ builder.WebHost.ConfigureKestrel(o => { o.Limits.MaxRequestBodySize = 256 * 1024
 builder.Services.AddFrontenis(builder.Configuration);
 builder.Services.AddControllers()
     .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+// Errores del propio framework (p. ej. validación) también como ProblemDetails con traceId.
+builder.Services.AddProblemDetails(o => o.CustomizeProblemDetails = c =>
+    c.ProblemDetails.Extensions["traceId"] = c.HttpContext.TraceIdentifier);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddJwtAuthentication(builder.Configuration, builder.Environment);
