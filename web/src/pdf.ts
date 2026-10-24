@@ -60,7 +60,7 @@ export async function exportMatchesPdf(competitionName: string, matches: MatchDt
         startY: y,
         head: [['Pareja A', 'Resultado', 'Pareja B', 'Sets']],
         body: list.map(m => [m.homeName ?? '', resultText(m), m.awayName ?? '', setsText(m)]),
-        headStyles: { fillColor: [109, 40, 217] },
+        headStyles: { fillColor: [30, 58, 138] },
         columnStyles: { 1: { halign: 'center' } },
         // Todo alineado a la izquierda salvo el resultado, que va centrado (también su cabecera).
         styles: { halign: 'left', fontSize: 10 },
@@ -100,7 +100,7 @@ export async function exportStandingsPdf(competitionName: string, standings: Gro
         r.rank, r.pairName, r.played, r.won, r.lost, r.pointsFor, r.pointsAgainst,
         r.pointsDiff > 0 ? `+${r.pointsDiff}` : r.pointsDiff, r.classificationPoints,
       ]),
-      headStyles: { fillColor: [109, 40, 217] },
+      headStyles: { fillColor: [30, 58, 138] },
       columnStyles: { 1: { halign: 'left' } },
       // Liga rotatoria terminada: en verde quien sube y en rojo quien baja.
       didParseCell: data => {
