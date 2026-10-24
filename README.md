@@ -1,5 +1,7 @@
 # Frontenis – ligas y torneos
 
+[![CI](https://github.com/jats03/frontenis/actions/workflows/ci.yml/badge.svg)](https://github.com/jats03/frontenis/actions/workflows/ci.yml)
+
 Aplicación web/móvil (PWA) para gestionar **ligas y torneos de frontenis** con clasificación.
 
 - **Backend**: .NET 8 Web API · EF Core · **PostgreSQL (Neon)** · JWT
