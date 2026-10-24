@@ -7,3 +7,5 @@ dist/
 .env
 .env.local
 appsettings.Development.json
+# Carpeta residual de compilación en la raíz (los tests viven en api/tests)
+/tests/
