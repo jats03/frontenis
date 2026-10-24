@@ -136,7 +136,7 @@ export async function exportStandingsImage(competitionName: string, standings: G
     tables: [{
       title: g.groupName,
       head: ['#', individual ? 'Jugador' : 'Pareja', 'PJ', 'G', 'P', 'TF', 'TC', 'Dif', 'Pts'],
-      rows: g.rows.map(r => [String(r.rank), r.pairName, String(r.played), String(r.won), String(r.lost), String(r.pointsFor),
+      rows: g.rows.map(r => [String(r.rank), r.pairName + (r.movement > 0 ? '  ▲' : r.movement < 0 ? '  ▼' : ''), String(r.played), String(r.won), String(r.lost), String(r.pointsFor),
         String(r.pointsAgainst), r.pointsDiff > 0 ? `+${r.pointsDiff}` : String(r.pointsDiff), String(r.classificationPoints)]),
       widths: [5, 41, 7, 7, 7, 8, 8, 8, 9],
       aligns: ['center', 'left', 'center', 'center', 'center', 'center', 'center', 'center', 'center'],

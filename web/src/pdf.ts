@@ -104,6 +104,15 @@ export async function exportStandingsPdf(competitionName: string, standings: Gro
         r.pointsDiff > 0 ? `+${r.pointsDiff}` : r.pointsDiff, r.classificationPoints,
       ]),
       headStyles: { fillColor: [30, 58, 138] },
+      // Flecha (triángulo) al final del nombre: verde hacia arriba si sube, roja hacia abajo si baja.
+      didDrawCell: data => {
+        if (data.section !== 'body' || data.column.index !== 1) return
+        const movement = g.rows[data.row.index]?.movement ?? 0
+        if (movement === 0) return
+        const cx = data.cell.x + data.cell.width - 5, cy = data.cell.y + data.cell.height / 2, s = 1.8
+        if (movement > 0) { doc.setFillColor(6, 95, 70); doc.triangle(cx - s, cy + s * 0.8, cx + s, cy + s * 0.8, cx, cy - s, 'F') }
+        else { doc.setFillColor(153, 27, 27); doc.triangle(cx - s, cy - s * 0.8, cx + s, cy - s * 0.8, cx, cy + s, 'F') }
+      },
       // Mismas columnas (ancho fijo) en todos los grupos; los nombres largos bajan a la línea siguiente.
       tableWidth: 182,
       columnStyles: {
