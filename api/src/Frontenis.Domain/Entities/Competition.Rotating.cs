@@ -67,6 +67,12 @@ public sealed partial class Competition
         {
             var group = new Group(GroupName(g));
             _groups.Add(group);
+            if (ManualRounds)
+            {
+                // Jornadas a mano: el grupo solo guarda quién lo forma; los partidos los crea el administrador.
+                foreach (var player in groups[g]) group.AddMember(player);
+                continue;
+            }
             AppendRounds(group, planner.Plan(groups[g], Rounds > 0 ? Rounds : RotationMath.FullRounds(groups[g].Count)), 0);
         }
         Status = CompetitionStatus.GroupStage;
@@ -96,6 +102,7 @@ public sealed partial class Competition
         _entries
             .Where(e => e.Group == group || (e.GroupId.HasValue && e.GroupId == group.Id))
             .SelectMany(e => new[] { e.Pair.Player1, e.Pair.Player2 })
+            .Concat(group.Members.Select(m => m.Player))
             .GroupBy(p => p.Id)
             .Select(g => g.First())
             .ToList();
@@ -134,7 +141,8 @@ public sealed partial class Competition
         if (previous.NextCompetitionId.HasValue) throw new DomainException("La siguiente liga ya fue creada.");
         var next = Create(new CompetitionSettings(
             NextName(previous.Name), CompetitionType.RotatingLeague, previous.PairCount, previous.GroupCount,
-            previous.PairsPerGroup, previous.PointsPerWin, previous.PointsPerLoss, false, 0, previous.Rounds, previous.SetsPerMatch));
+            previous.PairsPerGroup, previous.PointsPerWin, previous.PointsPerLoss, false, 0, previous.Rounds, previous.SetsPerMatch,
+            previous.ManualRounds));
         next.PairCount = rosters.Sum(r => r.Count);
         next.BuildRotating(rosters, planner);
         return next;

@@ -1,5 +1,6 @@
 using Frontenis.Application.Dtos;
 using Frontenis.Domain.Entities;
+using Frontenis.Domain.Enums;
 
 namespace Frontenis.Application.Mapping;
 
@@ -14,7 +15,7 @@ internal static class Mapper
     public static CompetitionSummaryDto ToSummary(this Competition c) => new(
         c.Id, c.Name, c.Type, c.Status, c.PairCount, c.GroupCount, c.PairsPerGroup,
         c.PointsPerWin, c.PointsPerLoss, c.DoubleRound, c.QualifiersPerGroup,
-        c.Entries.Count, c.CreatedAtUtc, c.Rounds, c.NextCompetitionId, c.SetsPerMatch);
+        c.Entries.Count, c.CreatedAtUtc, c.Rounds, c.NextCompetitionId, c.SetsPerMatch, c.ManualRounds);
 
     public static MatchDto ToDto(this Match m) => new(
         m.Id, m.Phase, m.GroupId, m.Group?.Name, m.Round, m.Order,
@@ -26,7 +27,10 @@ internal static class Mapper
 
     public static CompetitionDetailDto ToDetailDto(this Competition c) => new(
         c.ToSummary(),
-        c.Groups.OrderBy(g => g.Id).Select(g => new GroupDto(g.Id, g.Name)).ToList(),
+        c.Groups.OrderBy(g => g.Id).Select(g => new GroupDto(g.Id, g.Name,
+            c.Type == CompetitionType.RotatingLeague
+                ? c.GroupPlayers(g).OrderBy(p => p.Name).Select(p => new PlayerRefDto(p.Id, p.Name)).ToList()
+                : null)).ToList(),
         c.Entries.OrderBy(e => e.Id).Select(e => e.ToDto()).ToList(),
         c.Matches.OrderBy(m => m.Phase).ThenBy(m => m.GroupId).ThenBy(m => m.Round).ThenBy(m => m.Order)
             .Select(m => m.ToDto()).ToList());

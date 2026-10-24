@@ -26,6 +26,8 @@ public sealed partial class Competition
     public int QualifiersPerGroup { get; private set; }
     public int Rounds { get; private set; }
     public int SetsPerMatch { get; private set; } = 1;
+    /// <summary>Liga rotatoria cuyas jornadas se crean a mano: al sortear no se genera ningún partido.</summary>
+    public bool ManualRounds { get; private set; }
     public int? NextCompetitionId { get; private set; }
     public DateTime CreatedAtUtc { get; private set; }
 
@@ -102,6 +104,7 @@ public sealed partial class Competition
             QualifiersPerGroup = 0,
             Rounds = s.Rounds, // 0 = todos con todos (automático, según el tamaño de cada grupo)
             SetsPerMatch = s.SetsPerMatch,
+            ManualRounds = s.ManualRounds,
             CreatedAtUtc = DateTime.UtcNow
         };
     }
@@ -157,7 +160,8 @@ public sealed partial class Competition
         if (Status == CompetitionStatus.Draft) return;
         if (Type != CompetitionType.Tournament)
         {
-            Status = _matches.All(m => m.IsPlayed) ? CompetitionStatus.Finished : CompetitionStatus.GroupStage;
+            // Sin ningún partido (liga con jornadas manuales recién formada) no hay nada que terminar.
+            Status = _matches.Count > 0 && _matches.All(m => m.IsPlayed) ? CompetitionStatus.Finished : CompetitionStatus.GroupStage;
             return;
         }
         if (!HasPlayoffs) { Status = CompetitionStatus.GroupStage; return; }

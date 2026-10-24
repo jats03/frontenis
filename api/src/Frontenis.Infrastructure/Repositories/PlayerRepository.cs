@@ -39,6 +39,7 @@ public sealed class PlayerRepository : IPlayerRepository
 
     public async Task<bool> IsInUseAsync(int playerId, CancellationToken ct = default) =>
         await _db.Pairs.AnyAsync(p => p.Player1Id == playerId || p.Player2Id == playerId, ct)
+        || await _db.Set<GroupMember>().AnyAsync(m => m.PlayerId == playerId, ct)
         || await _db.TrainingMatches.AnyAsync(m =>
             m.Home1Id == playerId || m.Home2Id == playerId || m.Away1Id == playerId || m.Away2Id == playerId, ct);
 }

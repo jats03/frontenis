@@ -13,13 +13,14 @@ public sealed record CreateCompetitionRequest(
     bool DoubleRound,
     int QualifiersPerGroup,
     int Rounds = 0,
-    int SetsPerMatch = 1);
+    int SetsPerMatch = 1,
+    bool ManualRounds = false);
 
 public sealed record CompetitionSummaryDto(
     int Id, string Name, CompetitionType Type, CompetitionStatus Status,
     int PairCount, int GroupCount, int PairsPerGroup, int PointsPerWin, int PointsPerLoss,
     bool DoubleRound, int QualifiersPerGroup, int RegisteredPairs, DateTime CreatedAtUtc,
-    int Rounds = 0, int? NextCompetitionId = null, int SetsPerMatch = 1);
+    int Rounds = 0, int? NextCompetitionId = null, int SetsPerMatch = 1, bool ManualRounds = false);
 
 public sealed record RenameCompetitionRequest(string Name);
 
@@ -27,7 +28,8 @@ public sealed record SetsPerMatchRequest(int SetsPerMatch);
 
 public sealed record SetScoreDto(int Home, int Away);
 
-public sealed record GroupDto(int Id, string Name);
+/// <param name="Players">Jugadores del grupo (liga rotatoria), por orden alfabético.</param>
+public sealed record GroupDto(int Id, string Name, IReadOnlyList<PlayerRefDto>? Players = null);
 
 public sealed record MatchDto(
     int Id, MatchPhase Phase, int? GroupId, string? GroupName, int Round, int Order,

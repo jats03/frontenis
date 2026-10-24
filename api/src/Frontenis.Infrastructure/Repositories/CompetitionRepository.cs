@@ -61,7 +61,7 @@ public sealed class CompetitionRepository : ICompetitionRepository
     }
 
     private IQueryable<Competition> Detailed() => _db.Competitions
-        .Include(c => c.Groups)
+        .Include(c => c.Groups).ThenInclude(g => g.Members).ThenInclude(m => m.Player)
         .Include(c => c.Entries).ThenInclude(e => e.Pair).ThenInclude(p => p.Player1)
         .Include(c => c.Entries).ThenInclude(e => e.Pair).ThenInclude(p => p.Player2)
         .Include(c => c.Matches)

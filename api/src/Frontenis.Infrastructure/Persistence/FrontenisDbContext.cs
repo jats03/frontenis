@@ -73,6 +73,16 @@ public sealed class FrontenisDbContext : DbContext, IUnitOfWork
             e.ToTable("Groups");
             e.HasKey(x => x.Id);
             e.Property(x => x.Name).HasMaxLength(50).IsRequired();
+            e.HasMany(x => x.Members).WithOne().HasForeignKey(x => x.GroupId).OnDelete(DeleteBehavior.Cascade);
+            e.Navigation(x => x.Members).UsePropertyAccessMode(PropertyAccessMode.Field);
+        });
+
+        b.Entity<GroupMember>(e =>
+        {
+            e.ToTable("GroupMembers");
+            e.HasKey(x => x.Id);
+            e.HasIndex(x => new { x.GroupId, x.PlayerId }).IsUnique();
+            e.HasOne(x => x.Player).WithMany().HasForeignKey(x => x.PlayerId).OnDelete(DeleteBehavior.Restrict);
         });
 
         b.Entity<CompetitionEntry>(e =>

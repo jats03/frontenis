@@ -24,7 +24,7 @@ public sealed class CompetitionCommands : ICompetitionCommands
     {
         var competition = Competition.Create(new CompetitionSettings(
             r.Name, r.Type, r.PairCount, r.GroupCount, r.PairsPerGroup,
-            r.PointsPerWin, r.PointsPerLoss, r.DoubleRound, r.QualifiersPerGroup, r.Rounds, r.SetsPerMatch));
+            r.PointsPerWin, r.PointsPerLoss, r.DoubleRound, r.QualifiersPerGroup, r.Rounds, r.SetsPerMatch, r.ManualRounds));
         await _repository.AddAsync(competition, ct);
         await _uow.SaveChangesAsync(ct);
         return competition.ToSummary();

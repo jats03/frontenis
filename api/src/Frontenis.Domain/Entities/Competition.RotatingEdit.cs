@@ -18,9 +18,17 @@ public sealed partial class Competition
     public IReadOnlyList<Pair> AddPlayerToLastGroup(Player player, IRotationPlanner planner)
     {
         EnsureRotatingInProgress();
-        if (_entries.Any(e => e.Pair.Contains(player.Id))) throw new DomainException("Ese jugador ya participa en la liga.");
+        if (_entries.Any(e => e.Pair.Contains(player.Id)) || _groups.Any(g => g.Members.Any(m => m.PlayerId == player.Id)))
+            throw new DomainException("Ese jugador ya participa en la liga.");
 
         var group = _groups.OrderBy(g => g.Id).Last();
+        if (ManualRounds)
+        {
+            // Jornadas a mano: basta con asignarlo al grupo; sus partidos los crea el administrador.
+            group.AddMember(player);
+            PairCount++;
+            return Array.Empty<Pair>();
+        }
         if (GroupMatches(group).Any(m => m.IsPlayed))
             throw new DomainException("Solo se puede añadir un jugador si en el último grupo no se ha jugado ningún partido.");
 
