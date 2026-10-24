@@ -28,7 +28,7 @@ export default function AppNav() {
     <>
     <header className="topbar">
       <NavLink to="/" className="brand" aria-label="Club Frontenis Ciudad de Jaén, inicio">
-        <img src="/logo.png" alt="" className="logo" />
+        <img src="/logo-128.png" alt="" className="logo" width={44} height={44} fetchPriority="high" decoding="async" />
       </NavLink>
       {fullName && (
         <span className="greeting" title={`Eres ${me!.owner.name}`}>
