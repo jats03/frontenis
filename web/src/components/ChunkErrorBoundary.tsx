@@ -3,7 +3,7 @@ import { Component, type ErrorInfo, type ReactNode } from 'react'
 interface Props { children: ReactNode; resetKey: string }
 interface State { failed: boolean; key: string }
 
-/** Si no se puede descargar el código de una pantalla (p. ej. sin cobertura), avisa y deja reintentar. */
+/** Si no se puede descargar el código de una pantalla (p. ej. sin cobertura), avisa y deja reintentar (recargando la página). */
 export default class ChunkErrorBoundary extends Component<Props, State> {
   state: State = { failed: false, key: this.props.resetKey }
 
@@ -23,7 +23,8 @@ export default class ChunkErrorBoundary extends Component<Props, State> {
     return (
       <div role="alert">
         <p className="error">No se pudo cargar esta pantalla. Revisa la conexión e inténtalo de nuevo.</p>
-        <button type="button" onClick={() => this.setState({ failed: false })}>Reintentar</button>
+        {/* React.lazy recuerda el fallo de una descarga: volver a pintar no la repite. Recargar sí, y trae la versión actual. */}
+        <button type="button" onClick={() => window.location.reload()}>Reintentar</button>
       </div>
     )
   }
