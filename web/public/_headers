@@ -5,3 +5,11 @@
   Referrer-Policy: no-referrer
   Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()
   Strict-Transport-Security: max-age=31536000; includeSubDomains
+
+# Archivos con hash en el nombre: no cambian nunca, el navegador no necesita volver a preguntar.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Logo: casi nunca cambia; un día de caché evita preguntar a Cloudflare en cada visita.
+/logo.png
+  Cache-Control: public, max-age=86400
