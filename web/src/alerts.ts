@@ -24,12 +24,12 @@ export function notify(title: string, icon: 'success' | 'info' = 'success') {
 
 /** Pide un texto (p. ej. un nuevo nombre). Devuelve null si se cancela. */
 export async function promptText(
-  title: string, value: string, label: string, validate?: (value: string) => string | null,
+  title: string, value: string, label: string, validate?: (value: string) => string | null, maxLength = 150,
 ): Promise<string | null> {
   const r = await Swal.fire({
     title, input: 'text', inputValue: value, inputLabel: label, showCancelButton: true,
     confirmButtonText: 'Guardar', cancelButtonText: 'Cancelar', confirmButtonColor: '#0f766e',
-    inputAttributes: { maxlength: '150' },
+    inputAttributes: { maxlength: String(maxLength) },
     inputValidator: v => (v.trim() ? (validate?.(v) ?? null) : 'El nombre es obligatorio.'),
   })
   return r.isConfirmed ? String(r.value).trim() : null

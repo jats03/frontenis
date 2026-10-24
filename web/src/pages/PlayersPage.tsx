@@ -11,7 +11,7 @@ import { useAuth } from '../auth/AuthContext'
 import { useAsync, useDocumentTitle } from '../hooks'
 import LoadingBlock from '../components/LoadingBlock'
 import PlayerName from '../components/PlayerName'
-import { nameProblem } from '../playerNames'
+import { MAX_NAME_LENGTH, nameProblem } from '../playerNames'
 
 export default function PlayersPage() {
   useDocumentTitle('Jugadores')
@@ -89,7 +89,7 @@ export default function PlayersPage() {
   /** Cambia el nombre de un jugador (administrador). El aviso al momento y la comprobación definitiva usan las mismas reglas. */
   async function renamePlayer(p: Player) {
     const others = (players ?? []).filter(x => x.id !== p.id)
-    const name = await promptText('Cambiar nombre', p.name, 'Nombre del jugador', v => nameProblem(v, others, p.id))
+    const name = await promptText('Cambiar nombre', p.name, 'Nombre del jugador', v => nameProblem(v, others, p.id), MAX_NAME_LENGTH)
     if (name === null || name === p.name) return
     await guard(async () => {
       const saved = await api.players.update(p.id, name, p.position, p.groupNumber ?? null)
@@ -138,7 +138,7 @@ export default function PlayersPage() {
             <details className="card add-player">
               <summary>+ Añadir jugador</summary>
               <form className="form row" onSubmit={add}>
-                <input placeholder="Nombre" aria-label="Nombre" value={name} onChange={e => setName(e.target.value)} required />
+                <input placeholder="Nombre" aria-label="Nombre" maxLength={MAX_NAME_LENGTH} value={name} onChange={e => setName(e.target.value)} required />
                 <select aria-label="Posición" value={position} onChange={e => setPosition(e.target.value as Position)}>
                   <option value="Delantero">Delantero</option>
                   <option value="Zaguero">Zaguero</option>

@@ -362,7 +362,7 @@ li.card.inactive { opacity: .65; }
 .topbar .greeting { display: flex; align-items: center; gap: .6rem; margin-left: auto; max-width: 70%; color: #fff; min-width: 0; }
 .greeting-text { display: grid; line-height: 1.15; text-align: right; min-width: 0; }
 .greeting-hello { font-size: .78rem; opacity: .9; }
-.greeting-name { font-size: 1rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.greeting-name { font-size: 1rem; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow-wrap: anywhere; }
 .greeting-hello { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .greeting-avatar { flex: none; border-radius: 50%; box-shadow: 0 0 0 2px #fff; }
 .greeting-comma { display: none; }

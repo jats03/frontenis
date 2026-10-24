@@ -23,18 +23,18 @@ export default function AppNav() {
   const identified = isAdmin || me !== null // sin identificar solo se ve «Inicio»
   const [showCard, setShowCard] = useState(false)
   useEffect(() => startPresence(), []) // marca la app como «vista» para el cronómetro (regla de los 15 minutos)
-  const firstName = me?.owner.name.trim().split(/\s+/)[0]
+  const fullName = me?.owner.name.trim().replace(/\s+/g, ' ')
   return (
     <>
     <header className="topbar">
       <NavLink to="/" className="brand" aria-label="Club Frontenis Ciudad de Jaén, inicio">
         <img src="/logo.png" alt="" className="logo" />
       </NavLink>
-      {firstName && (
+      {fullName && (
         <span className="greeting" title={`Eres ${me!.owner.name}`}>
           <span className="greeting-text">
             <span className="greeting-hello">{greetingFor(new Date())}<span className="greeting-comma">,</span></span>
-            <strong className="greeting-name">{firstName}</strong>
+            <strong className="greeting-name">{fullName}</strong>
           </span>
           <button type="button" className="greeting-avatar-btn" aria-label="Ver mi carta de jugador" onClick={() => { askMotionPermission(); setShowCard(true) }}>
             <PlayerAvatar playerId={me!.owner.id} size={40} className="greeting-avatar" />

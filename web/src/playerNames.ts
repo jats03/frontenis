@@ -12,6 +12,7 @@ export const normalizeName = (name: string) =>
 export const nameKey = (name: string) =>
   normalizeName(name).normalize('NFKD').replace(/\p{Mn}/gu, '').toLowerCase().replace(/ß/g, 'ss').replace(/[^\p{L}\p{N}]/gu, '')
 
+export const MAX_NAME_LENGTH = 40
 export const RESERVE_NAME = 'Jugador reserva'
 
 /**
@@ -21,7 +22,7 @@ export const RESERVE_NAME = 'Jugador reserva'
 export function nameProblem(name: string, others: { id: number; name: string }[], selfId?: number): string | null {
   const clean = normalizeName(name)
   if (!clean) return 'El nombre es obligatorio.'
-  if (clean.length > 100) return 'El nombre no puede pasar de 100 caracteres.'
+  if (clean.length > MAX_NAME_LENGTH) return `El nombre no puede pasar de ${MAX_NAME_LENGTH} caracteres.`
   const key = nameKey(clean)
   if (!key) return 'El nombre debe contener letras o números.'
   if (key === nameKey(RESERVE_NAME)) return `El nombre «${RESERVE_NAME}» está reservado.`
