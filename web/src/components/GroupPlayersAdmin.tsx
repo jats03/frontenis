@@ -35,7 +35,21 @@ export default function GroupPlayersAdmin({ detail, group, onChanged, onError }:
     }
   }
 
+  const canRemoveGroup = detail.groups.length > 1 && played.size === 0
+
+  async function removeGroup() {
+    if (!(await confirmDelete(`¿Eliminar ${group.name}?`, 'Se borrarán sus jugadores y todos sus partidos. Los jugadores no se borran de la app.'))) return
+    try {
+      await api.competitions.removeGroup(detail.summary.id, group.id)
+      notify(`${group.name} eliminado`)
+      await onChanged()
+    } catch (e) {
+      onError(e instanceof Error ? e.message : 'Error')
+    }
+  }
+
   return (
+    <>
     <Disclosure summary={`Jugadores del grupo (${players.length})`} defaultOpen={false}>
       <ul className="plain">
         {players.map(p => (
@@ -49,5 +63,7 @@ export default function GroupPlayersAdmin({ detail, group, onChanged, onError }:
       </ul>
       {!canRemove && <p className="muted">Cada grupo necesita al menos 4 jugadores.</p>}
     </Disclosure>
+    {canRemoveGroup && <button type="button" className="danger small" onClick={() => void removeGroup()}>Eliminar grupo</button>}
+    </>
   )
 }

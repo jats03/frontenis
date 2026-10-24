@@ -34,6 +34,30 @@ public sealed partial class Competition
     }
 
     /// <summary>
+    /// Elimina un grupo entero con sus jugadores y partidos, siempre que en él no se haya jugado ningún partido. La liga
+    /// conserva al menos un grupo. Devuelve las parejas que han quedado sin partido, para que quien persiste las elimine.
+    /// </summary>
+    /// <exception cref="DomainException">Liga sin sortear o terminada, grupo con partidos jugados o único grupo de la liga.</exception>
+    public IReadOnlyList<Pair> RemoveGroup(int groupId)
+    {
+        EnsureRotatingInProgress();
+        var group = _groups.FirstOrDefault(g => g.Id == groupId) ?? throw new NotFoundException("Grupo no encontrado.");
+        if (_groups.Count <= 1) throw new DomainException("La liga tiene que conservar al menos un grupo.");
+        if (GroupMatches(group).Any(m => m.IsPlayed))
+            throw new DomainException("No se puede eliminar un grupo en el que ya se ha jugado algún partido.");
+
+        var players = GroupPlayers(group).Count;
+        var removed = RemoveGroupMatches(group, _ => true);
+        foreach (var e in _entries.Where(e => e.Group == group || (e.GroupId.HasValue && e.GroupId == group.Id)).ToList())
+            _entries.Remove(e);
+        _groups.Remove(group);
+        GroupCount--;
+        PairCount -= players;
+        RefreshStatus();
+        return removed;
+    }
+
+    /// <summary>
     /// Saca a un jugador de un grupo siempre que no haya jugado ningún partido: se borran automáticamente todos sus partidos (pendientes) (con sus
     /// jornadas vacías, que se renumeran) y el resto del grupo sigue igual. El grupo conserva al menos 4 jugadores.
     /// Devuelve las parejas que han quedado sin partido, para que quien persiste las elimine.

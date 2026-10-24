@@ -119,6 +119,36 @@ public class ManualRoundsTests
     }
 
     [Fact]
+    public void A_group_without_played_matches_can_be_removed_with_everything_in_it()
+    {
+        var c = Competition.Create(new CompetitionSettings("Liga", CompetitionType.RotatingLeague, 0, 2, 4, 2, 0, false, 0));
+        c.DrawRotating(Players(8), Rnd(), Planner());
+        var gid = 1; foreach (var gr in c.Groups) gr.WithId(gid++);
+        var mid = 1; foreach (var m in c.Matches) m.WithId(mid++);
+        var first = c.Matches.First(m => m.Group == c.Groups.First());
+        c.RecordResult(first.Id, 10, 5);
+
+        Assert.Throws<DomainException>(() => c.RemoveGroup(1));          // tiene un partido jugado
+        var removed = c.RemoveGroup(2);
+        Assert.NotEmpty(removed);
+        Assert.Single(c.Groups);
+        Assert.Equal(1, c.GroupCount);
+        Assert.Equal(4, c.PairCount);
+        Assert.All(c.Matches, m => Assert.Equal(1, m.Group!.Id));
+        Assert.Throws<DomainException>(() => c.RemoveGroup(1));          // es el único
+        Assert.Throws<NotFoundException>(() => c.RemoveGroup(99));
+    }
+
+    [Fact]
+    public void A_manual_group_without_matches_can_be_removed()
+    {
+        var c = Manual();
+        var removed = c.RemoveGroup(c.Groups.Last().Id);
+        Assert.Empty(removed);
+        Assert.Single(c.Groups);
+    }
+
+    [Fact]
     public void Reserve_player_fills_a_slot_but_is_not_a_group_player_and_does_not_score()
     {
         var c = Manual(1);

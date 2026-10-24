@@ -17,6 +17,11 @@ public sealed class RotatingLeagueController : ControllerBase
     public async Task<ActionResult<CompetitionDetailDto>> AddPlayer(int id, AddRotatingPlayerRequest request, CancellationToken ct) =>
         Ok(await _commands.AddPlayerAsync(id, request, ct));
 
+    /// <summary>Elimina un grupo entero (con sus jugadores y partidos) si no se ha jugado ningún partido en él.</summary>
+    [HttpDelete("api/competitions/{id:int}/groups/{groupId:int}")]
+    public async Task<ActionResult<CompetitionDetailDto>> RemoveGroup(int id, int groupId, CancellationToken ct) =>
+        Ok(await _commands.RemoveGroupAsync(id, groupId, ct));
+
     /// <summary>Saca a un jugador de un grupo si no ha jugado ningún partido.</summary>
     [HttpDelete("api/competitions/{id:int}/groups/{groupId:int}/players/{playerId:int}")]
     public async Task<ActionResult<CompetitionDetailDto>> RemovePlayer(int id, int groupId, int playerId, CancellationToken ct) =>

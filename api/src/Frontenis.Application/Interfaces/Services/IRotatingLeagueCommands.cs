@@ -8,6 +8,10 @@ public interface IRotatingLeagueCommands
     /// <summary>Añade un jugador al último grupo y recalcula los partidos pendientes de ese grupo; los jugados se conservan.</summary>
     /// <exception cref="Frontenis.Domain.Exceptions.DomainException">Liga sin sortear o terminada, o jugador que ya participa.</exception>
     Task<CompetitionDetailDto> AddPlayerAsync(int competitionId, AddRotatingPlayerRequest request, CancellationToken ct = default);
+    /// <summary>Elimina un grupo entero (jugadores y partidos) si no se ha jugado ningún partido en él.</summary>
+    /// <exception cref="Frontenis.Domain.Exceptions.DomainException">El grupo tiene partidos jugados o es el único de la liga.</exception>
+    Task<CompetitionDetailDto> RemoveGroupAsync(int competitionId, int groupId, CancellationToken ct = default);
+
     /// <summary>Saca a un jugador de un grupo si no ha jugado ningún partido; se borran sus partidos pendientes.</summary>
     /// <exception cref="Frontenis.Domain.Exceptions.DomainException">El jugador ya ha jugado, no es del grupo o el grupo se quedaría con menos de 4.</exception>
     Task<CompetitionDetailDto> RemovePlayerAsync(int competitionId, int groupId, int playerId, CancellationToken ct = default);
