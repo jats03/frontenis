@@ -42,9 +42,13 @@ public sealed class CompetitionQueries : ICompetitionQueries
     {
         var tables = competition.RotatingStandings(_individual);
         var movement = new Dictionary<int, int>();
-        if (competition.Status == CompetitionStatus.Finished)
-            foreach (var move in PromotionRules.Compute(tables.Select(t => t.Rows).ToList()))
-                movement[move.PlayerId] = move.IsPromotion ? 1 : -1;
+        // También durante la liga: sube/baja quien lo haría ahora mismo. Un grupo sin partidos jugados no marca a nadie.
+        var started = tables.Where(t => t.Rows.Any(r => r.Played > 0)).Select(t => t.GroupId).ToHashSet();
+        foreach (var move in PromotionRules.Compute(tables.Select(t => t.Rows).ToList()))
+        {
+            var table = tables[move.FromGroupIndex];
+            if (started.Contains(table.GroupId)) movement[move.PlayerId] = move.IsPromotion ? 1 : -1;
+        }
 
         return tables.Select(table =>
         {
