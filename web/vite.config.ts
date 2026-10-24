@@ -23,8 +23,6 @@ export default defineConfig({
       workbox: {
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/api/],
-        // El logo de la cabecera se guarda en la precaché para que salga sin red desde la segunda visita.
-        globPatterns: ['**/*.{js,css,html,svg,webmanifest}', 'logo-128.png'],
       },
     }),
   ],
