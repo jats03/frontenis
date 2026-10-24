@@ -131,9 +131,13 @@ public class ReadCacheTests
     {
         var cache = new Frontenis.Application.Caching.ReadCache();
         var calls = 0;
-        async Task<int> Slow() { Interlocked.Increment(ref calls); await Task.Delay(50); return 7; }
-        var all = await Task.WhenAll(Enumerable.Range(0, 10).Select(_ => cache.GetOrAddAsync("k", Slow)));
-        Assert.Equal(1, calls);
+        var gate = new TaskCompletionSource();
+        async Task<int> Slow() { Interlocked.Increment(ref calls); await gate.Task; return 7; }
+        // Las diez peticiones se lanzan mientras el cálculo sigue bloqueado: no depende de la velocidad de la máquina.
+        var pending = Enumerable.Range(0, 10).Select(_ => cache.GetOrAddAsync("k", Slow)).ToList();
+        gate.SetResult();
+        var all = await Task.WhenAll(pending);
+        Assert.True(calls == 1, $"El valor se calculó {calls} veces; se esperaba 1.");
         Assert.True(all.All(v => v == 7));
     }
 
