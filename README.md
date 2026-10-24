@@ -27,6 +27,16 @@ por defecto `admin` / `Cambia-Esta-Clave-2026!`). **Cámbialos y cambia `Jwt:Key
 la API se niega a arrancar con la clave JWT de ejemplo, y la contraseña inicial debe tener al menos 12 caracteres.
 Cualquier visitante puede consultar; solo el administrador crea o modifica datos (salvo reservas y registrar partidos de entrenamiento, que también pueden hacer los jugadores con el dispositivo vinculado).
 
+### Tests
+
+```bash
+cd api && dotnet test --collect:"XPlat Code Coverage"   # xUnit; informe Cobertura en TestResults/
+cd web && npm test                                       # Vitest; resumen de cobertura por consola y en web/coverage/
+```
+
+- Los tests de repositorios (`CompetitionRepository`, `MatchHistoryRepository`, `PlayerRepository`) usan **SQLite en memoria** con el modelo real de EF Core (`SqliteDb`). Limitaciones: no es PostgreSQL (colación, tipos `timestamptz`/`date`), así que `SchemaScripts`, `SchemaUpdater` y los reintentos de conexión no están cubiertos. Si un test falla, el mensaje incluye el SQL generado.
+- Los tests del frontend cubren las utilidades puras `cardStats.ts`, `dates.ts`, `auditView.ts` y `avatar.ts` (la zona horaria se fija en `Europe/Madrid`).
+
 ### Seguridad de la autenticación
 
 - Contraseñas con PBKDF2-SHA256 (600.000 iteraciones, sal aleatoria); los hashes antiguos se actualizan solos al iniciar sesión.
