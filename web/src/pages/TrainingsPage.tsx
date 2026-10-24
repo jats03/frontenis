@@ -8,6 +8,8 @@ import PageHeader from '../components/PageHeader'
 import ReservasButton from '../components/ReservasButton'
 import { formatDate, todayIso, trainingTitle } from '../dates'
 import { useAsync, useDocumentTitle } from '../hooks'
+import SubTabs from '../components/SubTabs'
+import { defaultMonth, monthKey, monthName, monthsOf, seasonLabel, seasonsOf, seasonStart } from '../trainingPeriods'
 import LoadingBlock from '../components/LoadingBlock'
 
 export default function TrainingsPage() {
@@ -21,6 +23,17 @@ export default function TrainingsPage() {
   const [win, setWin] = useState(3)
   const [loss, setLoss] = useState(0)
   const [formError, setFormError] = useState<string | null>(null)
+  const [seasonSel, setSeasonSel] = useState<number | null>(null)
+  const [monthSel, setMonthSel] = useState<string | null>(null)
+
+  // Temporada y mes: por defecto la actual y el mes en curso; las anteriores solo salen cuando existen.
+  const today = todayIso()
+  const dates = (data ?? []).map(t => t.date.slice(0, 10))
+  const seasons = seasonsOf(dates, today)
+  const season = seasonSel !== null && seasons.includes(seasonSel) ? seasonSel : seasonStart(today)
+  const months = monthsOf(dates, season)
+  const month = monthSel !== null && months.includes(monthSel) ? monthSel : defaultMonth(months, today)
+  const shown = (data ?? []).filter(t => monthKey(t.date.slice(0, 10)) === month)
 
   async function create(e: FormEvent) {
     e.preventDefault()
@@ -57,6 +70,16 @@ export default function TrainingsPage() {
         </form>
       )}
 
+      {seasons.length > 1 && (
+        <SubTabs label="Temporada" value={String(season)} onChange={k => { setSeasonSel(Number(k)); setMonthSel(null) }}
+          options={seasons.map(s => ({ key: String(s), label: `Temporada ${seasonLabel(s)}` }))} />
+      )}
+      {months.length > 0 && (
+        <SubTabs label="Mes" value={month ?? ''} onChange={setMonthSel}
+          options={months.map(m => ({ key: m, label: monthName(m) }))} />
+      )}
+      {data && data.length > 0 && months.length === 0 && <p className="muted">No hay entrenamientos en esta temporada.</p>}
+
       {loading && !data && <LoadingBlock />}
       {error && !data && <p className="error">{error}</p>}
       {data?.length === 0 && (
@@ -66,7 +89,7 @@ export default function TrainingsPage() {
         </EmptyState>
       )}
       <div className="grid">
-        {data?.map(t => (
+        {shown.map(t => (
           <Link key={t.id} to={`/entrenamientos/${t.id}`} className="card link-card">
             <strong>{t.name}</strong>
             <p className="muted">{formatDate(t.date)} · {t.matchCount} partido(s)</p>
