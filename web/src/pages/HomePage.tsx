@@ -7,7 +7,7 @@ import LoadingBlock from '../components/LoadingBlock'
 import PageHeader from '../components/PageHeader'
 import ReservasButton from '../components/ReservasButton'
 import { useAsync, useDocumentTitle } from '../hooks'
-import { statusLabel, typeLabel } from '../labels'
+import { statusText, typeLabel } from '../labels'
 import { formatDate } from '../dates'
 import { useDevice } from '../useDevice'
 
@@ -79,7 +79,7 @@ function HomeContent() {
               <Link key={c.id} to={`/competiciones/${c.id}`} className="card link-card">
                 <div className="row between">
                   <strong>{c.name}</strong>
-                  <span className={`badge ${c.status}`}>{statusLabel[c.status]}</span>
+                  <span className={`badge ${c.status}`}>{statusText(c.status, c.type)}</span>
                 </div>
                 <span className="muted">{typeLabel[c.type]} · {c.groupCount} grupo(s)</span>
               </Link>

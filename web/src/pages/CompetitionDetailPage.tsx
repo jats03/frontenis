@@ -21,7 +21,7 @@ import GroupPlayersAdmin from '../components/GroupPlayersAdmin'
 import RemoveMatchButton from '../components/RemoveMatchButton'
 import SubTabs from '../components/SubTabs'
 import StandingsTable from '../components/StandingsTable'
-import { statusLabel, typeLabel } from '../labels'
+import { statusText, typeLabel } from '../labels'
 import { holdLoader, useDocumentTitle } from '../hooks'
 import { exportMatchesImage, exportStandingsImage } from '../imageExport'
 import { exportMatchesPdf, exportStandingsPdf } from '../pdf'
@@ -147,7 +147,7 @@ function CompetitionDetailView({ id }: { id: number }) {
   return (
     <>
       <PageHeader title={summary.name}
-        badge={<span className={`badge ${summary.status}`}>{statusLabel[summary.status]}</span>}
+        badge={<span className={`badge ${summary.status}`}>{statusText(summary.status, summary.type)}</span>}
         subtitle={<>
           {typeLabel[summary.type]} · {summary.pointsPerWin} pts por victoria
           {summary.pointsPerLoss > 0 && ` · ${summary.pointsPerLoss} por derrota`}

@@ -6,6 +6,10 @@ export const statusLabel: Record<CompetitionStatus, string> = {
   Playoffs: 'Fase final',
   Finished: 'Finalizada',
 }
+/** Texto del estado; en la liga rotatoria no hay «fase de grupos»: se dice «En curso». */
+export const statusText = (status: CompetitionStatus, type: CompetitionType) =>
+  type === 'RotatingLeague' && status === 'GroupStage' ? 'En curso' : statusLabel[status]
+
 export const typeLabel: Record<CompetitionType, string> = {
   League: 'Liga', Tournament: 'Torneo', RotatingLeague: 'Liga rotatoria',
 }

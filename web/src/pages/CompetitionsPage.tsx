@@ -5,7 +5,7 @@ import { useAuth } from '../auth/AuthContext'
 import EmptyState from '../components/EmptyState'
 import PageHeader from '../components/PageHeader'
 import { useAsync, useDocumentTitle } from '../hooks'
-import { statusLabel, typeLabel } from '../labels'
+import { statusText, typeLabel } from '../labels'
 import LoadingBlock from '../components/LoadingBlock'
 
 function Card({ c }: { c: CompetitionSummary }) {
@@ -13,7 +13,7 @@ function Card({ c }: { c: CompetitionSummary }) {
     <Link to={`/competiciones/${c.id}`} className="card link-card">
       <div className="row between">
         <strong>{c.name}</strong>
-        <span className={`badge ${c.status}`}>{statusLabel[c.status]}</span>
+        <span className={`badge ${c.status}`}>{statusText(c.status, c.type)}</span>
       </div>
       <p className="muted">
         {typeLabel[c.type]} · {c.type === 'RotatingLeague' ? c.status === 'Draft' ? `mín. ${c.pairCount} jugadores` : `${c.pairCount} jugadores` : `${c.registeredPairs}/${c.pairCount} parejas`} · {c.groupCount} grupo(s)
