@@ -1,0 +1,4 @@
+ANTES (produccion, https://frontenis.ciudad-jaen.workers.dev/): pantalla en blanco.
+Consola: Uncaught Error: Minified React error #527 (args 19.3.1, 19.3.0) = react 19.3.1 y react-dom 19.3.0 no coinciden.
+Causa: se fusiono la PR #15 de Dependabot (react 19.3.0 -> 19.3.1) sin actualizar react-dom.
+DESPUES: react y react-dom 19.3.1, la app carga (captura).
