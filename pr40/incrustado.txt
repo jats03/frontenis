@@ -1,0 +1,2 @@
+Logo incrustado (data URI) en el JavaScript: con el servidor retrasando 6 s cualquier logo*.png, la cabecera muestra el logo al instante y no hay ninguna peticion de logo (performance.getEntriesByType(resource) vacio para /logo/).
+Coste: el JS de entrada pasa de 510,65 kB a 521,56 kB (+10,9 kB; gzip 160,64 kB).
