@@ -1,0 +1,22 @@
+wrangler dev (servidor local de Cloudflare con los _headers del build)
+--- GET /assets/index-CuDysjvl.js
+HTTP/1.1 200 OK
+Content-Type: text/javascript; charset=utf-8
+Cache-Control: public, max-age=31536000, immutable
+ETag: "888c3306838ae762dbea1b6a4a8785db"
+x-content-type-options: nosniff
+--- GET /logo.png
+HTTP/1.1 200 OK
+Content-Type: image/png
+Cache-Control: public, max-age=86400
+ETag: "d466a47227c0338e7a490dc73c643c44"
+x-content-type-options: nosniff
+--- GET /index.html
+HTTP/1.1 307 Temporary Redirect
+x-content-type-options: nosniff
+--- GET /
+HTTP/1.1 200 OK
+Content-Type: text/html; charset=utf-8
+Cache-Control: public, max-age=0, must-revalidate
+ETag: "439f0f0b4f52182bbcecc5d3ec997ca6"
+x-content-type-options: nosniff
