@@ -36,12 +36,13 @@ public sealed class TrainingPlanner : ITrainingPlanner
         });
     }
 
-    public IReadOnlyList<TrainingSuggestion> Suggest(IReadOnlyList<int> present, IReadOnlyList<TrainingGame> games, int count)
+    public IReadOnlyList<TrainingSuggestion> Suggest(IReadOnlyList<int> present, IReadOnlyList<TrainingGame> games, int count,
+        IReadOnlyList<TrainingGame>? history = null)
     {
         var ids = present.Distinct().OrderBy(x => x).ToList();
         if (ids.Count < 4 || count < 1) return Array.Empty<TrainingSuggestion>();
 
-        var level = Levels(ids, games);
+        var level = Levels(ids, history ?? games);   // el nivel sale de todo el histórico; el resto, de la sesión
         var played = ids.ToDictionary(p => p, _ => 0);
         var partners = new Dictionary<(int, int), int>();
         var matchups = new Dictionary<string, int>();

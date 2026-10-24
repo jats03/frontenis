@@ -9,7 +9,7 @@ using Frontenis.Domain.Interfaces;
 
 namespace Frontenis.Application.Services;
 
-/// <summary>Sugiere partidos usando el nivel estimado de los jugadores presentes.</summary>
+/// <summary>Sugiere partidos usando el nivel de los jugadores presentes, estimado con su histórico en todos los entrenamientos.</summary>
 public sealed class TrainingSuggestionService : ITrainingSuggestionService
 {
     private const int MaxSuggestions = 10;
@@ -36,7 +36,9 @@ public sealed class TrainingSuggestionService : ITrainingSuggestionService
         if (present.Any(p => !names.ContainsKey(p))) throw new NotFoundException("Algún jugador no existe.");
 
         string Pair(int a, int b) => $"{names[a]} / {names[b]}";
-        return _planner.Suggest(present, session.ToGames(), Math.Clamp(r.Count, 1, MaxSuggestions))
+        // El nivel se estima con los partidos de todos los entrenamientos; el descanso y las repeticiones, con los de esta sesión.
+        var history = (await _trainings.ListAsync(ct)).SelectMany(s => s.ToGames()).ToList();
+        return _planner.Suggest(present, session.ToGames(), Math.Clamp(r.Count, 1, MaxSuggestions), history)
             .Select(s => new TrainingSuggestionDto(
                 new[] { s.Home1, s.Home2 }, new[] { s.Away1, s.Away2 }, Pair(s.Home1, s.Home2), Pair(s.Away1, s.Away2),
                 s.HomeLevel, s.AwayLevel, s.Balance, s.Reason))

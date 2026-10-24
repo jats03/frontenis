@@ -77,6 +77,19 @@ public class TrainingTests
     }
 
     [Fact]
+    public void Suggestions_use_the_history_of_all_sessions_to_estimate_levels()
+    {
+        var planner = new TrainingPlanner();
+        // Sesión actual vacía, pero en sesiones anteriores 1 y 2 ganan siempre: no deben ir juntos.
+        var history = new List<TrainingGame>();
+        for (var i = 0; i < 4; i++) { history.Add(G(1, 5, 3, 6, 15, 5)); history.Add(G(2, 6, 4, 5, 15, 6)); }
+        var best = planner.Suggest(new[] { 1, 2, 3, 4 }, new List<TrainingGame>(), 3, history)[0];
+        var sideOf1 = new[] { best.Home1, best.Home2 }.Contains(1) ? new[] { best.Home1, best.Home2 } : new[] { best.Away1, best.Away2 };
+        Assert.DoesNotContain(2, sideOf1);
+        Assert.True(best.HomeLevel != best.AwayLevel || best.Balance >= 80);
+    }
+
+    [Fact]
     public void Suggestions_favor_players_who_have_played_less()
     {
         var planner = new TrainingPlanner();
