@@ -14,9 +14,16 @@ async function loadLogo(): Promise<string | null> {
 
 const safeName = (name: string, fallback: string) => name.replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '_') || fallback
 
+/** Resultado en sets ganados («2-1»). */
 function resultText(m: MatchDto): string {
   if (!m.isPlayed) return '—'
-  if (m.sets && m.sets.length > 0) return m.sets.map(s => `${s.home}-${s.away}`).join('  ')
+  return `${m.homeSets ?? 1}-${m.awaySets ?? 0}`
+}
+
+/** Tantos de cada set («15-5 / 14-15 / 5-10»). */
+function setsText(m: MatchDto): string {
+  if (!m.isPlayed) return ''
+  if (m.sets && m.sets.length > 0) return m.sets.map(s => `${s.home}-${s.away}`).join(' / ')
   return `${m.homeScore}-${m.awayScore}`
 }
 
@@ -51,11 +58,12 @@ export async function exportMatchesPdf(competitionName: string, matches: MatchDt
       if (groups.length > 1) { doc.setFontSize(11); doc.text(g.name, 14, y + 2); y += 4 }
       autoTable(doc, {
         startY: y,
-        head: [['Pareja A', 'Resultado', 'Pareja B']],
-        body: list.map(m => [m.homeName ?? '', resultText(m), m.awayName ?? '']),
+        head: [['Pareja A', 'Resultado', 'Pareja B', 'Sets']],
+        body: list.map(m => [m.homeName ?? '', resultText(m), m.awayName ?? '', setsText(m)]),
         headStyles: { fillColor: [109, 40, 217] },
-        columnStyles: { 0: { halign: 'left' }, 2: { halign: 'left' } },
-        styles: { halign: 'center', fontSize: 10 },
+        columnStyles: { 1: { halign: 'center' } },
+        // Todo alineado a la izquierda salvo el resultado, que va centrado (también su cabecera).
+        styles: { halign: 'left', fontSize: 10 },
         margin: { left: 14, right: 14 },
       } as Parameters<typeof autoTable>[1])
       y = lastY() + 6
