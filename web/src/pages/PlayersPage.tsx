@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { confirmDelete, notify } from '../alerts'
+import { confirmDelete, notify, promptText } from '../alerts'
 import { api } from '../api/client'
 import type { PairingPreview, Player, Position } from '../api/types'
 import Disclosure from '../components/Disclosure'
@@ -11,6 +11,7 @@ import { useAuth } from '../auth/AuthContext'
 import { useAsync, useDocumentTitle } from '../hooks'
 import LoadingBlock from '../components/LoadingBlock'
 import PlayerName from '../components/PlayerName'
+import { nameProblem } from '../playerNames'
 
 export default function PlayersPage() {
   useDocumentTitle('Jugadores')
@@ -62,6 +63,8 @@ export default function PlayersPage() {
 
   const add = (e: FormEvent) => {
     e.preventDefault()
+    const problem = nameProblem(name, players ?? [])
+    if (problem) { setMessage(problem); return }
     void guard(async () => { await api.players.create(name, position, groupInput === '' ? null : Number(groupInput)); notify(`Jugador «${name.trim()}» creado`); setName(''); await reload() })
   }
 
@@ -79,6 +82,18 @@ export default function PlayersPage() {
     await guard(async () => {
       await Promise.all(targets.map(p => api.players.update(p.id, p.name, p.position, group)))
       notify(group === null ? `${targets.length} jugador(es) sin grupo` : `${targets.length} jugador(es) asignados al grupo ${group}`)
+      await reload()
+    })
+  }
+
+  /** Cambia el nombre de un jugador (administrador). El aviso al momento y la comprobación definitiva usan las mismas reglas. */
+  async function renamePlayer(p: Player) {
+    const others = (players ?? []).filter(x => x.id !== p.id)
+    const name = await promptText('Cambiar nombre', p.name, 'Nombre del jugador', v => nameProblem(v, others, p.id))
+    if (name === null || name === p.name) return
+    await guard(async () => {
+      const saved = await api.players.update(p.id, name, p.position, p.groupNumber ?? null)
+      notify(`Ahora se llama «${saved.name}»`)
       await reload()
     })
   }
@@ -152,6 +167,9 @@ export default function PlayersPage() {
                 <button className="secondary" disabled={assignGroup === ''}
                   onClick={() => void applyGroup(Number(assignGroup))}>Asignar grupo</button>
                 <button className="secondary" onClick={() => void applyGroup(null)}>Quitar grupo</button>
+                {selected.size === 1 && (
+                  <button className="secondary" onClick={() => { const p = view.find(x => selected.has(x.id)); if (p) void renamePlayer(p) }}>Cambiar nombre</button>
+                )}
                 <button className="secondary danger" onClick={() => void deleteSelected()}>Borrar</button>
               </div>
             </section>
