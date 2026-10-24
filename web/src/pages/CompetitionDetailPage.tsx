@@ -23,6 +23,7 @@ import SubTabs from '../components/SubTabs'
 import StandingsTable from '../components/StandingsTable'
 import { statusLabel, typeLabel } from '../labels'
 import { holdLoader, useDocumentTitle } from '../hooks'
+import { exportMatchesImage, exportStandingsImage } from '../imageExport'
 import { exportMatchesPdf, exportStandingsPdf } from '../pdf'
 import LoadingBlock from '../components/LoadingBlock'
 
@@ -158,6 +159,10 @@ function CompetitionDetailView({ id }: { id: number }) {
               onSelect: () => void exportStandingsPdf(summary.name, standings, isRotating) },
             { label: 'Exportar partidos a PDF', hidden: groupMatches.length === 0,
               onSelect: () => void exportMatchesPdf(summary.name, detail.matches, detail.groups) },
+            { label: 'Guardar clasificación como imagen', hidden: standings.length === 0,
+              onSelect: () => void exportStandingsImage(summary.name, standings, isRotating) },
+            { label: 'Guardar partidos como imagen', hidden: groupMatches.length === 0,
+              onSelect: () => void exportMatchesImage(summary.name, detail.matches, detail.groups) },
             { label: 'Editar nombre', hidden: !isAdmin, onSelect: () => void rename() },
             { label: `Pasar a ${summary.setsPerMatch === 2 ? '1 set' : '2 sets'} por partido`,
               hidden: !isAdmin || detail.matches.some(m => m.isPlayed), onSelect: () => void changeSets() },
@@ -288,8 +293,12 @@ function CompetitionDetailView({ id }: { id: number }) {
                       <section className="card" key={r}>
                         <div className="round-head">
                           <h2>Jornada {r}</h2>
-                          <button type="button" className="secondary small"
-                            onClick={() => void exportMatchesPdf(summary.name, detail.matches, detail.groups, r)}>PDF</button>
+                          <div className="round-tools">
+                            <button type="button" className="secondary small"
+                              onClick={() => void exportMatchesPdf(summary.name, detail.matches, detail.groups, r)}>PDF</button>
+                            <button type="button" className="secondary small"
+                              onClick={() => void exportMatchesImage(summary.name, detail.matches, detail.groups, r)}>Imagen</button>
+                          </div>
                         </div>
                         {detail.groups.map(g => {
                           const list = groupMatches.filter(m => m.round === r && m.groupId === g.id)

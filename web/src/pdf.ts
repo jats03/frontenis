@@ -15,13 +15,13 @@ async function loadLogo(): Promise<string | null> {
 const safeName = (name: string, fallback: string) => name.replace(/[^\w\- ]+/g, '').trim().replace(/\s+/g, '_') || fallback
 
 /** Resultado en sets ganados («2-1»). */
-function resultText(m: MatchDto): string {
+export function resultText(m: MatchDto): string {
   if (!m.isPlayed) return '—'
   return `${m.homeSets ?? 1}-${m.awaySets ?? 0}`
 }
 
 /** Tantos de cada set («15-5 / 14-15 / 5-10»). */
-function setsText(m: MatchDto): string {
+export function setsText(m: MatchDto): string {
   if (!m.isPlayed) return ''
   if (m.sets && m.sets.length > 0) return m.sets.map(s => `${s.home}-${s.away}`).join(' / ')
   return `${m.homeScore}-${m.awayScore}`
