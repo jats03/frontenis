@@ -23,7 +23,7 @@ import SubTabs from '../components/SubTabs'
 import StandingsTable from '../components/StandingsTable'
 import { statusLabel, typeLabel } from '../labels'
 import { holdLoader, useDocumentTitle } from '../hooks'
-import { exportStandingsPdf } from '../pdf'
+import { exportMatchesPdf, exportStandingsPdf } from '../pdf'
 import LoadingBlock from '../components/LoadingBlock'
 
 type Tab = 'standings' | 'matches' | 'playoffs' | 'pairs'
@@ -156,6 +156,8 @@ function CompetitionDetailView({ id }: { id: number }) {
           <ActionMenu items={[
             { label: 'Exportar clasificación a PDF', hidden: standings.length === 0,
               onSelect: () => void exportStandingsPdf(summary.name, standings, isRotating) },
+            { label: 'Exportar partidos a PDF', hidden: groupMatches.length === 0,
+              onSelect: () => void exportMatchesPdf(summary.name, detail.matches, detail.groups) },
             { label: 'Editar nombre', hidden: !isAdmin, onSelect: () => void rename() },
             { label: `Pasar a ${summary.setsPerMatch === 2 ? '1 set' : '2 sets'} por partido`,
               hidden: !isAdmin || detail.matches.some(m => m.isPlayed), onSelect: () => void changeSets() },
@@ -284,7 +286,11 @@ function CompetitionDetailView({ id }: { id: number }) {
                     )}
                     {shown.map(r => (
                       <section className="card" key={r}>
-                        <h2>Jornada {r}</h2>
+                        <div className="round-head">
+                          <h2>Jornada {r}</h2>
+                          <button type="button" className="secondary small"
+                            onClick={() => void exportMatchesPdf(summary.name, detail.matches, detail.groups, r)}>PDF</button>
+                        </div>
                         {detail.groups.map(g => {
                           const list = groupMatches.filter(m => m.round === r && m.groupId === g.id)
                           if (list.length === 0) return null
