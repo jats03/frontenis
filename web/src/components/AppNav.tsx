@@ -7,6 +7,8 @@ import { useDevice } from '../useDevice'
 import PlayerAvatar from './PlayerAvatar'
 import PlayerCard, { askMotionPermission } from './PlayerCard'
 import { CalendarIcon, HomeIcon, MoreIcon, TrophyIcon, UsersIcon } from './Icons'
+// El logo va incrustado en el JavaScript (data URI): no depende de una petición aparte que pueda fallar o tardar.
+import logoUrl from '../assets/logo-128.png?inline'
 
 const items: { to: string; label: string; short?: string; icon: ReactNode; end?: boolean }[] = [
   { to: '/', label: 'Inicio', icon: <HomeIcon />, end: true },
@@ -28,7 +30,7 @@ export default function AppNav() {
     <>
     <header className="topbar">
       <NavLink to="/" className="brand" aria-label="Club Frontenis Ciudad de Jaén, inicio">
-        <img src="/logo-128.png" alt="" className="logo" width={44} height={44} fetchPriority="high" decoding="async" />
+        <img src={logoUrl} alt="" className="logo" width={44} height={44} decoding="async" />
       </NavLink>
       {fullName && (
         <span className="greeting" title={`Eres ${me!.owner.name}`}>
