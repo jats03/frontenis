@@ -116,7 +116,7 @@ export async function exportStandingsPdf(competitionName: string, standings: Gro
       // Mismas columnas (ancho fijo) en todos los grupos; los nombres largos bajan a la línea siguiente.
       tableWidth: 182,
       columnStyles: {
-        0: { cellWidth: 10 }, 1: { halign: 'left', cellWidth: 70 }, 2: { cellWidth: 12 }, 3: { cellWidth: 12 }, 4: { cellWidth: 12 },
+        0: { cellWidth: 10 }, 1: { halign: 'left', cellWidth: 70, cellPadding: { top: 2.5, bottom: 2.5, left: 2.5, right: 8 } }, 2: { cellWidth: 12 }, 3: { cellWidth: 12 }, 4: { cellWidth: 12 },
         5: { cellWidth: 16 }, 6: { cellWidth: 16 }, 7: { cellWidth: 16 }, 8: { cellWidth: 18 },
       },
       // Liga rotatoria terminada: en verde quien sube y en rojo quien baja.

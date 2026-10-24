@@ -12,6 +12,8 @@ interface Table {
   widths: number[]
   aligns: ('left' | 'center')[]
   rowStyles?: (Style | null)[]
+  /** 1 = sube, -1 = baja (flecha al final de la 2.ª columna). */
+  marks?: number[]
 }
 interface Block { heading?: string; tables: Table[] }
 
@@ -31,20 +33,64 @@ async function loadLogo(): Promise<HTMLImageElement | null> {
   })
 }
 
-function fit(ctx: CanvasRenderingContext2D, text: string, max: number): string {
-  if (ctx.measureText(text).width <= max) return text
-  let t = text
-  while (t.length > 1 && ctx.measureText(`${t}…`).width > max) t = t.slice(0, -1)
-  return `${t}…`
+const LINE = 20, MAX_LINES = 2, ARROW_SPACE = 26
+
+/** Parte el texto en líneas que quepan en `max`; si pasa de MAX_LINES, la última se corta con «…». */
+function wrap(ctx: CanvasRenderingContext2D, text: string, max: number): string[] {
+  const words = text.split(' ')
+  const lines: string[] = []
+  let cur = ''
+  for (const w of words) {
+    const next = cur ? `${cur} ${w}` : w
+    if (ctx.measureText(next).width <= max || !cur) cur = next
+    else { lines.push(cur); cur = w }
+  }
+  if (cur) lines.push(cur)
+  const out = lines.slice(0, MAX_LINES)
+  if (lines.length > MAX_LINES) out[MAX_LINES - 1] = `${out[MAX_LINES - 1]} ${lines.slice(MAX_LINES).join(' ')}`
+  return out.map(l => {
+    if (ctx.measureText(l).width <= max) return l
+    // una palabra más larga que la columna, o la última línea que se pasa: se corta con «…»
+    let s = l
+    while (s.length > 1 && ctx.measureText(`${s}…`).width > max) s = s.slice(0, -1)
+    return `${s}…`
+  })
+}
+
+interface RowLayout { lines: string[][]; height: number }
+
+function layoutTable(ctx: CanvasRenderingContext2D, t: Table): { xs: number[]; rows: RowLayout[] } {
+  const inner = W - PAD * 2
+  const total = t.widths.reduce((acc, c) => acc + c, 0)
+  const xs: number[] = []
+  let acc = PAD
+  for (const w of t.widths) { xs.push(acc); acc += (w / total) * inner }
+  xs.push(PAD + inner)
+  const hasMarks = !!t.marks
+  const rows = t.rows.map(cells => {
+    ctx.font = FONT
+    const lines = cells.map((c, i) => {
+      const reserve = hasMarks && i === 1 ? ARROW_SPACE : 0
+      return wrap(ctx, c, xs[i + 1] - xs[i] - 20 - reserve)
+    })
+    return { lines, height: ROW + (Math.max(...lines.map(l => l.length), 1) - 1) * LINE }
+  })
+  return { xs, rows }
 }
 
 async function render(title: string, subtitle: string, blocks: Block[]): Promise<Blob> {
   const logo = await loadLogo()
+  const measure = document.createElement('canvas').getContext('2d')!
+  const layouts = new Map<Table, ReturnType<typeof layoutTable>>()
   const headerH = 110
   let height = headerH + PAD
   for (const b of blocks) {
     if (b.heading) height += 44
-    for (const t of b.tables) height += (t.title ? 34 : 0) + ROW * (t.rows.length + 1) + 24
+    for (const t of b.tables) {
+      const l = layoutTable(measure, t)
+      layouts.set(t, l)
+      height += (t.title ? 34 : 0) + ROW + l.rows.reduce((s, r) => s + r.height, 0) + 24
+    }
   }
   const canvas = document.createElement('canvas')
   canvas.width = W * SCALE
@@ -59,7 +105,7 @@ async function render(title: string, subtitle: string, blocks: Block[]): Promise
   const tx = logo ? PAD + 90 : PAD
   ctx.fillStyle = '#111827'
   ctx.font = 'bold 30px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif'
-  ctx.fillText(fit(ctx, title, W - tx - PAD), tx, 48)
+  ctx.fillText(title, tx, 48, W - tx - PAD)
   ctx.fillStyle = '#6b7280'
   ctx.font = '18px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif'
   ctx.fillText(subtitle, tx, 82)
@@ -80,29 +126,37 @@ async function render(title: string, subtitle: string, blocks: Block[]): Promise
         ctx.fillText(t.title, PAD, y + 14)
         y += 34
       }
-      const total = t.widths.reduce((a, c) => a + c, 0)
-      const xs: number[] = []
-      let acc = PAD
-      for (const w of t.widths) { xs.push(acc); acc += (w / total) * inner }
-      xs.push(PAD + inner)
-      const drawRow = (cells: string[], top: number, bg: string | null, fg: string, font: string) => {
-        if (bg) { ctx.fillStyle = bg; ctx.fillRect(PAD, top, inner, ROW) }
+      const { xs, rows } = layouts.get(t)!
+      const drawRow = (lines: string[][], top: number, h: number, bg: string | null, fg: string, font: string) => {
+        if (bg) { ctx.fillStyle = bg; ctx.fillRect(PAD, top, inner, h) }
         ctx.fillStyle = fg
         ctx.font = font
-        cells.forEach((c, i) => {
-          const colW = xs[i + 1] - xs[i] - 20
-          const text = fit(ctx, c, colW)
-          if (t.aligns[i] === 'center') { ctx.textAlign = 'center'; ctx.fillText(text, xs[i] + (xs[i + 1] - xs[i]) / 2, top + ROW / 2) }
-          else { ctx.textAlign = 'left'; ctx.fillText(text, xs[i] + 10, top + ROW / 2) }
+        lines.forEach((cellLines, i) => {
+          const startY = top + h / 2 - ((cellLines.length - 1) * LINE) / 2
+          cellLines.forEach((text, k) => {
+            if (t.aligns[i] === 'center') { ctx.textAlign = 'center'; ctx.fillText(text, xs[i] + (xs[i + 1] - xs[i]) / 2, startY + k * LINE) }
+            else { ctx.textAlign = 'left'; ctx.fillText(text, xs[i] + 10, startY + k * LINE) }
+          })
         })
         ctx.textAlign = 'left'
       }
-      drawRow(t.head, y, HEAD_BG, '#ffffff', BOLD)
+      drawRow(t.head.map(h => [h]), y, ROW, HEAD_BG, '#ffffff', BOLD)
       y += ROW
-      t.rows.forEach((r, i) => {
+      rows.forEach((r, i) => {
         const s = t.rowStyles?.[i] ?? null
-        drawRow(r, y, s ? s.bg : i % 2 ? '#f3f4f6' : null, s ? s.fg : '#111827', FONT)
-        y += ROW
+        drawRow(r.lines, y, r.height, s ? s.bg : i % 2 ? '#f3f4f6' : null, s ? s.fg : '#111827', FONT)
+        const mark = t.marks?.[i] ?? 0
+        if (mark !== 0) {
+          // Flecha siempre visible al final de la celda del nombre.
+          const cx = xs[2] - 18, cy = y + r.height / 2, sz = 7
+          ctx.fillStyle = mark > 0 ? '#065f46' : '#991b1b'
+          ctx.beginPath()
+          if (mark > 0) { ctx.moveTo(cx - sz, cy + sz * 0.8); ctx.lineTo(cx + sz, cy + sz * 0.8); ctx.lineTo(cx, cy - sz) }
+          else { ctx.moveTo(cx - sz, cy - sz * 0.8); ctx.lineTo(cx + sz, cy - sz * 0.8); ctx.lineTo(cx, cy + sz) }
+          ctx.closePath()
+          ctx.fill()
+        }
+        y += r.height
       })
       y += 24
     }
@@ -136,11 +190,12 @@ export async function exportStandingsImage(competitionName: string, standings: G
     tables: [{
       title: g.groupName,
       head: ['#', individual ? 'Jugador' : 'Pareja', 'PJ', 'G', 'P', 'TF', 'TC', 'Dif', 'Pts'],
-      rows: g.rows.map(r => [String(r.rank), r.pairName + (r.movement > 0 ? '  ▲' : r.movement < 0 ? '  ▼' : ''), String(r.played), String(r.won), String(r.lost), String(r.pointsFor),
+      rows: g.rows.map(r => [String(r.rank), r.pairName, String(r.played), String(r.won), String(r.lost), String(r.pointsFor),
         String(r.pointsAgainst), r.pointsDiff > 0 ? `+${r.pointsDiff}` : String(r.pointsDiff), String(r.classificationPoints)]),
       widths: [5, 41, 7, 7, 7, 8, 8, 8, 9],
       aligns: ['center', 'left', 'center', 'center', 'center', 'center', 'center', 'center', 'center'],
       rowStyles: g.rows.map(r => (r.movement > 0 ? UP : r.movement < 0 ? DOWN : null)),
+      marks: g.rows.map(r => r.movement),
     }],
   }))
   await deliver(await render(competitionName, 'Clasificación', blocks), `clasificacion_${safe(competitionName, 'clasificacion')}.png`)
