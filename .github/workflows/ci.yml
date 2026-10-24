@@ -1,0 +1,124 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  api:
+    name: API (build y tests)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: "API: restaurar y compilar"
+        run: dotnet build api/Frontenis.sln --configuration Release
+
+      - name: "API: tests"
+        run: >
+          dotnet test api/Frontenis.sln --configuration Release --no-build
+          --logger "trx;LogFileName=resultados.trx"
+          --logger "console;verbosity=normal"
+          --results-directory "${{ runner.temp }}/trx"
+
+      - name: "API: resumen de tests"
+        if: always()
+        run: |
+          {
+            echo "### Tests de la API"
+            for f in "${{ runner.temp }}"/trx/*.trx; do
+              [ -f "$f" ] || { echo "No se generó informe .trx (falló antes de ejecutar los tests)."; break; }
+              grep -o '<Counters [^>]*>' "$f" | sed 's/<Counters //; s/\/>//; s/>//'
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: "API: subir informe .trx"
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: informe-tests-api
+          path: ${{ runner.temp }}/trx/*.trx
+          if-no-files-found: warn
+
+  web:
+    name: Web (lint, tests y build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: "Web: instalar dependencias"
+        run: npm ci
+
+      - name: "Web: lint"
+        run: npm run lint
+
+      - name: "Web: tipos"
+        run: npx tsc -b --noEmit
+
+      # Solo se ejecuta cuando el proyecto define el script «test» (Vitest).
+      - name: "Web: tests"
+        run: npm run test --if-present
+
+      - name: "Web: build"
+        run: npm run build
+
+  seguridad:
+    name: Seguridad (dependencias vulnerables)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # «dotnet list package --vulnerable» siempre termina con código 0: se falla si el informe menciona paquetes vulnerables.
+      - name: "Seguridad API: paquetes NuGet vulnerables"
+        env:
+          DOTNET_CLI_UI_LANGUAGE: en
+        run: |
+          dotnet list api/Frontenis.sln package --vulnerable --include-transitive | tee nuget-vulnerables.txt
+          if grep -q "has the following vulnerable packages" nuget-vulnerables.txt; then
+            echo "::error::Hay paquetes NuGet con vulnerabilidades conocidas (ver el informe de este paso)."
+            exit 1
+          fi
+
+      # Falla con vulnerabilidades de gravedad alta o crítica; las bajas y moderadas solo se muestran.
+      - name: "Seguridad web: npm audit"
+        working-directory: web
+        run: npm audit --audit-level=high
+
+      - name: "Seguridad: resumen"
+        if: always()
+        run: |
+          {
+            echo "### Seguridad de dependencias"
+            echo '```'
+            cat nuget-vulnerables.txt 2>/dev/null || echo "Sin informe NuGet."
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -16,5 +16,6 @@
     <ProjectReference Include="..\..\src\Frontenis.Domain\Frontenis.Domain.csproj" />
     <ProjectReference Include="..\..\src\Frontenis.Application\Frontenis.Application.csproj" />
     <ProjectReference Include="..\..\src\Frontenis.Infrastructure\Frontenis.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Frontenis.Api\Frontenis.Api.csproj" />
   </ItemGroup>
 </Project>
