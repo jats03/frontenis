@@ -23,8 +23,8 @@ public sealed class MatchService : IMatchService
     {
         var competition = await _competitions.GetDetailedByMatchOrThrowAsync(matchId, ct);
         var match = request.Sets is { Count: > 0 }
-            ? competition.RecordResult(matchId, request.Sets.Select(s => new SetScore(s.Home, s.Away)).ToList())
-            : competition.RecordResult(matchId, request.HomeScore, request.AwayScore);
+            ? competition.RecordResult(matchId, request.Sets.Select(s => new SetScore(s.Home, s.Away)).ToList(), request.Ball)
+            : competition.RecordResult(matchId, request.HomeScore, request.AwayScore, request.Ball);
         await _uow.SaveChangesAsync(ct);
         return match.ToDto();
     }

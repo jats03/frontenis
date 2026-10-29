@@ -9,6 +9,9 @@ import StopwatchPanel from '../components/StopwatchPanel'
 import { useDocumentTitle } from '../hooks'
 import { TIMER_KEY } from '../timerStore'
 import { useDevice } from '../useDevice'
+import BallPicker from '../components/BallPicker'
+import BallTag from '../components/BallTag'
+import { DEFAULT_BALL, type BallType } from '../balls'
 
 interface Pts { h: number; a: number }
 const ZERO = (): Pts[] => [{ h: 0, a: 0 }, { h: 0, a: 0 }, { h: 0, a: 0 }]
@@ -50,6 +53,7 @@ export default function MatchPlayPage() {
   const [error, setError] = useState<string | null>(null)
   const [pts, setPts] = useState<Pts[] | null>(null)
   const [busy, setBusy] = useState(false)
+  const [ballChoice, setBallChoice] = useState<BallType | null>(null)
 
   const load = useCallback(async () => {
     try {
@@ -101,7 +105,7 @@ export default function MatchPlayPage() {
   if (me === null) return <>{back}<h1>{home} – {away}</h1><p>Para enviar resultados tienes que identificarte desde el <Link to="/">inicio</Link>.</p></>
   if (match.isPlayed) {
     return <>{back}<h1>{home} – {away}</h1>
-      <section className="card"><p><strong>Resultado: </strong>{match.sets?.map(s => `${s.home}-${s.away}`).join(', ') ?? `${match.homeScore}-${match.awayScore}`}</p></section></>
+      <section className="card"><p><strong>Resultado: </strong>{match.sets?.map(s => `${s.home}-${s.away}`).join(', ') ?? `${match.homeScore}-${match.awayScore}`} <BallTag ball={match.ball} /></p></section></>
   }
   if (match.homeEntryId === null || match.awayEntryId === null) {
     return <>{back}<h1>{home} – {away}</h1><p className="muted">Este partido todavía no tiene las dos parejas definidas.</p></>
@@ -110,12 +114,14 @@ export default function MatchPlayPage() {
     return <>{back}<h1>{home} – {away}</h1>
       <section className="card">
         <p><strong>Resultado pendiente de aprobación</strong></p>
-        <p>{mine.sets.map(s => `${s.home}-${s.away}`).join(', ')} · enviado por {mine.playerName}</p>
+        <p>{mine.sets.map(s => `${s.home}-${s.away}`).join(', ')} <BallTag ball={mine.ball} /> · enviado por {mine.playerName}</p>
         <p className="muted">Solo quien lo envió puede modificarlo, hasta que el administrador lo apruebe o lo rechace.</p>
       </section></>
   }
 
   const board = pts ?? ZERO()
+  // Bola elegida a mano; si no, la del resultado ya enviado o la preolímpica.
+  const ball: BallType = ballChoice ?? mine?.ball ?? DEFAULT_BALL
   const visible = visibleSets(board, setsPerMatch)
 
   async function send() {
@@ -132,7 +138,7 @@ export default function MatchPlayPage() {
     if (!ok) return
     setBusy(true)
     try {
-      await api.matches.submitResult(matchId, sets)
+      await api.matches.submitResult(matchId, sets, ball)
       clearDraft(matchId)
       notify('Resultado enviado, pendiente de aprobación')
       await load()
@@ -172,6 +178,7 @@ export default function MatchPlayPage() {
             </div>
           </div>
         ))}
+        <BallPicker value={ball} onChange={setBallChoice} />
         {error && <p className="error">{error}</p>}
         <div className="row center">
           <button disabled={busy} onClick={() => void send()}>Enviar resultado</button>

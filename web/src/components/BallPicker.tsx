@@ -1,6 +1,6 @@
-import { BALLS, type TrainingBall } from '../balls'
+import { BALLS, type BallType } from '../balls'
 
-interface Props { value: TrainingBall; onChange: (ball: TrainingBall) => void }
+interface Props { value: BallType; onChange: (ball: BallType) => void }
 
 /** Elección de la bola del partido: tres botones pequeños (una sola opción marcada). */
 export default function BallPicker({ value, onChange }: Props) {

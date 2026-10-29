@@ -1,3 +1,4 @@
+using Frontenis.Domain.Enums;
 using Frontenis.Application.Models;
 using Frontenis.Domain.Entities;
 
@@ -17,5 +18,5 @@ public static class CacheKeys
     public static string HistoryPlayer(int playerId, HistoryFilter filter) => $"history:player:{playerId}:{Filter(filter)}";
 
     private static string Filter(HistoryFilter f) =>
-        $"c={string.Join(',', f.CompetitionIds.OrderBy(x => x))};t={string.Join(',', f.TrainingIds.OrderBy(x => x))};b={(int)f.Ball}";
+        $"c={string.Join(',', f.CompetitionIds.OrderBy(x => x))};t={string.Join(',', f.TrainingIds.OrderBy(x => x))};b={string.Join(',', (f.Balls ?? Array.Empty<BallType>()).Select(x => (int)x).OrderBy(x => x))}";
 }

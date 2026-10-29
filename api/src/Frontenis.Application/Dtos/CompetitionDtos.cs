@@ -35,7 +35,9 @@ public sealed record MatchDto(
     int Id, MatchPhase Phase, int? GroupId, string? GroupName, int Round, int Order,
     int? HomeEntryId, string? HomeName, int? AwayEntryId, string? AwayName,
     int? HomeScore, int? AwayScore, bool IsPlayed, int? WinnerEntryId,
-    IReadOnlyList<SetScoreDto>? Sets = null, int? HomeSets = null, int? AwaySets = null);
+    IReadOnlyList<SetScoreDto>? Sets = null, int? HomeSets = null, int? AwaySets = null,
+    /// <summary>Bola con la que se jugó (la preolímpica si no se indicó otra).</summary>
+    BallType Ball = BallTypes.Default);
 
 public sealed record CompetitionDetailDto(
     CompetitionSummaryDto Summary,
@@ -44,7 +46,10 @@ public sealed record CompetitionDetailDto(
     IReadOnlyList<MatchDto> Matches);
 
 /// <summary>Resultado: lista de sets (preferido) o, por compatibilidad, un único marcador Home/Away.</summary>
-public sealed record SetResultRequest(int HomeScore = 0, int AwayScore = 0, IReadOnlyList<SetScoreDto>? Sets = null);
+public sealed record SetResultRequest(
+    int HomeScore = 0, int AwayScore = 0, IReadOnlyList<SetScoreDto>? Sets = null,
+    /// <summary>Bola del partido; si se omite, se conserva la que ya tenía (por defecto, la preolímpica).</summary>
+    BallType? Ball = null);
 
 public sealed record StandingDto(
     int Rank, int EntryId, string PairName, int Played, int Won, int Lost,

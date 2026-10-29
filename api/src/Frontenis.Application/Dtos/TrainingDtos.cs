@@ -10,7 +10,7 @@ public sealed record CreateTrainingRequest(string Name, DateTime Date, int Point
 public sealed record AddTrainingMatchRequest(
     int Home1Id, int Home2Id, int Away1Id, int Away2Id, int HomeScore, int AwayScore,
     /// <summary>Bola del partido; si se omite, preolímpica.</summary>
-    TrainingBall? Ball = null);
+    BallType? Ball = null);
 
 public sealed record TrainingSuggestRequest(IReadOnlyList<int> PlayerIds, int Count = 5);
 
@@ -19,7 +19,7 @@ public sealed record TrainingSummaryDto(
 
 public sealed record TrainingMatchDto(
     int Id, int Order, string HomeName, string AwayName, int[] HomePlayerIds, int[] AwayPlayerIds,
-    int HomeScore, int AwayScore, bool HomeWon, DateTime? PlayedAtUtc, TrainingBall Ball = TrainingBall.PreOlympic);
+    int HomeScore, int AwayScore, bool HomeWon, DateTime? PlayedAtUtc, BallType Ball = BallType.PreOlympic);
 
 public sealed record TrainingRowDto(
     int Rank, string Name, int[] PlayerIds, int Played, int Won, int Lost,

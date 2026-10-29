@@ -26,6 +26,11 @@ public sealed class MatchHistoryRepository : IMatchHistoryRepository
     {
         var q = _db.Matches.AsNoTracking().Where(m =>
             m.HomeScore != null && m.AwayScore != null && m.HomeEntryId != null && m.AwayEntryId != null);
+        if (!filter.AllBalls)
+        {
+            var balls = filter.Balls!.ToList(); // solo los jugados con alguna de las bolas del filtro
+            q = q.Where(m => balls.Contains(m.Ball));
+        }
         if (filter.CompetitionIds.Count > 0)
         {
             var ids = filter.CompetitionIds.ToList();
@@ -71,8 +76,12 @@ public sealed class MatchHistoryRepository : IMatchHistoryRepository
     private async Task<List<PlayedMatch>> TrainingMatchesAsync(HistoryFilter filter, int? playerId, CancellationToken ct)
     {
         // Solo los partidos jugados con la bola del filtro (los anteriores a este dato figuran con la preolímpica).
-        var ball = filter.Ball;
-        var q = _db.TrainingMatches.AsNoTracking().Where(m => m.Ball == ball);
+        var q = _db.TrainingMatches.AsNoTracking().AsQueryable();
+        if (!filter.AllBalls)
+        {
+            var balls = filter.Balls!.ToList(); // los anteriores a este dato figuran con la preolímpica
+            q = q.Where(m => balls.Contains(m.Ball));
+        }
         if (filter.TrainingIds.Count > 0)
         {
             var ids = filter.TrainingIds.ToList();

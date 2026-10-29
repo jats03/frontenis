@@ -23,7 +23,7 @@ internal static class Mapper
         m.AwayEntry?.Id, m.AwayEntry?.Pair.DisplayName,
         m.HomeScore, m.AwayScore, m.IsPlayed, m.Winner?.Id,
         m.IsPlayed ? m.Sets.Select(s => new SetScoreDto(s.Home, s.Away)).ToList() : null,
-        m.IsPlayed ? m.HomeSets : null, m.IsPlayed ? m.AwaySets : null);
+        m.IsPlayed ? m.HomeSets : null, m.IsPlayed ? m.AwaySets : null, m.Ball);
 
     public static CompetitionDetailDto ToDetailDto(this Competition c) => new(
         c.ToSummary(),

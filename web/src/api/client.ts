@@ -5,6 +5,7 @@ import type {
   AuditPage, AuditQuery, PendingResult, RejectedResult, DeviceLink, DeviceMe, DevicePlayer, PlayerDelegateRow, SaveSlot, SaveSlotTemplate, Slot, SlotTemplate,
 } from './types'
 import { deviceHeaders, deviceToken, hasDeviceToken } from '../device'
+import type { BallType } from '../balls'
 
 export const BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:5080'
 const TOKEN_KEY = 'frontenis.token'
@@ -51,8 +52,8 @@ export class ApiError extends Error {
 }
 
 function historyQuery(f: HistoryFilter): string {
-  const q = [...f.competitionIds.map(i => `competitionIds=${i}`), ...f.trainingIds.map(i => `trainingIds=${i}`), `ball=${f.ball}`]
-  return `?${q.join('&')}`
+  const q = [...f.competitionIds.map(i => `competitionIds=${i}`), ...f.trainingIds.map(i => `trainingIds=${i}`), ...(f.balls ?? []).map(b => `balls=${b}`)]
+  return q.length ? `?${q.join('&')}` : ''
 }
 
 async function request<T>(method: string, path: string, body?: unknown, extraHeaders?: Record<string, string>): Promise<T> {
@@ -266,8 +267,8 @@ export const api = {
   },
 
   matches: {
-    setResult: (id: number, sets: SetScore[]) =>
-      request<MatchDto>('PUT', `/api/matches/${id}/result`, { sets }),
+    setResult: (id: number, sets: SetScore[], ball?: BallType) =>
+      request<MatchDto>('PUT', `/api/matches/${id}/result`, { sets, ball }),
     moveToRound: (id: number, round: number) =>
       request<CompetitionDetail>('PUT', `/api/matches/${id}/round`, { round }),
     remove: (id: number) => request<CompetitionDetail>('DELETE', `/api/matches/${id}`),
@@ -275,8 +276,8 @@ export const api = {
       request<CompetitionDetail>('PUT', `/api/matches/${id}/swap`, { otherMatchId }),
     clearResult: (id: number) => request<MatchDto>('DELETE', `/api/matches/${id}/result`),
     /** Un jugador identificado envía el resultado; queda pendiente de que lo apruebe el administrador. */
-    submitResult: (id: number, sets: SetScore[]) =>
-      request<PendingResult>('PUT', `/api/matches/${id}/submission`, { sets }),
+    submitResult: (id: number, sets: SetScore[], ball?: BallType) =>
+      request<PendingResult>('PUT', `/api/matches/${id}/submission`, { sets, ball }),
   },
 
   matchSubmissions: {

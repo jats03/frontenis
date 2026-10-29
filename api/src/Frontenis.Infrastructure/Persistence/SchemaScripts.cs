@@ -19,6 +19,10 @@ internal static class SchemaScripts
         // Tipo de bola de cada partido de entrenamiento (1 = lenta, 2 = preolímpica, 3 = olímpica). Los partidos que ya
         // existían se quedan con la preolímpica, que es la bola por defecto.
         "ALTER TABLE \"TrainingMatches\" ADD COLUMN IF NOT EXISTS \"Ball\" smallint NOT NULL DEFAULT 2;",
+        // Lo mismo para los partidos de competición y los resultados enviados por los jugadores (pendientes y rechazados).
+        "ALTER TABLE \"Matches\" ADD COLUMN IF NOT EXISTS \"Ball\" smallint NOT NULL DEFAULT 2;",
+        "ALTER TABLE \"MatchSubmissions\" ADD COLUMN IF NOT EXISTS \"Ball\" smallint NOT NULL DEFAULT 2;",
+        "ALTER TABLE \"RejectedSubmissions\" ADD COLUMN IF NOT EXISTS \"Ball\" smallint NOT NULL DEFAULT 2;",
 
         // Reservas de entrenamientos: plantillas semanales, franjas y asistencias.
         """

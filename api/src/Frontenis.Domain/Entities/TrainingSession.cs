@@ -44,7 +44,7 @@ public sealed class TrainingSession
 
     /// <summary>Añade un partido 2 contra 2 a la sesión. Si no se indica la bola, se toma la preolímpica.</summary>
     /// <exception cref="DomainException">Jugadores repetidos, marcador no válido, empate, bola no válida o límite de partidos alcanzado.</exception>
-    public TrainingMatch AddMatch(int home1, int home2, int away1, int away2, int homeScore, int awayScore, TrainingBall? ball = null)
+    public TrainingMatch AddMatch(int home1, int home2, int away1, int away2, int homeScore, int awayScore, BallType? ball = null)
     {
         var players = new[] { home1, home2, away1, away2 };
         if (players.Any(p => p <= 0)) throw new DomainException("Selecciona los cuatro jugadores.");
@@ -55,7 +55,7 @@ public sealed class TrainingSession
         if (ball is { } b && !Enum.IsDefined(b)) throw new DomainException("Tipo de bola no válido.");
         if (_matches.Count >= MaxMatches) throw new DomainException($"La sesión ya tiene el máximo de {MaxMatches} partidos.");
         var order = _matches.Count == 0 ? 1 : _matches.Max(m => m.Order) + 1;
-        var match = new TrainingMatch(order, home1, home2, away1, away2, homeScore, awayScore, ball ?? TrainingMatch.DefaultBall);
+        var match = new TrainingMatch(order, home1, home2, away1, away2, homeScore, awayScore, ball ?? BallTypes.Default);
         _matches.Add(match);
         return match;
     }

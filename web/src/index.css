@@ -270,6 +270,7 @@ details.present summary { cursor: pointer; font-weight: 600; min-height: 32px; d
 .ball-Slow { --ball: #2563eb; }
 .ball-Olympic { --ball: #7c3aed; }
 @media (prefers-color-scheme: dark) { .ball-Slow { --ball: #7aa7ff; } .ball-Olympic { --ball: #b69cff; } }
+.score .ball-tag, .plain .ball-tag, .card p .ball-tag { margin-left: .4rem; }
 .ball-filter .ball-picker { margin: 0; }
 .ball-filter .muted { margin: .4rem 0 0; font-size: .8rem; }
 .ball-picker { display: flex; align-items: center; gap: .4rem; flex-wrap: wrap; margin: .2rem 0 .6rem; }

@@ -7,7 +7,7 @@ public sealed class TrainingMatch
 {
     private TrainingMatch() { }
 
-    internal TrainingMatch(int order, int home1, int home2, int away1, int away2, int homeScore, int awayScore, TrainingBall ball = DefaultBall)
+    internal TrainingMatch(int order, int home1, int home2, int away1, int away2, int homeScore, int awayScore, BallType ball = BallTypes.Default)
     {
         Order = order;
         Home1Id = home1; Home2Id = home2; Away1Id = away1; Away2Id = away2;
@@ -15,9 +15,6 @@ public sealed class TrainingMatch
         PlayedAtUtc = DateTime.UtcNow;
         Ball = ball;
     }
-
-    /// <summary>Bola con la que se juega si no se indica otra: la preolímpica.</summary>
-    public const TrainingBall DefaultBall = TrainingBall.PreOlympic;
 
     public int Id { get; private set; }
     public int SessionId { get; private set; }
@@ -30,7 +27,7 @@ public sealed class TrainingMatch
     public int AwayScore { get; private set; }
     public DateTime PlayedAtUtc { get; private set; }
     /// <summary>Bola con la que se jugó (los partidos anteriores a este dato figuran con la bola por defecto).</summary>
-    public TrainingBall Ball { get; private set; } = DefaultBall;
+    public BallType Ball { get; private set; } = BallTypes.Default;
 
     /// <summary>Indica si ganó la pareja local.</summary>
     public bool HomeWon => HomeScore > AwayScore;

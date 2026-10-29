@@ -16,7 +16,7 @@ import LoadingBlock from '../components/LoadingBlock'
 import PlayerName from '../components/PlayerName'
 import { isDraftEmpty, loadDraft, saveDraft } from '../matchDraft'
 import BallPicker from '../components/BallPicker'
-import { ballLabel, DEFAULT_BALL, type TrainingBall } from '../balls'
+import { ballLabel, DEFAULT_BALL, type BallType } from '../balls'
 
 type Slots = [string, string, string, string]
 const EMPTY: Slots = ['', '', '', '']
@@ -72,7 +72,7 @@ export default function TrainingDetailPage() {
   const [awayScore, setAwayScore] = useState(draft0.awayScore)
   const [formError, setFormError] = useState<string | null>(null)
   // Bola elegida a mano; mientras no se toque se propone la del último partido de la sesión (o la preolímpica).
-  const [ballChoice, setBallChoice] = useState<TrainingBall | null>(null)
+  const [ballChoice, setBallChoice] = useState<BallType | null>(null)
   const [presentChosen, setPresentChosen] = useState<Set<number> | null>(null) // null = los que ya han jugado
   const [suggestions, setSuggestions] = useState<TrainingSuggestion[] | null>(null)
   const [suggestError, setSuggestError] = useState<string | null>(null)

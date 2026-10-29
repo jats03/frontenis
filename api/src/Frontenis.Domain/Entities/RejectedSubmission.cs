@@ -1,3 +1,5 @@
+using Frontenis.Domain.Enums;
+
 namespace Frontenis.Domain.Entities;
 
 /// <summary>
@@ -14,6 +16,7 @@ public sealed class RejectedSubmission
     public int PlayerId { get; private set; }
     public DateTime SubmittedAtUtc { get; private set; }
     public DateTime RejectedAtUtc { get; private set; }
+    public BallType Ball { get; private set; } = BallTypes.Default;
 
     public int Set1Home { get; private set; }
     public int Set1Away { get; private set; }
@@ -41,7 +44,7 @@ public sealed class RejectedSubmission
         return new RejectedSubmission
         {
             MatchId = s.MatchId, CompetitionId = competitionId, PlayerId = s.PlayerId,
-            SubmittedAtUtc = s.SubmittedAtUtc, RejectedAtUtc = rejectedAtUtc,
+            SubmittedAtUtc = s.SubmittedAtUtc, RejectedAtUtc = rejectedAtUtc, Ball = s.Ball,
             Set1Home = sets[0].Home, Set1Away = sets[0].Away,
             Set2Home = sets.Count > 1 ? sets[1].Home : null, Set2Away = sets.Count > 1 ? sets[1].Away : null,
             Set3Home = sets.Count > 2 ? sets[2].Home : null, Set3Away = sets.Count > 2 ? sets[2].Away : null,

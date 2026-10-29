@@ -2,6 +2,10 @@ import { useState } from 'react'
 import { confirmDelete, notify } from '../alerts'
 import { api } from '../api/client'
 import type { MatchDto, SetScore } from '../api/types'
+import type { BallType } from '../balls'
+import BallPicker from './BallPicker'
+import BallTag from './BallTag'
+import { DEFAULT_BALL as BALL_DEFAULT } from '../balls'
 
 interface Props {
   match: MatchDto
@@ -31,6 +35,7 @@ export default function MatchCard({ match, canEdit, setsPerMatch = 1, onChanged,
   const [cells, setCells] = useState<Cell[]>(() => initial(match))
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const [ball, setBall] = useState<BallType>(match.ball)
 
   const pending = !!pendingSets
   const ready = match.homeEntryId !== null && match.awayEntryId !== null
@@ -58,6 +63,7 @@ export default function MatchCard({ match, canEdit, setsPerMatch = 1, onChanged,
   async function clear() {
     if (!(await confirmDelete('¿Borrar el resultado de este partido?'))) return
     await run(async () => { const m = await api.matches.clearResult(match.id); notify('Resultado eliminado'); return m })
+    setBall(BALL_DEFAULT)
     setCells([{ h: '', a: '' }, { h: '', a: '' }, { h: '', a: '' }])
   }
 
@@ -69,7 +75,7 @@ export default function MatchCard({ match, canEdit, setsPerMatch = 1, onChanged,
       if (h === a) { setError(`El set ${i + 1} no puede acabar en empate.`); return }
       sets.push({ home: h, away: a })
     }
-    void run(() => api.matches.setResult(match.id, sets))
+    void run(() => api.matches.setResult(match.id, sets, ball))
   }
 
   const side = (name: string | null, entryId: number | null) => (
@@ -103,6 +109,7 @@ export default function MatchCard({ match, canEdit, setsPerMatch = 1, onChanged,
                 onChange={e => setCell(i, 'a', e.target.value)} />
             </div>
           ))}
+          <BallPicker value={ball} onChange={setBall} />
           <div className="row">
             <button disabled={busy} onClick={save}>Guardar</button>
             {match.isPlayed && (
@@ -114,6 +121,7 @@ export default function MatchCard({ match, canEdit, setsPerMatch = 1, onChanged,
         <div className="score">
           {readOnly}
           {multi && <small className="muted sets-detail"> ({match.sets!.map(s => `${s.home}-${s.away}`).join(', ')})</small>}
+          {match.isPlayed && <BallTag ball={match.ball} />}
         </div>
       )}
       {!match.isPlayed && ready && (pending || onOpen) && (

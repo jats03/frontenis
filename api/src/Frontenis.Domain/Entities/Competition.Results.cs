@@ -8,16 +8,17 @@ namespace Frontenis.Domain.Entities;
 public sealed partial class Competition
 {
     /// <summary>Registra un resultado simple (un solo set).</summary>
-    public Match RecordResult(int matchId, int homeScore, int awayScore) =>
-        RecordResult(matchId, new[] { new SetScore(homeScore, awayScore) });
+    public Match RecordResult(int matchId, int homeScore, int awayScore, BallType? ball = null) =>
+        RecordResult(matchId, new[] { new SetScore(homeScore, awayScore) }, ball);
 
     /// <summary>Registra el resultado por sets, avanza al ganador en el cuadro y recalcula el estado de la competición.</summary>
-    /// <exception cref="DomainException">Marcador no válido o partido no editable.</exception>
-    public Match RecordResult(int matchId, IReadOnlyList<SetScore> sets)
+    /// <param name="ball">Bola con la que se jugó; <c>null</c> conserva la que ya tenga el partido (por defecto, la preolímpica).</param>
+    /// <exception cref="DomainException">Marcador o bola no válidos, o partido no editable.</exception>
+    public Match RecordResult(int matchId, IReadOnlyList<SetScore> sets, BallType? ball = null)
     {
         var match = FindMatch(matchId);
         EnsureEditable(match);
-        match.SetResult(sets, SetsPerMatch);
+        match.SetResult(sets, SetsPerMatch, ball);
         Advance(match);
         RefreshStatus();
         return match;
