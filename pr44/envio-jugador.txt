@@ -1,0 +1,5 @@
+== Resultado enviado por un jugador (pendiente de aprobar):
+envio 1 partido 5 [{'home': 6, 'away': 4}] bola Olympic por Ana
+== Aprobar el envio del jugador:
+approve 200
+partido 5 6 - 4 bola Olympic

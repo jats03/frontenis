@@ -10,11 +10,3 @@ bola numerica 99 (debe ser 400): 400
 3 15 - 11 PreOlympic
 4 15 - 3 Slow
 5 9 - 15 Olympic
-== Historico: partidos jugados por Ana segun la bola del filtro (y sin filtro = preolimpica)
-/api/players/history -> Ana played=3
-/api/players/history?ball=Slow -> Ana played=1
-/api/players/history?ball=PreOlympic -> Ana played=3
-/api/players/history?ball=Olympic -> Ana played=1
-historico con bola invalida (400): 400
-historico con bola 99 (400): 400
-ficha de jugador con ?ball=Slow, partidos recientes de Ana: 1 [(15, 3)]

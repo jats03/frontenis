@@ -1,0 +1,16 @@
+== Resultados de competición con bola (HTTP):
+partido 1 {"sets":[{"home":6,"away":4}],"ball":"Slow"} -> 200
+partido 2 {"sets":[{"home":3,"away":6}]} -> 200
+partido 3 {"sets":[{"home":6,"away":2}],"ball":"Olympic"} -> 200
+partido 4 {"sets":[{"home":6,"away":5}],"ball":"Pelota"} -> 400
+partido 4 {"sets":[{"home":6,"away":5}],"ball":"Olympic"} -> 200
+== Bola de cada partido:
+1 True Slow
+2 True PreOlympic
+3 True Olympic
+4 True Olympic
+5 False PreOlympic
+6 False PreOlympic
+== Corregir el partido 1 sin indicar bola (conserva Slow):
+partido 1 {"sets":[{"home":6,"away":3}]} -> 200
+partido 1: Slow 6 - 3

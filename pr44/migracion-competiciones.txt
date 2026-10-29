@@ -1,0 +1,17 @@
+== Simulo el esquema antiguo: quito la columna Ball de Matches, MatchSubmissions y RejectedSubmissions (con los datos ya guardados)
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+columnas de Matches antes: Id,CompetitionId,Phase,GroupId,Round,Order,HomeEntryId,AwayEntryId,HomeScore,AwayScore,Set1Home,Set1Away,Set2Home,Set2Away,Set3Home,Set3Away,NextMatchId,NextSlot
+4 partidos con resultado
+== Tras arrancar la API nueva:
+Matches: Ball smallint null=NO default=2
+MatchSubmissions: Ball smallint null=NO default=2
+RejectedSubmissions: Ball smallint null=NO default=2
+Bola de los partidos que ya existian:
+1|6|3|2
+2|3|6|2
+3|6|2|2
+4|6|5|2
+5|||2
+6|||2

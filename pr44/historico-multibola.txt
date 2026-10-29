@@ -1,0 +1,11 @@
+== Historico de Ana (partidos de entrenamiento + competicion) segun las bolas del filtro:
+ -> Ana PJ=8
+?balls=PreOlympic -> Ana PJ=3
+?balls=Slow -> Ana PJ=3
+?balls=Olympic -> Ana PJ=2
+?balls=Slow&balls=Olympic -> Ana PJ=5
+?balls=Slow&balls=PreOlympic&balls=Olympic -> Ana PJ=8
+bola invalida (400): 400
+bola 99 (400): 400
+== Ficha de Ana: partidos recientes con ?balls=Olympic
+2 partidos; [('Liga con bolas', False), ('Entreno B - rapido', True)]
