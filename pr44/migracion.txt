@@ -1,0 +1,8 @@
+== Columnas de TrainingMatches tras arrancar la API nueva:
+Ball smallint null=NO default=2
+== Partidos que ya existian (sin bola antes):
+1|1|15|9|2
+2|2|12|15|2
+== GET /api/trainings/2 (bola de cada partido):
+1 Ana / Beto 15 - 9 PreOlympic
+2 Ana / Carla 12 - 15 PreOlympic
