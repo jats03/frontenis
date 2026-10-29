@@ -57,6 +57,14 @@ export function startAutoUpdate() {
     if (hadController) applyUpdate('service worker nuevo')
   })
 
+  // El service worker nuevo pregunta a cada pestaña si se encarga ella de actualizarse; esta versión sí (con su espera
+  // a que la persona salga de la app) y se lo confirma para que el service worker no la recargue por su cuenta.
+  navigator.serviceWorker.addEventListener('message', event => {
+    if (event.data?.type !== 'frontenis-update') return
+    event.ports[0]?.postMessage('ok')
+    applyUpdate('aviso del service worker')
+  })
+
   const checkForUpdate = () => {
     navigator.serviceWorker.getRegistration().then(registration => registration?.update()).catch(() => undefined)
   }

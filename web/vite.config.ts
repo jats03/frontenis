@@ -23,6 +23,8 @@ export default defineConfig({
       workbox: {
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/api/],
+        // Recarga las pestañas abiertas cuando un service worker nuevo sustituye a otro (ver public/sw-reload.js).
+        importScripts: ['sw-reload.js'],
       },
     }),
   ],
