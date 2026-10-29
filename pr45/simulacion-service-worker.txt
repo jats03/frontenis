@@ -1,0 +1,17 @@
+1) Primera instalacion (no habia service worker anterior)
+OK    no hace nada: ni claim, ni avisos, ni recargas
+2) Actualizacion y la pestana NO contesta (version antigua sin codigo de actualizacion)
+OK    primero toma el control (claim)
+OK    avisa a la pestana
+OK    la recarga desde el service worker
+     registro: Service worker actualizado: 1 pestaña(s) abierta(s), 1 recargada(s) desde aquí
+3) Actualizacion y la pestana SI contesta (version actual, que se actualiza ella misma)
+OK    no la recarga desde el service worker
+     registro: Service worker actualizado: 1 pestaña(s) abierta(s), 0 recargada(s) desde aquí
+4) Varias pestanas: una antigua, una actual y una cerrada que falla al recargar
+OK    recarga la antigua
+OK    no toca la actual
+OK    intenta la tercera y el fallo no rompe nada
+     registro: Service worker actualizado: 3 pestaña(s) abierta(s), 1 recargada(s) desde aquí
+
+Todas las comprobaciones correctas

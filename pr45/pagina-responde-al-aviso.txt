@@ -1,0 +1,6 @@
+Prueba de la parte de la pagina (build de la rama servido en local, navegador integrado):
+- Se despacha en navigator.serviceWorker un mensaje {type: "frontenis-update"} con un MessageChannel, como haria el service worker nuevo.
+- La pagina responde por el puerto: "ok" (asi el service worker sabe que ella se encarga de actualizarse).
+- Como la persona aun no habia tocado nada, la pagina se recarga (tipo de navegacion = reload) y deja la marca de recarga en sessionStorage (maximo una por minuto).
+Limitacion: el navegador integrado no registra service workers en localhost, asi que el cambio real de service worker no se pudo ver; se simula el mensaje que enviaria (ver simulacion-service-worker.txt para la otra mitad).
+La espera "mientras la persona usa la app, recargar al salir" es el mismo codigo de la PR #29 (applyUpdate), ya comprobado alli.
