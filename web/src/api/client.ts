@@ -51,8 +51,8 @@ export class ApiError extends Error {
 }
 
 function historyQuery(f: HistoryFilter): string {
-  const q = [...f.competitionIds.map(i => `competitionIds=${i}`), ...f.trainingIds.map(i => `trainingIds=${i}`)]
-  return q.length ? `?${q.join('&')}` : ''
+  const q = [...f.competitionIds.map(i => `competitionIds=${i}`), ...f.trainingIds.map(i => `trainingIds=${i}`), `ball=${f.ball}`]
+  return `?${q.join('&')}`
 }
 
 async function request<T>(method: string, path: string, body?: unknown, extraHeaders?: Record<string, string>): Promise<T> {

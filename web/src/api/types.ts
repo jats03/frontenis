@@ -1,3 +1,4 @@
+import type { TrainingBall } from '../balls'
 export type Position = 'Delantero' | 'Zaguero'
 export type CompetitionType = 'League' | 'Tournament' | 'RotatingLeague'
 export type CompetitionStatus = 'Draft' | 'GroupStage' | 'Playoffs' | 'Finished'
@@ -85,14 +86,19 @@ export interface PlayerHistory {
   summary: PlayerHistoryRow; partners: Relation[]; rivals: Relation[]
   recent: RecentMatch[]
 }
-/** Origen de los partidos del histórico; sin ids = todos. */
-export interface HistoryFilter { competitionIds: number[]; trainingIds: number[] }
+/**
+ * Origen de los partidos del histórico; sin ids = todos. `ball` es siempre una sola bola (por defecto la preolímpica)
+ * y solo afecta a los partidos de entrenamiento.
+ */
+export interface HistoryFilter { competitionIds: number[]; trainingIds: number[]; ball: TrainingBall }
 
 export interface TrainingSummary {
   id: number; name: string; date: string; pointsPerWin: number; pointsPerLoss: number; matchCount: number
 }
 export interface TrainingMatch {
   id: number; order: number; homeName: string; awayName: string
+  /** Bola con la que se jugó (los partidos antiguos figuran como preolímpica). */
+  ball: TrainingBall
   homePlayerIds: number[]; awayPlayerIds: number[]
   homeScore: number; awayScore: number; homeWon: boolean
   /** Momento en que se apuntó el partido (UTC, con «Z»); null en los partidos antiguos, que no guardaban la hora. */
@@ -113,6 +119,7 @@ export interface TrainingSuggestion {
 export interface NewTrainingMatch {
   home1Id: number; home2Id: number; away1Id: number; away2Id: number
   homeScore: number; awayScore: number
+  ball?: TrainingBall
 }
 
 // ---------- Reservas de entrenamientos ----------

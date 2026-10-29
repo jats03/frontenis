@@ -126,7 +126,8 @@ CREATE TABLE IF NOT EXISTS "TrainingMatches" (
     "Away2Id" integer NOT NULL REFERENCES "Players"("Id"),
     "HomeScore" integer NOT NULL,
     "AwayScore" integer NOT NULL,
-    "PlayedAtUtc" timestamptz NOT NULL
+    "PlayedAtUtc" timestamptz NOT NULL,
+    "Ball" smallint NOT NULL DEFAULT 2 -- 1 = lenta, 2 = preolímpica (por defecto), 3 = olímpica
 );
 CREATE INDEX IF NOT EXISTS "IX_TrainingMatches_SessionId_Order" ON "TrainingMatches"("SessionId", "Order");
 

@@ -17,5 +17,5 @@ public static class CacheKeys
     public static string HistoryPlayer(int playerId, HistoryFilter filter) => $"history:player:{playerId}:{Filter(filter)}";
 
     private static string Filter(HistoryFilter f) =>
-        $"c={string.Join(',', f.CompetitionIds.OrderBy(x => x))};t={string.Join(',', f.TrainingIds.OrderBy(x => x))}";
+        $"c={string.Join(',', f.CompetitionIds.OrderBy(x => x))};t={string.Join(',', f.TrainingIds.OrderBy(x => x))};b={(int)f.Ball}";
 }

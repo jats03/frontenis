@@ -53,7 +53,7 @@ public sealed class TrainingCommands : ITrainingCommands
         var ids = new[] { r.Home1Id, r.Home2Id, r.Away1Id, r.Away2Id };
         var found = await _players.GetByIdsAsync(ids.Distinct().ToList(), ct);
         if (found.Count != ids.Distinct().Count()) throw new NotFoundException("Algún jugador no existe.");
-        session.AddMatch(r.Home1Id, r.Home2Id, r.Away1Id, r.Away2Id, r.HomeScore, r.AwayScore);
+        session.AddMatch(r.Home1Id, r.Home2Id, r.Away1Id, r.Away2Id, r.HomeScore, r.AwayScore, r.Ball);
         await _uow.SaveChangesAsync(ct);
         return await _detail.BuildAsync(session, ct);
     }

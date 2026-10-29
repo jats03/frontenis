@@ -136,6 +136,7 @@ public sealed class FrontenisDbContext : DbContext, IUnitOfWork
             e.ToTable("TrainingMatches");
             e.HasKey(x => x.Id);
             e.Ignore(x => x.HomeWon);
+            e.Property(x => x.Ball).HasConversion<byte>();
             e.HasIndex(x => new { x.SessionId, x.Order });
         });
 

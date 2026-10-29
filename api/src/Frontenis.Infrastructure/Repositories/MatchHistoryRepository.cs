@@ -70,7 +70,9 @@ public sealed class MatchHistoryRepository : IMatchHistoryRepository
     /// <summary>Los partidos de entrenamiento cuentan como un único set a X tantos y siempre puntúan.</summary>
     private async Task<List<PlayedMatch>> TrainingMatchesAsync(HistoryFilter filter, int? playerId, CancellationToken ct)
     {
-        var q = _db.TrainingMatches.AsNoTracking().AsQueryable();
+        // Solo los partidos jugados con la bola del filtro (los anteriores a este dato figuran con la preolímpica).
+        var ball = filter.Ball;
+        var q = _db.TrainingMatches.AsNoTracking().Where(m => m.Ball == ball);
         if (filter.TrainingIds.Count > 0)
         {
             var ids = filter.TrainingIds.ToList();

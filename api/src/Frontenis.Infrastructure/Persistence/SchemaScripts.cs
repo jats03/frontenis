@@ -16,6 +16,10 @@ internal static class SchemaScripts
         // Los entrenamientos ya no indican a cuántos tantos se juega.
         "ALTER TABLE \"TrainingMatches\" DROP COLUMN IF EXISTS \"TargetPoints\";",
 
+        // Tipo de bola de cada partido de entrenamiento (1 = lenta, 2 = preolímpica, 3 = olímpica). Los partidos que ya
+        // existían se quedan con la preolímpica, que es la bola por defecto.
+        "ALTER TABLE \"TrainingMatches\" ADD COLUMN IF NOT EXISTS \"Ball\" smallint NOT NULL DEFAULT 2;",
+
         // Reservas de entrenamientos: plantillas semanales, franjas y asistencias.
         """
         CREATE TABLE IF NOT EXISTS "SlotTemplates" (

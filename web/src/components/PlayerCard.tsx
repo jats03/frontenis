@@ -7,8 +7,9 @@ import type { CardTier } from '../cardStats'
 import { useAsync } from '../hooks'
 import LoadingBlock from './LoadingBlock'
 import PlayerAvatar from './PlayerAvatar'
+import { DEFAULT_BALL } from '../balls'
 
-const ALL: HistoryFilter = { competitionIds: [], trainingIds: [] }
+const ALL: HistoryFilter = { competitionIds: [], trainingIds: [], ball: DEFAULT_BALL }
 
 const TIER_RANK: Record<CardTier, number> = { bronze: 0, silver: 1, gold: 2 }
 const TIER_NAME: Record<CardTier, string> = { bronze: 'bronce', silver: 'plata', gold: 'oro' }
