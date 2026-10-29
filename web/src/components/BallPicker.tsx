@@ -9,7 +9,10 @@ export default function BallPicker({ value, onChange }: Props) {
       <span className="ball-picker-label" aria-hidden="true">Bola</span>
       {BALLS.map(b => (
         <button key={b.key} type="button" role="radio" aria-checked={value === b.key}
-          className={`ball-tag ball-${b.key}${value === b.key ? ' on' : ''}`} onClick={() => onChange(b.key)}>{b.label}</button>
+          className={`ball-tag ball-${b.key}${value === b.key ? ' on' : ''}`} onClick={() => onChange(b.key)}>
+          {b.label}
+          {value === b.key && <small className="ball-sel" aria-hidden="true">(seleccionada)</small>}
+        </button>
       ))}
     </div>
   )

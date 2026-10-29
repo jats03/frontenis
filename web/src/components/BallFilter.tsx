@@ -20,7 +20,10 @@ export default function BallFilter({ value, onChange }: Props) {
       <span className="ball-picker-label" aria-hidden="true">Bola</span>
       {BALLS.map(b => (
         <button key={b.key} type="button" aria-pressed={value.includes(b.key)}
-          className={`ball-tag ball-${b.key}${value.includes(b.key) ? ' on' : ''}`} onClick={() => toggle(b.key)}>{b.label}</button>
+          className={`ball-tag ball-${b.key}${value.includes(b.key) ? ' on' : ''}`} onClick={() => toggle(b.key)}>
+          {b.label}
+          {value.includes(b.key) && <small className="ball-sel" aria-hidden="true">(seleccionada)</small>}
+        </button>
       ))}
     </div>
   )
