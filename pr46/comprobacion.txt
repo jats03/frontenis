@@ -1,0 +1,5 @@
+Prueba en el navegador con la API y Postgres en local (web en el puerto 5174 porque el 5173 lo usa otro proyecto):
+1) Enlace antiguo con dos bolas (?b=Slow,Olympic): se muestra solo la primera (Lenta marcada).
+2) Elegir Preolimpica: queda solo ella marcada y la URL se limpia (es la bola por defecto).
+3) Pulsar la bola ya marcada: sigue marcada (no se puede dejar sin ninguna).
+4) Elegir Olimpica: queda solo ella marcada; URL ?b=Olympic; la peticion al servidor lleva un solo parametro: /api/players/history?balls=Olympic.
