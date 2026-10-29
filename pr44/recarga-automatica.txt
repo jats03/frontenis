@@ -1,0 +1,4 @@
+Prueba con el build de la rama (web/dist servido en local) en el navegador integrado, despachando el evento vite:preloadError sobre la pagina:
+1) Primer aviso (sin recarga previa en el ultimo minuto): el evento queda cancelado (defaultPrevented = true) y la pagina se recarga (tipo de navegacion = reload).
+2) Segundo aviso dentro del minuto: la recarga se omite y el evento NO se cancela (defaultPrevented = false), de modo que el error de descarga sigue su camino hasta la pantalla de fallo con el boton Reintentar en lugar de tragarse en silencio.
+Antes del cambio, el evento se cancelaba siempre, incluso cuando no se recargaba.
