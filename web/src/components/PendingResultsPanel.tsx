@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { confirmAction, confirmDelete, notify } from '../alerts'
 import { api } from '../api/client'
 import type { PendingResult, RejectedResult } from '../api/types'
+import BallTag from './BallTag'
 
 interface Props {
   pending: PendingResult[]
@@ -49,7 +50,7 @@ export default function PendingResultsPanel({ pending, rejected = [], onChanged 
             {pending.map(p => (
               <li key={p.id}>
                 <div><strong>{p.homeName ?? '—'}</strong> – <strong>{p.awayName ?? '—'}</strong></div>
-                <div>{p.sets.map(s => `${s.home}-${s.away}`).join(', ')} <span className="muted">· enviado por {p.playerName}</span></div>
+                <div>{p.sets.map(s => `${s.home}-${s.away}`).join(', ')} <BallTag ball={p.ball} /> <span className="muted">· enviado por {p.playerName}</span></div>
                 <div className="row">
                   <button disabled={busy} onClick={() => void run(() => api.matchSubmissions.approve(p.id), 'Resultado aprobado')}>Aprobar</button>
                   <button className="secondary" disabled={busy} onClick={() => void reject(p)}>Rechazar</button>
@@ -66,7 +67,7 @@ export default function PendingResultsPanel({ pending, rejected = [], onChanged 
             {rejected.map(r => (
               <li key={r.id}>
                 <div><strong>{r.homeName ?? '—'}</strong> – <strong>{r.awayName ?? '—'}</strong></div>
-                <div>{r.sets.map(s => `${s.home}-${s.away}`).join(', ')} <span className="muted">· enviado por {r.playerName}</span></div>
+                <div>{r.sets.map(s => `${s.home}-${s.away}`).join(', ')} <BallTag ball={r.ball} /> <span className="muted">· enviado por {r.playerName}</span></div>
                 <div className="row">
                   <button className="secondary" disabled={busy} onClick={() => void restore(r)}>Recuperar</button>
                   <button className="secondary" disabled={busy} onClick={() => void removeRejected(r)}>Eliminar</button>

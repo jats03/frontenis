@@ -45,6 +45,9 @@ public sealed class Match
     public int HomeSets => Sets.Count(s => s.HomeWon);
     public int AwaySets => Sets.Count(s => !s.HomeWon);
 
+    /// <summary>Bola con la que se jugó. Se elige al registrar el resultado; mientras tanto (y en los partidos anteriores a este dato) es la bola por defecto.</summary>
+    public BallType Ball { get; private set; } = BallTypes.Default;
+
     public int? NextMatchId { get; private set; }
     public Match? NextMatch { get; private set; }
     public BracketSlot? NextSlot { get; private set; }
@@ -82,16 +85,21 @@ public sealed class Match
     }
 
     /// <summary>Registra el resultado por sets. Con 1 set por partido: un set; con 2: dos sets y, si van 1-1, un tercero.</summary>
-    internal void SetResult(IReadOnlyList<SetScore> sets, int setsPerMatch)
+    internal void SetResult(IReadOnlyList<SetScore> sets, int setsPerMatch, BallType? ball = null)
     {
         if (!IsReady) throw new DomainException("El partido aún no tiene las dos parejas definidas.");
         ValidateSets(sets, setsPerMatch);
+        if (ball is { } b) Ball = ValidateBall(b); // sin bola, se conserva la que ya tenía el partido
         Set1Home = sets[0].Home; Set1Away = sets[0].Away;
         Set2Home = sets.Count > 1 ? sets[1].Home : null; Set2Away = sets.Count > 1 ? sets[1].Away : null;
         Set3Home = sets.Count > 2 ? sets[2].Home : null; Set3Away = sets.Count > 2 ? sets[2].Away : null;
         HomeScore = sets.Sum(s => s.Home);
         AwayScore = sets.Sum(s => s.Away);
     }
+
+    /// <exception cref="DomainException">Tipo de bola desconocido.</exception>
+    internal static BallType ValidateBall(BallType ball) =>
+        Enum.IsDefined(ball) ? ball : throw new DomainException("Tipo de bola no válido.");
 
     internal static void ValidateSets(IReadOnlyList<SetScore> sets, int setsPerMatch)
     {
@@ -123,5 +131,6 @@ public sealed class Match
         HomeScore = null;
         AwayScore = null;
         Set1Home = Set1Away = Set2Home = Set2Away = Set3Home = Set3Away = null;
+        Ball = BallTypes.Default;
     }
 }

@@ -34,12 +34,12 @@ public sealed class MatchSubmissionService : IMatchSubmissionService
         var existing = await _submissions.GetByMatchAsync(matchId, ct);
         if (existing is null)
         {
-            existing = MatchSubmission.Create(matchId, playerId, sets);
+            existing = MatchSubmission.Create(matchId, playerId, sets, request.Ball);
             await _submissions.AddAsync(existing, ct);
         }
         else
         {
-            existing.Replace(playerId, sets); // falla si lo envió otro jugador
+            existing.Replace(playerId, sets, request.Ball); // falla si lo envió otro jugador
         }
         await _uow.SaveChangesAsync(ct);
 
@@ -61,7 +61,7 @@ public sealed class MatchSubmissionService : IMatchSubmissionService
     {
         var submission = await _submissions.GetAsync(submissionId, ct) ?? throw new NotFoundException("Envío no encontrado.");
         var competition = await _competitions.GetDetailedByMatchOrThrowAsync(submission.MatchId, ct);
-        var match = competition.RecordResult(submission.MatchId, submission.Sets);
+        var match = competition.RecordResult(submission.MatchId, submission.Sets, submission.Ball);
         _submissions.Remove(submission);
         await _uow.SaveChangesAsync(ct);
         return match.ToDto();
@@ -87,7 +87,7 @@ public sealed class MatchSubmissionService : IMatchSubmissionService
         {
             var m = matches[r.MatchId];
             return new RejectedResultDto(r.Id, r.MatchId, competitionId, m.HomeEntry?.Pair.DisplayName, m.AwayEntry?.Pair.DisplayName,
-                r.PlayerId, names.GetValueOrDefault(r.PlayerId, "—"), r.Sets.Select(x => new SetScoreDto(x.Home, x.Away)).ToList(), r.RejectedAtUtc);
+                r.PlayerId, names.GetValueOrDefault(r.PlayerId, "—"), r.Sets.Select(x => new SetScoreDto(x.Home, x.Away)).ToList(), r.RejectedAtUtc, r.Ball);
         }).ToList();
     }
 
@@ -106,7 +106,7 @@ public sealed class MatchSubmissionService : IMatchSubmissionService
         if (await _submissions.GetByMatchAsync(rejected.MatchId, ct) is not null)
             throw new DomainException("Este partido ya tiene otro resultado pendiente de aprobación.");
 
-        var submission = MatchSubmission.Create(rejected.MatchId, rejected.PlayerId, rejected.Sets);
+        var submission = MatchSubmission.Create(rejected.MatchId, rejected.PlayerId, rejected.Sets, rejected.Ball);
         await _submissions.AddAsync(submission, ct);
         _submissions.RemoveRejected(rejected);
         await _uow.SaveChangesAsync(ct);
@@ -117,5 +117,5 @@ public sealed class MatchSubmissionService : IMatchSubmissionService
 
     private static MatchSubmissionDto ToDto(MatchSubmission s, Competition c, Match m, string playerName) => new(
         s.Id, s.MatchId, c.Id, c.Name, m.HomeEntry?.Pair.DisplayName, m.AwayEntry?.Pair.DisplayName,
-        s.PlayerId, playerName, s.Sets.Select(x => new SetScoreDto(x.Home, x.Away)).ToList(), s.SubmittedAtUtc);
+        s.PlayerId, playerName, s.Sets.Select(x => new SetScoreDto(x.Home, x.Away)).ToList(), s.SubmittedAtUtc, s.Ball);
 }

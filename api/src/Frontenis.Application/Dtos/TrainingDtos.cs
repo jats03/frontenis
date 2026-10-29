@@ -1,3 +1,5 @@
+using Frontenis.Domain.Enums;
+
 namespace Frontenis.Application.Dtos;
 
 public sealed record RenameTrainingRequest(string Name);
@@ -6,7 +8,9 @@ public sealed record RenameTrainingRequest(string Name);
 public sealed record CreateTrainingRequest(string Name, DateTime Date, int PointsPerWin = 3, int PointsPerLoss = 0);
 
 public sealed record AddTrainingMatchRequest(
-    int Home1Id, int Home2Id, int Away1Id, int Away2Id, int HomeScore, int AwayScore);
+    int Home1Id, int Home2Id, int Away1Id, int Away2Id, int HomeScore, int AwayScore,
+    /// <summary>Bola del partido; si se omite, preolímpica.</summary>
+    BallType? Ball = null);
 
 public sealed record TrainingSuggestRequest(IReadOnlyList<int> PlayerIds, int Count = 5);
 
@@ -15,7 +19,7 @@ public sealed record TrainingSummaryDto(
 
 public sealed record TrainingMatchDto(
     int Id, int Order, string HomeName, string AwayName, int[] HomePlayerIds, int[] AwayPlayerIds,
-    int HomeScore, int AwayScore, bool HomeWon, DateTime? PlayedAtUtc);
+    int HomeScore, int AwayScore, bool HomeWon, DateTime? PlayedAtUtc, BallType Ball = BallType.PreOlympic);
 
 public sealed record TrainingRowDto(
     int Rank, string Name, int[] PlayerIds, int Played, int Won, int Lost,

@@ -265,6 +265,18 @@ details.present summary { cursor: pointer; font-weight: 600; min-height: 32px; d
 .tm-score { display: grid; text-align: right; font-variant-numeric: tabular-nums; }
 .tm-score strong { font-size: 1.15rem; }
 .tm-del { grid-column: 1 / -1; justify-self: start; margin-left: 0; }
+/* Etiqueta pequeña con la bola del partido; la bola por defecto (preolímpica) va sin color para no llamar la atención. */
+.ball-tag { --ball: var(--muted); display: inline-block; justify-self: end; margin-top: .15rem; padding: .05rem .5rem; border-radius: 99px; border: 1px solid color-mix(in srgb, var(--ball) 45%, transparent); background: transparent; color: var(--ball); font-size: .7rem; font-weight: 600; line-height: 1.5; }
+.ball-Slow { --ball: #2563eb; }
+.ball-Olympic { --ball: #7c3aed; }
+@media (prefers-color-scheme: dark) { .ball-Slow { --ball: #7aa7ff; } .ball-Olympic { --ball: #b69cff; } }
+.score .ball-tag, .plain .ball-tag, .card p .ball-tag { margin-left: .4rem; }
+.ball-filter .ball-picker { margin: 0; }
+.ball-filter .muted { margin: .4rem 0 0; font-size: .8rem; }
+.ball-picker { display: flex; align-items: center; gap: .4rem; flex-wrap: wrap; margin: .2rem 0 .6rem; }
+.ball-picker-label { flex-basis: 100%; font-size: .85rem; color: var(--muted); }
+.ball-picker .ball-tag { margin: 0; padding: .15rem .65rem; font-size: .82rem; cursor: pointer; }
+.ball-picker .ball-tag.on { background: color-mix(in srgb, var(--ball) 16%, transparent); border-color: var(--ball); }
 
 .content a:not(.button):not(.link-card) { color: var(--link); }
 .content a.link-card { color: inherit; }

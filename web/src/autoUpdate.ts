@@ -74,8 +74,9 @@ export function startAutoUpdate() {
   window.setInterval(checkForUpdate, CHECK_EVERY_MS)
 
   // Vite avisa cuando no se puede descargar un trozo de código (p. ej. porque ya no existe tras un despliegue).
+  // Solo se cancela el error si de verdad se recarga; si no (ya se recargó hace poco), el error sigue su camino hasta
+  // la pantalla de fallo con el botón Reintentar en lugar de quedarse en silencio.
   window.addEventListener('vite:preloadError', event => {
-    event.preventDefault()
-    reloadOnce('trozo de código ausente')
+    if (reloadOnce('trozo de código ausente')) event.preventDefault()
   })
 }

@@ -1,3 +1,4 @@
+using Frontenis.Domain.Enums;
 using Frontenis.Domain.Exceptions;
 
 namespace Frontenis.Domain.Entities;
@@ -14,6 +15,8 @@ public sealed class MatchSubmission
     public int MatchId { get; private set; }
     public int PlayerId { get; private set; }
     public DateTime SubmittedAtUtc { get; private set; }
+    /// <summary>Bola con la que dice el jugador que se jugó.</summary>
+    public BallType Ball { get; private set; } = BallTypes.Default;
 
     public int Set1Home { get; private set; }
     public int Set1Away { get; private set; }
@@ -35,23 +38,24 @@ public sealed class MatchSubmission
     }
 
     /// <summary>Crea el envío. Las reglas del marcador las valida antes la competición.</summary>
-    public static MatchSubmission Create(int matchId, int playerId, IReadOnlyList<SetScore> sets)
+    public static MatchSubmission Create(int matchId, int playerId, IReadOnlyList<SetScore> sets, BallType? ball = null)
     {
         if (matchId <= 0 || playerId <= 0) throw new DomainException("Envío no válido.");
         var s = new MatchSubmission { MatchId = matchId, PlayerId = playerId };
-        s.Replace(playerId, sets);
+        s.Replace(playerId, sets, ball);
         return s;
     }
 
     /// <summary>Sustituye el marcador enviado (solo lo puede hacer quien lo envió).</summary>
     /// <exception cref="DomainException">Otro jugador distinto del que lo envió, o marcador sin sets.</exception>
-    public void Replace(int playerId, IReadOnlyList<SetScore> sets)
+    public void Replace(int playerId, IReadOnlyList<SetScore> sets, BallType? ball = null)
     {
         if (playerId != PlayerId) throw new DomainException("Solo quien envió el resultado puede modificarlo.");
         if (sets.Count is < 1 or > 3) throw new DomainException("El resultado debe tener entre 1 y 3 sets.");
         Set1Home = sets[0].Home; Set1Away = sets[0].Away;
         Set2Home = sets.Count > 1 ? sets[1].Home : null; Set2Away = sets.Count > 1 ? sets[1].Away : null;
         Set3Home = sets.Count > 2 ? sets[2].Home : null; Set3Away = sets.Count > 2 ? sets[2].Away : null;
+        Ball = Match.ValidateBall(ball ?? BallTypes.Default);
         SubmittedAtUtc = DateTime.UtcNow;
     }
 }

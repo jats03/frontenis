@@ -102,6 +102,7 @@ public sealed class FrontenisDbContext : DbContext, IUnitOfWork
             e.HasKey(x => x.Id);
             e.Property(x => x.Phase).HasConversion<byte>();
             e.Property(x => x.NextSlot).HasConversion<byte?>();
+            e.Property(x => x.Ball).HasConversion<byte>();
             e.Ignore(x => x.IsPlayed);
             e.Ignore(x => x.IsReady);
             e.Ignore(x => x.Winner);
@@ -136,6 +137,7 @@ public sealed class FrontenisDbContext : DbContext, IUnitOfWork
             e.ToTable("TrainingMatches");
             e.HasKey(x => x.Id);
             e.Ignore(x => x.HomeWon);
+            e.Property(x => x.Ball).HasConversion<byte>();
             e.HasIndex(x => new { x.SessionId, x.Order });
         });
 
@@ -181,6 +183,7 @@ public sealed class FrontenisDbContext : DbContext, IUnitOfWork
         {
             e.ToTable("MatchSubmissions");
             e.HasKey(x => x.Id);
+            e.Property(x => x.Ball).HasConversion<byte>();
             e.Ignore(x => x.Sets);
             e.HasIndex(x => x.MatchId).IsUnique();      // un único envío pendiente por partido
             e.HasOne<Match>().WithMany().HasForeignKey(x => x.MatchId).OnDelete(DeleteBehavior.Cascade);
@@ -191,6 +194,7 @@ public sealed class FrontenisDbContext : DbContext, IUnitOfWork
         {
             e.ToTable("RejectedSubmissions");
             e.HasKey(x => x.Id);
+            e.Property(x => x.Ball).HasConversion<byte>();
             e.Ignore(x => x.Sets);
             e.HasIndex(x => x.CompetitionId);
             // Sin claves foráneas: es una copia de seguridad que debe sobrevivir aunque cambie el partido o el jugador.

@@ -94,7 +94,8 @@ CREATE TABLE IF NOT EXISTS "Matches" (
     -- Tantos totales (suma de sets) pueden empatar; el ganador se decide por sets.
     "Set1Home" integer NULL, "Set1Away" integer NULL,
     "Set2Home" integer NULL, "Set2Away" integer NULL,
-    "Set3Home" integer NULL, "Set3Away" integer NULL
+    "Set3Home" integer NULL, "Set3Away" integer NULL,
+    "Ball" smallint NOT NULL DEFAULT 2       -- 1 = lenta, 2 = preolímpica (por defecto), 3 = olímpica
 );
 CREATE INDEX IF NOT EXISTS "IX_Matches_CompetitionId_Phase_GroupId_Round" ON "Matches"("CompetitionId", "Phase", "GroupId", "Round");
 
@@ -126,7 +127,8 @@ CREATE TABLE IF NOT EXISTS "TrainingMatches" (
     "Away2Id" integer NOT NULL REFERENCES "Players"("Id"),
     "HomeScore" integer NOT NULL,
     "AwayScore" integer NOT NULL,
-    "PlayedAtUtc" timestamptz NOT NULL
+    "PlayedAtUtc" timestamptz NOT NULL,
+    "Ball" smallint NOT NULL DEFAULT 2 -- 1 = lenta, 2 = preolímpica (por defecto), 3 = olímpica
 );
 CREATE INDEX IF NOT EXISTS "IX_TrainingMatches_SessionId_Order" ON "TrainingMatches"("SessionId", "Order");
 
@@ -191,7 +193,8 @@ CREATE TABLE IF NOT EXISTS "MatchSubmissions" (
     "SubmittedAtUtc" timestamptz NOT NULL,
     "Set1Home" integer NOT NULL, "Set1Away" integer NOT NULL,
     "Set2Home" integer NULL, "Set2Away" integer NULL,
-    "Set3Home" integer NULL, "Set3Away" integer NULL
+    "Set3Home" integer NULL, "Set3Away" integer NULL,
+    "Ball" smallint NOT NULL DEFAULT 2
 );
 CREATE UNIQUE INDEX IF NOT EXISTS "IX_MatchSubmissions_MatchId" ON "MatchSubmissions"("MatchId");
 CREATE INDEX IF NOT EXISTS "IX_MatchSubmissions_PlayerId" ON "MatchSubmissions"("PlayerId");
@@ -206,7 +209,8 @@ CREATE TABLE IF NOT EXISTS "RejectedSubmissions" (
     "RejectedAtUtc" timestamptz NOT NULL,
     "Set1Home" integer NOT NULL, "Set1Away" integer NOT NULL,
     "Set2Home" integer NULL, "Set2Away" integer NULL,
-    "Set3Home" integer NULL, "Set3Away" integer NULL
+    "Set3Home" integer NULL, "Set3Away" integer NULL,
+    "Ball" smallint NOT NULL DEFAULT 2
 );
 CREATE INDEX IF NOT EXISTS "IX_RejectedSubmissions_CompetitionId" ON "RejectedSubmissions"("CompetitionId");
 

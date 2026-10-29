@@ -15,6 +15,8 @@ import { useAsync, useDocumentTitle } from '../hooks'
 import LoadingBlock from '../components/LoadingBlock'
 import PlayerName from '../components/PlayerName'
 import { isDraftEmpty, loadDraft, saveDraft } from '../matchDraft'
+import BallPicker from '../components/BallPicker'
+import { ballLabel, DEFAULT_BALL, type BallType } from '../balls'
 
 type Slots = [string, string, string, string]
 const EMPTY: Slots = ['', '', '', '']
@@ -69,11 +71,15 @@ export default function TrainingDetailPage() {
   const [homeScore, setHomeScore] = useState(draft0.homeScore)
   const [awayScore, setAwayScore] = useState(draft0.awayScore)
   const [formError, setFormError] = useState<string | null>(null)
+  // Bola elegida a mano; mientras no se toque se propone la del último partido de la sesión (o la preolímpica).
+  const [ballChoice, setBallChoice] = useState<BallType | null>(null)
   const [presentChosen, setPresentChosen] = useState<Set<number> | null>(null) // null = los que ya han jugado
   const [suggestions, setSuggestions] = useState<TrainingSuggestion[] | null>(null)
   const [suggestError, setSuggestError] = useState<string | null>(null)
 
   const list: Player[] = useMemo(() => players.data ?? [], [players.data])
+  const lastBall = data?.matches.at(-1)?.ball ?? DEFAULT_BALL
+  const ball = ballChoice ?? lastBall
   const hasDraft = !isDraftEmpty({ slots, homeScore, awayScore })
 
   useEffect(() => { saveDraft(id, { slots, homeScore, awayScore }) }, [id, slots, homeScore, awayScore])
@@ -100,11 +106,12 @@ export default function TrainingDetailPage() {
     try {
       const updated = await api.trainings.addMatch(id, {
         home1Id: h1, home2Id: h2, away1Id: a1, away2Id: a2,
-        homeScore: Number(homeScore), awayScore: Number(awayScore),
+        homeScore: Number(homeScore), awayScore: Number(awayScore), ball,
       })
       commit(updated)
       notify('Partido añadido')
       setSlots(EMPTY); setHomeScore(''); setAwayScore('')
+      setBallChoice(null) // la siguiente propuesta es la bola de este partido
       setFormOpen(false)
       if (suggestions) void suggest()
     } catch (e) { setFormError(e instanceof Error ? e.message : 'Error') }
@@ -198,6 +205,7 @@ export default function TrainingDetailPage() {
                 <label>Marcador pareja A<input inputMode="numeric" value={homeScore} onChange={e => setHomeScore(e.target.value)} /></label>
                 <label>Marcador pareja B<input inputMode="numeric" value={awayScore} onChange={e => setAwayScore(e.target.value)} /></label>
               </div>
+              <BallPicker value={ball} onChange={setBallChoice} />
               {formError && <p className="error">{formError}</p>}
               <div className="row">
                 <button onClick={() => void addMatch()}>Guardar partido</button>
@@ -225,6 +233,7 @@ export default function TrainingDetailPage() {
                     </div>
                     <div className="tm-score">
                       <strong>{m.homeScore} - {m.awayScore}</strong>
+                      <span className={`ball-tag ball-${m.ball}`}>{ballLabel(m.ball)}</span>
                     </div>
                     {isAdmin && <button className="secondary small tm-del" onClick={() => void removeMatch(m.id)}>Borrar</button>}
                   </li>

@@ -1,4 +1,6 @@
 import { useSearchParams } from 'react-router-dom'
+import { BALLS, DEFAULT_BALL, type BallType } from '../balls'
+import BallFilter from './BallFilter'
 import { api } from '../api/client'
 import type { HistoryFilter } from '../api/types'
 import { useAsync } from '../hooks'
@@ -6,14 +8,23 @@ import { useAsync } from '../hooks'
 const parse = (v: string | null): number[] =>
   (v ?? '').split(',').map(Number).filter(n => Number.isInteger(n) && n > 0)
 
-/** El filtro vive en la URL (?c=1,2&t=3) para poder compartirlo y mantenerlo al navegar entre páginas del histórico. */
+/** Bolas marcadas en la URL (?b=Slow,Olympic), en orden y sin repetir; si no hay ninguna válida, la preolímpica. */
+const parseBalls = (v: string | null): BallType[] => {
+  const wanted = (v ?? '').split(',')
+  const balls = BALLS.map(b => b.key).filter(k => wanted.includes(k))
+  return balls.length ? balls : [DEFAULT_BALL]
+}
+
+/** El filtro vive en la URL (?c=1,2&t=3&b=Slow) para poder compartirlo y mantenerlo al navegar entre páginas del histórico. */
 export function useHistoryFilter(): [HistoryFilter, (f: HistoryFilter) => void, string] {
   const [params, setParams] = useSearchParams()
-  const filter: HistoryFilter = { competitionIds: parse(params.get('c')), trainingIds: parse(params.get('t')) }
+  const filter: HistoryFilter = { competitionIds: parse(params.get('c')), trainingIds: parse(params.get('t')), balls: parseBalls(params.get('b')) }
   const set = (f: HistoryFilter) => {
     const next = new URLSearchParams()
     if (f.competitionIds.length) next.set('c', f.competitionIds.join(','))
     if (f.trainingIds.length) next.set('t', f.trainingIds.join(','))
+    const balls = f.balls ?? [DEFAULT_BALL]
+    if (balls.join() !== DEFAULT_BALL) next.set('b', balls.join(',')) // la bola por defecto no hace falta ponerla en la URL
     setParams(next, { replace: true })
   }
   return [filter, set, params.toString() ? `?${params.toString()}` : '']
@@ -61,6 +72,12 @@ export default function SourceFilter({ value, onChange }: { value: HistoryFilter
   const trainings = useAsync(() => api.trainings.list(), [], '/api/trainings')
   const count = value.competitionIds.length + value.trainingIds.length
   return (
+    <>
+    {/* Se pueden marcar varias bolas, pero siempre queda al menos una (por defecto, la preolímpica). */}
+    <div className="card ball-filter">
+      <BallFilter value={value.balls ?? [DEFAULT_BALL]} onChange={balls => onChange({ ...value, balls })} />
+      <p className="muted">Solo cuentan los partidos (de entrenamiento y de competición) jugados con las bolas marcadas. Siempre hay al menos una.</p>
+    </div>
     <details className="card source-filter" open={count > 0}>
       <summary>
         Filtrar partidos: {count === 0 ? 'todos (competiciones y entrenamientos)'
@@ -73,7 +90,8 @@ export default function SourceFilter({ value, onChange }: { value: HistoryFilter
         <Group legend="Entrenamientos" items={(trainings.data ?? []).map(t => ({ id: t.id, name: t.name }))}
           selected={value.trainingIds} onChange={ids => onChange({ ...value, trainingIds: ids })} />
       </div>
-      {count > 0 && <button className="secondary" onClick={() => onChange({ competitionIds: [], trainingIds: [] })}>Quitar filtros</button>}
+      {count > 0 && <button className="secondary" onClick={() => onChange({ ...value, competitionIds: [], trainingIds: [] })}>Quitar filtros</button>}
     </details>
+    </>
   )
 }

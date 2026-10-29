@@ -8,6 +8,7 @@ import { useAsync } from '../hooks'
 import LoadingBlock from './LoadingBlock'
 import PlayerAvatar from './PlayerAvatar'
 
+// La carta de nivel cuenta todos los partidos jugados, sea cual sea la bola.
 const ALL: HistoryFilter = { competitionIds: [], trainingIds: [] }
 
 const TIER_RANK: Record<CardTier, number> = { bronze: 0, silver: 1, gold: 2 }

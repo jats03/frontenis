@@ -1,3 +1,4 @@
+import type { BallType } from '../balls'
 export type Position = 'Delantero' | 'Zaguero'
 export type CompetitionType = 'League' | 'Tournament' | 'RotatingLeague'
 export type CompetitionStatus = 'Draft' | 'GroupStage' | 'Playoffs' | 'Finished'
@@ -36,18 +37,20 @@ export interface MatchDto {
   homeScore: number | null; awayScore: number | null
   isPlayed: boolean; winnerEntryId: number | null
   sets: SetScore[] | null; homeSets: number | null; awaySets: number | null
+  /** Bola con la que se jugó (preolímpica por defecto). */
+  ball: BallType
 }
 export interface SetScore { home: number; away: number }
 /** Resultado enviado que el administrador rechazó; se conserva por si se rechazó sin querer. */
 export interface RejectedResult {
   id: number; matchId: number; competitionId: number; homeName: string | null; awayName: string | null
-  playerId: number; playerName: string; sets: SetScore[]; rejectedAtUtc: string
+  playerId: number; playerName: string; sets: SetScore[]; rejectedAtUtc: string; ball: BallType
 }
 /** Resultado enviado por un jugador desde su dispositivo, pendiente de aprobación del administrador. */
 export interface PendingResult {
   id: number; matchId: number; competitionId: number; competitionName: string
   homeName: string | null; awayName: string | null
-  playerId: number; playerName: string; sets: SetScore[]; submittedAtUtc: string
+  playerId: number; playerName: string; sets: SetScore[]; submittedAtUtc: string; ball: BallType
 }
 export interface CompetitionDetail {
   summary: CompetitionSummary; groups: Group[]; pairs: PairDto[]; matches: MatchDto[]
@@ -85,14 +88,20 @@ export interface PlayerHistory {
   summary: PlayerHistoryRow; partners: Relation[]; rivals: Relation[]
   recent: RecentMatch[]
 }
-/** Origen de los partidos del histórico; sin ids = todos. */
-export interface HistoryFilter { competitionIds: number[]; trainingIds: number[] }
+/**
+ * Origen de los partidos del histórico; sin ids = todos. `balls` son las bolas que cuentan (una o varias; la pantalla
+ * del histórico siempre envía al menos una, por defecto la preolímpica). Sin `balls` cuentan todas: solo lo usa la
+ * carta de nivel del jugador.
+ */
+export interface HistoryFilter { competitionIds: number[]; trainingIds: number[]; balls?: BallType[] }
 
 export interface TrainingSummary {
   id: number; name: string; date: string; pointsPerWin: number; pointsPerLoss: number; matchCount: number
 }
 export interface TrainingMatch {
   id: number; order: number; homeName: string; awayName: string
+  /** Bola con la que se jugó (los partidos antiguos figuran como preolímpica). */
+  ball: BallType
   homePlayerIds: number[]; awayPlayerIds: number[]
   homeScore: number; awayScore: number; homeWon: boolean
   /** Momento en que se apuntó el partido (UTC, con «Z»); null en los partidos antiguos, que no guardaban la hora. */
@@ -113,6 +122,7 @@ export interface TrainingSuggestion {
 export interface NewTrainingMatch {
   home1Id: number; home2Id: number; away1Id: number; away2Id: number
   homeScore: number; awayScore: number
+  ball?: BallType
 }
 
 // ---------- Reservas de entrenamientos ----------
