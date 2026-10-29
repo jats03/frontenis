@@ -89,8 +89,8 @@ export interface PlayerHistory {
   recent: RecentMatch[]
 }
 /**
- * Origen de los partidos del histórico; sin ids = todos. `balls` son las bolas que cuentan (una o varias; la pantalla
- * del histórico siempre envía al menos una, por defecto la preolímpica). Sin `balls` cuentan todas: solo lo usa la
+ * Origen de los partidos del histórico; sin ids = todos. `balls` son las bolas que cuentan: la pantalla del histórico
+ * envía siempre una sola (por defecto la preolímpica; la API admite varias). Sin `balls` cuentan todas: solo lo usa la
  * carta de nivel del jugador.
  */
 export interface HistoryFilter { competitionIds: number[]; trainingIds: number[]; balls?: BallType[] }
