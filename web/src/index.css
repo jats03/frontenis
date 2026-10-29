@@ -276,6 +276,10 @@ details.present summary { cursor: pointer; font-weight: 600; min-height: 32px; d
 .ball-picker { display: flex; align-items: center; gap: .4rem; flex-wrap: wrap; margin: .2rem 0 .6rem; }
 .ball-picker-label { flex-basis: 100%; font-size: .85rem; color: var(--muted); }
 .ball-picker .ball-tag { margin: 0; padding: .15rem .65rem; font-size: .82rem; cursor: pointer; }
+/* La bola marcada lleva debajo, en pequeño, la palabra «(seleccionada)». */
+.ball-picker .ball-tag { display: inline-flex; flex-direction: column; align-items: center; }
+.ball-sel { display: block; font-size: .6rem; font-weight: 500; line-height: 1.1; opacity: .8; }
+.ball-picker .ball-tag.on { border-radius: 14px; padding-bottom: .1rem; }
 .ball-picker .ball-tag.on { background: color-mix(in srgb, var(--ball) 16%, transparent); border-color: var(--ball); }
 
 .content a:not(.button):not(.link-card) { color: var(--link); }
