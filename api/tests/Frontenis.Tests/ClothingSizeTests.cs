@@ -29,6 +29,37 @@ public class ClothingSizeTests
     }
 
     [Theory]
+    [InlineData("sm", "SM")]
+    [InlineData(" 4xlh ", "4XLH")]
+    [InlineData("XXLM", "XXLM")]
+    public void Adult_sizes_come_in_woman_and_man(string input, string expected)
+    {
+        var p = NewPlayer();
+        p.SetClothingSizes(input, input);
+        Assert.Equal((expected, expected), (p.TopSize, p.BottomSize));
+    }
+
+    [Fact]
+    public void Offered_sizes_are_children_plus_each_adult_size_for_woman_and_man_without_the_XS()
+    {
+        Assert.Equal(new[] { "6", "8", "10", "12", "14", "16" }, ClothingSizes.Offered.Take(6));
+        Assert.Equal(new[] { "SM", "SH", "MM", "MH", "LM", "LH", "XLM", "XLH", "XXLM", "XXLH", "3XLM", "3XLH", "4XLM", "4XLH" },
+            ClothingSizes.Offered.Skip(6));
+        Assert.DoesNotContain("XS", ClothingSizes.Offered);
+        Assert.All(ClothingSizes.Offered, s => Assert.Contains(s, ClothingSizes.Allowed));
+    }
+
+    [Theory]
+    [InlineData("XS")]
+    [InlineData("3XL")]
+    public void Sizes_saved_before_the_split_are_still_accepted(string legacy)
+    {
+        var p = NewPlayer();
+        p.SetClothingSizes(legacy, legacy);
+        Assert.Equal((legacy, legacy), (p.TopSize, p.BottomSize));
+    }
+
+    [Theory]
     [InlineData(null)]
     [InlineData("")]
     [InlineData("   ")]
@@ -43,6 +74,9 @@ public class ClothingSizeTests
 
     [Theory]
     [InlineData("XXXL")]
+    [InlineData("5XLM")]
+    [InlineData("XSM")]
+    [InlineData("SX")]
     [InlineData("7")]
     [InlineData("grande")]
     public void An_unknown_size_is_rejected_and_nothing_changes(string bad)
