@@ -102,7 +102,7 @@ export default function ReservasPage() {
             <h2 className="week-title">{weekTitle(monday)}</h2>
             {weekSlots.some(isRemindable) && (
               <ShareImageButton label="Recordar la semana por WhatsApp"
-                onShare={() => exportAttendanceImage('Entrenamientos', weekTitle(monday), weekSlots.filter(isRemindable), `entrenos_${monday}.png`)} />
+                onShare={() => exportAttendanceImage('Entrenamientos', weekSlots.filter(isRemindable), `entrenos_${monday}.png`)} />
             )}
             {days.map(([date, daySlots]) => (
               <section key={date} aria-labelledby={`dia-${date}`}>
@@ -125,7 +125,7 @@ export default function ReservasPage() {
                     {isRemindable(slot) && (
                       <ShareImageButton label="Avisar por WhatsApp"
                         ariaLabel={`Avisar por WhatsApp del entreno de ${formatDate(slot.date)}`}
-                        onShare={() => exportAttendanceImage('Entrenamiento', formatDate(slot.date), [slot], `entreno_${slot.date}_${slot.start.slice(0, 2)}h.png`)} />
+                        onShare={() => exportAttendanceImage('Entrenamiento', [slot], `entreno_${slot.date}_${slot.start.slice(0, 2)}h.png`)} />
                     )}
                   </SlotCard>
                 ))}

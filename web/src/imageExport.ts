@@ -79,7 +79,7 @@ function layoutTable(ctx: CanvasRenderingContext2D, t: Table, width: number): { 
   return { xs, rows }
 }
 
-async function render(title: string, subtitle: string, blocks: Block[], width = W): Promise<Blob> {
+async function render(title: string, subtitle: string | null, blocks: Block[], width = W): Promise<Blob> {
   const logo = await loadLogo()
   const measure = document.createElement('canvas').getContext('2d')!
   const layouts = new Map<Table, ReturnType<typeof layoutTable>>()
@@ -106,10 +106,12 @@ async function render(title: string, subtitle: string, blocks: Block[], width = 
   const tx = logo ? PAD + 90 : PAD
   ctx.fillStyle = '#111827'
   ctx.font = 'bold 30px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif'
-  ctx.fillText(title, tx, 48, width - tx - PAD)
-  ctx.fillStyle = '#6b7280'
-  ctx.font = '18px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif'
-  ctx.fillText(subtitle, tx, 82)
+  ctx.fillText(title, tx, subtitle ? 48 : 59, width - tx - PAD)
+  if (subtitle) {
+    ctx.fillStyle = '#6b7280'
+    ctx.font = '18px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif'
+    ctx.fillText(subtitle, tx, 82)
+  }
 
   let y = headerH + 10
   const inner = width - PAD * 2
@@ -228,7 +230,7 @@ export async function exportMatchesImage(competitionName: string, matches: Match
  * Imagen de los apuntados a cada entreno, tal como se ven en la app, para mandarla por WhatsApp en vez de la
  * plantilla de texto (`reminders.ts`, que se conserva). Las franjas se agrupan por día.
  */
-export async function exportAttendanceImage(title: string, subtitle: string, slots: Slot[], filename: string) {
+export async function exportAttendanceImage(title: string, slots: Slot[], filename: string) {
   const days = new Map<string, Slot[]>()
   for (const s of [...slots].sort((a, b) => a.date.localeCompare(b.date) || a.start.localeCompare(b.start))) {
     days.set(s.date, [...(days.get(s.date) ?? []), s])
@@ -243,5 +245,5 @@ export async function exportAttendanceImage(title: string, subtitle: string, slo
       aligns: ['center', 'left'] as ('left' | 'center')[],
     })),
   }))
-  await deliver(await render(title, subtitle, blocks, 560), filename)
+  await deliver(await render(title, null, blocks, 560), filename)
 }
