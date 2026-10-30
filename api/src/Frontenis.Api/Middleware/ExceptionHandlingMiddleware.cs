@@ -84,6 +84,7 @@ public sealed class ExceptionHandlingMiddleware
         DomainException => (StatusCodes.Status400BadRequest, "Solicitud no válida", ex.Message),
         NotFoundException => (StatusCodes.Status404NotFound, "No encontrado", ex.Message),
         UnauthorizedAppException => (StatusCodes.Status401Unauthorized, "No autorizado", ex.Message),
+        ForbiddenAppException => (StatusCodes.Status403Forbidden, "Sin permiso", ex.Message),
         TooManyAttemptsException => (StatusCodes.Status429TooManyRequests, "Demasiados intentos", ex.Message),
         ConflictException => (StatusCodes.Status409Conflict, "Conflicto", ex.Message),
         DbUpdateException { InnerException: PostgresException { SqlState: UniqueViolation } } =>

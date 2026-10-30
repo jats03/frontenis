@@ -13,4 +13,13 @@ public interface IClothingSizeService
     Task<ClothingSizeDto> SaveForDeviceAsync(string? deviceToken, int playerId, SaveClothingSizeRequest request, CancellationToken ct = default);
     /// <summary>Tallas de todos los jugadores (administrador), sin el jugador comodín.</summary>
     Task<IReadOnlyList<ClothingSizeDto>> ListAllAsync(CancellationToken ct = default);
+    /// <summary>Resumen de todos los jugadores para quien el administrador ha autorizado (el titular del dispositivo, no sus apadrinados).</summary>
+    /// <exception cref="Frontenis.Application.Exceptions.UnauthorizedAppException">Dispositivo sin vincular.</exception>
+    /// <exception cref="Frontenis.Application.Exceptions.ForbiddenAppException">El titular no tiene acceso al resumen.</exception>
+    Task<IReadOnlyList<ClothingSizeDto>> ListAllForDeviceAsync(string? deviceToken, CancellationToken ct = default);
+    /// <summary>Jugadores a los que el administrador ha dado acceso al resumen de tallas.</summary>
+    Task<IReadOnlyList<PlayerRefDto>> ListViewersAsync(CancellationToken ct = default);
+    /// <summary>Da o quita a un jugador el acceso al resumen de tallas (administrador).</summary>
+    /// <exception cref="Frontenis.Domain.Exceptions.NotFoundException">El jugador no existe.</exception>
+    Task<IReadOnlyList<PlayerRefDto>> SetViewerAsync(int playerId, bool allowed, CancellationToken ct = default);
 }

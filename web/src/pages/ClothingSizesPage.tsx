@@ -1,63 +1,55 @@
 import { api } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
+import ClothingSizesSummary from '../components/ClothingSizesSummary'
 import LoadingBlock from '../components/LoadingBlock'
 import MyClothingSizes from '../components/MyClothingSizes'
 import PageHeader from '../components/PageHeader'
-import { isIncomplete, sizeCounts } from '../clothing'
+import SizeViewersPanel from '../components/SizeViewersPanel'
 import { useAsync, useDocumentTitle } from '../hooks'
 import { useDevice } from '../useDevice'
 
 /**
- * Tallas de ropa. El administrador ve las de todos los jugadores con el recuento por talla (para el pedido);
- * quien tiene su dispositivo identificado indica las suyas y las de sus apadrinados.
+ * Tallas de ropa. Quien tiene su dispositivo identificado indica las suyas y las de sus apadrinados; el administrador,
+ * y los jugadores a los que da acceso, ven además el resumen de todos (el recuento por talla sirve para el pedido).
  */
 export default function ClothingSizesPage() {
   useDocumentTitle('Tallas de ropa')
   const { isAdmin } = useAuth()
   const device = useDevice()
-  const sizes = useAsync(() => (isAdmin ? api.clothingSizes.all() : Promise.resolve([])), [isAdmin])
 
-  if (!isAdmin) {
-    if (device.me === undefined) return <LoadingBlock />
-    if (device.me) return <MyClothingSizes me={device.me} />
-    return <><h1>Tallas de ropa</h1><p className="error">Identifícate en Inicio para indicar tus tallas.</p></>
-  }
-  const rows = sizes.data ?? []
-  const missing = rows.filter(isIncomplete)
-
+  if (isAdmin) return <AdminSizes />
+  if (device.me === undefined) return <LoadingBlock />
+  if (!device.me) return <><h1>Tallas de ropa</h1><p className="error">Identifícate en Inicio para indicar tus tallas.</p></>
   return (
     <>
-      <PageHeader title="Tallas de ropa" subtitle={`${rows.length - missing.length} de ${rows.length} jugadores con las dos tallas`} />
-      {sizes.error && <p className="error">{sizes.error}</p>}
-      {sizes.loading && !sizes.data && <LoadingBlock />}
-      {sizes.data && (
-        <>
-          <h2 className="section-title">Camisetas</h2>
-          <Chips rows={sizeCounts(rows, r => r.topSize)} />
-          <h2 className="section-title">Pantalones</h2>
-          <Chips rows={sizeCounts(rows, r => r.bottomSize)} />
-          <h2 className="section-title">Por jugador</h2>
-          <div className="card">
-            <table className="size-table">
-              <thead><tr><th>Jugador</th><th>Camiseta</th><th>Pantalón</th></tr></thead>
-              <tbody>
-                {rows.map(r => (
-                  <tr key={r.playerId}>
-                    <td>{r.name}</td>
-                    <td className={r.topSize ? '' : 'size-missing'}>{r.topSize ?? 'Falta'}</td>
-                    <td className={r.bottomSize ? '' : 'size-missing'}>{r.bottomSize ?? 'Falta'}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </>
-      )}
+      <MyClothingSizes me={device.me} />
+      {device.me.canViewSizes && <Everybody />}
     </>
   )
 }
 
-function Chips({ rows }: { rows: { size: string; count: number }[] }) {
-  if (rows.length === 0) return <p className="muted">Aún no hay ninguna.</p>
-  return <ul className="size-chips">{rows.map(c => <li key={c.size}><strong>{c.size}</strong> × {c.count}</li>)}</ul>
+/** Resumen de todos los jugadores para quien el administrador ha autorizado. */
+function Everybody() {
+  const all = useAsync(() => api.device.allSizes(), [])
+  return (
+    <>
+      <h2 className="section-title">Todos los jugadores</h2>
+      {all.error && <p className="error">{all.error}</p>}
+      {!all.data && !all.error && <LoadingBlock />}
+      {all.data && <ClothingSizesSummary rows={all.data} />}
+    </>
+  )
+}
+
+function AdminSizes() {
+  const sizes = useAsync(() => api.clothingSizes.all(), [])
+  return (
+    <>
+      <PageHeader title="Tallas de ropa" subtitle="Camiseta y pantalón de cada jugador" />
+      {sizes.error && <p className="error">{sizes.error}</p>}
+      {sizes.loading && !sizes.data && <LoadingBlock />}
+      {sizes.data && <ClothingSizesSummary rows={sizes.data} />}
+      <SizeViewersPanel />
+    </>
+  )
 }

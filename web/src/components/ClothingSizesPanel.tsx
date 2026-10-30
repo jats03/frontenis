@@ -45,7 +45,7 @@ export default function ClothingSizesPanel({ rows, onChange }: { rows: ClothingS
           {missing > 0 ? (missing === 1 ? 'Falta 1 persona' : `Faltan ${missing} personas`) : 'Completas'}
         </span>
       </summary>
-      <p className="muted">Indica la talla de camiseta y de pantalón. Para niños: 6 a 16.</p>
+      <p className="muted">Indica la talla de camiseta y de pantalón.</p>
       {error && <p className="error" role="alert">{error}</p>}
       <ul className="plain sizes-list">
         {rows.map(r => (

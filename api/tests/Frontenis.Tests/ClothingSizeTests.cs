@@ -117,4 +117,44 @@ public class ClothingSizeTests
         Assert.Equal(all.Select(r => r.Name).OrderBy(n => n), all.Select(r => r.Name));
         Assert.Equal(("L", "XL"), (all.Single(r => r.PlayerId == 1).TopSize, all.Single(r => r.PlayerId == 1).BottomSize));
     }
+
+    [Fact]
+    public async Task Only_a_player_the_admin_authorized_sees_everybody_and_only_the_owner_counts()
+    {
+        var (w, service) = await Linked(2);
+        await service.SaveForDeviceAsync(PhoneA, 1, new SaveClothingSizeRequest("M", "L"));
+
+        await Assert.ThrowsAsync<ForbiddenAppException>(() => service.ListAllForDeviceAsync(PhoneA));   // sin permiso
+        await Assert.ThrowsAsync<UnauthorizedAppException>(() => service.ListAllForDeviceAsync(null));  // sin vincular
+
+        await service.SetViewerAsync(2, true);                                                          // el apadrinado tiene permiso, el titular no
+        await Assert.ThrowsAsync<ForbiddenAppException>(() => service.ListAllForDeviceAsync(PhoneA));
+
+        await service.SetViewerAsync(1, true);
+        var all = await service.ListAllForDeviceAsync(PhoneA);
+        Assert.Equal(5, all.Count);
+        Assert.Equal("M", all.Single(r => r.PlayerId == 1).TopSize);
+        Assert.True((await w.Links().GetMeAsync(PhoneA))!.CanViewSizes);
+    }
+
+    [Fact]
+    public async Task The_admin_grants_and_revokes_access_and_lists_who_has_it()
+    {
+        var (w, service) = await Linked();
+        var start = w.Uow.Saves;
+
+        Assert.Empty(await service.ListViewersAsync());
+        var viewers = await service.SetViewerAsync(3, true);
+        Assert.Equal(new[] { 3 }, viewers.Select(v => v.Id));
+        await service.SetViewerAsync(3, true);                                  // repetir no guarda de nuevo
+        Assert.Equal(start + 1, w.Uow.Saves);
+
+        Assert.False((await w.Links().GetMeAsync(PhoneA))!.CanViewSizes);
+        Assert.Empty(await service.SetViewerAsync(3, false));
+        Assert.Equal(start + 2, w.Uow.Saves);
+
+        await Assert.ThrowsAsync<NotFoundException>(() => service.SetViewerAsync(99, true));
+        w.Players.Items.Add(Player.CreateReserve().WithId(9));
+        await Assert.ThrowsAsync<DomainException>(() => service.SetViewerAsync(9, true));
+    }
 }

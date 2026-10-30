@@ -28,6 +28,12 @@ public sealed class Player
     /// <summary>Talla de la parte de abajo (pantalón); null = aún sin indicar.</summary>
     public string? BottomSize { get; private set; }
 
+    /// <summary>El administrador le ha dado acceso al resumen de tallas de todos los jugadores.</summary>
+    public bool CanViewSizes { get; private set; }
+
+    /// <summary>Da o quita el acceso al resumen de tallas de todos los jugadores.</summary>
+    public void SetCanViewSizes(bool allowed) => CanViewSizes = allowed;
+
     /// <summary>Guarda las tallas de ropa (vacío = sin indicar).</summary>
     /// <exception cref="DomainException">Alguna talla no es válida.</exception>
     public void SetClothingSizes(string? top, string? bottom)

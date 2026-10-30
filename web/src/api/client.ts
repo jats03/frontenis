@@ -2,7 +2,7 @@ import type {
   CompetitionDetail, CompetitionSummary, CreateCompetition, GroupStandings, MatchDto,
   PairDto, PairingPreview, Player, PlayerHistory, PlayerHistoryRow, Position, SetScore,
   HistoryFilter, NewTrainingMatch, TrainingMatchEdit, TrainingDetail, TrainingSuggestion, TrainingSummary,
-  AuditPage, AuditQuery, ClothingSize, PendingResult, RejectedResult, DeviceLink, DeviceMe, DevicePlayer, PlayerDelegateRow, SaveSlot, SaveSlotTemplate, Slot, SlotTemplate,
+  AuditPage, AuditQuery, ClothingSize, PlayerRef, PendingResult, RejectedResult, DeviceLink, DeviceMe, DevicePlayer, PlayerDelegateRow, SaveSlot, SaveSlotTemplate, Slot, SlotTemplate,
 } from './types'
 import { deviceHeaders, deviceToken, hasDeviceToken } from '../device'
 import type { BallType } from '../balls'
@@ -240,12 +240,20 @@ export const api = {
     unlink: () => request<void>('DELETE', '/api/device/link', undefined, deviceHeaders()),
     /** Tallas de ropa del titular de este dispositivo y de sus apadrinados. */
     sizes: () => request<ClothingSize[]>('GET', '/api/device/sizes', undefined, deviceHeaders()),
+    /** Resumen de tallas de todos los jugadores (solo si el administrador ha dado acceso). */
+    allSizes: () => request<ClothingSize[]>('GET', '/api/device/sizes/all', undefined, deviceHeaders()),
     saveSizes: (playerId: number, sizes: { topSize: string | null; bottomSize: string | null }) =>
       request<ClothingSize>('PUT', `/api/device/sizes/${playerId}`, sizes, deviceHeaders()),
   },
 
   /** Tallas de ropa de todos los jugadores (solo administrador). */
-  clothingSizes: { all: () => request<ClothingSize[]>('GET', '/api/clothing-sizes') },
+  clothingSizes: {
+    all: () => request<ClothingSize[]>('GET', '/api/clothing-sizes'),
+    /** Jugadores con acceso al resumen de tallas; dar o quitar el acceso devuelve la lista actualizada. */
+    viewers: () => request<PlayerRef[]>('GET', '/api/clothing-sizes/viewers'),
+    addViewer: (playerId: number) => request<PlayerRef[]>('PUT', `/api/clothing-sizes/viewers/${playerId}`),
+    removeViewer: (playerId: number) => request<PlayerRef[]>('DELETE', `/api/clothing-sizes/viewers/${playerId}`),
+  },
 
   audit: {
     /** Registro de actividad (solo administrador). Las fechas son días locales (aaaa-mm-dd). */

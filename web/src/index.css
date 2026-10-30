@@ -543,6 +543,7 @@ button.secondary.fut-close { background: var(--card); }
 .size-row .cols { margin-top: .3rem; }
 .size-table { width: 100%; border-collapse: collapse; }
 .size-table th, .size-table td { text-align: left; padding: .4rem .5rem; border-bottom: 1px solid var(--border); }
+.viewers-list button { width: auto; flex: none; }
 .size-chips { display: flex; flex-wrap: wrap; gap: .4rem; margin: 0 0 .8rem; padding: 0; list-style: none; }
 .size-chips li { padding: .15rem .6rem; border-radius: 999px; border: 1px solid var(--border); font-size: .85rem; }
 .size-missing { color: #b45309; }

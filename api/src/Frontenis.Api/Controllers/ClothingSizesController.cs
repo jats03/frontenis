@@ -26,6 +26,27 @@ public sealed class ClothingSizesController : ControllerBase
         [FromHeader(Name = DeviceController.TokenHeader)] string? token, SaveClothingSizeRequest request, CancellationToken ct) =>
         Ok(await _sizes.SaveForDeviceAsync(token, playerId, request, ct));
 
+    /// <summary>Resumen de tallas de todos los jugadores para quien el administrador ha autorizado.</summary>
+    [HttpGet("api/device/sizes/all")]
+    public async Task<ActionResult<IReadOnlyList<ClothingSizeDto>>> AllForDevice(
+        [FromHeader(Name = DeviceController.TokenHeader)] string? token, CancellationToken ct) =>
+        Ok(await _sizes.ListAllForDeviceAsync(token, ct));
+
+    /// <summary>Jugadores con acceso al resumen de tallas (administrador).</summary>
+    [HttpGet("api/clothing-sizes/viewers"), AdminOnly]
+    public async Task<ActionResult<IReadOnlyList<PlayerRefDto>>> Viewers(CancellationToken ct) =>
+        Ok(await _sizes.ListViewersAsync(ct));
+
+    /// <summary>Da acceso al resumen de tallas a un jugador (administrador).</summary>
+    [HttpPut("api/clothing-sizes/viewers/{playerId:int}"), AdminOnly]
+    public async Task<ActionResult<IReadOnlyList<PlayerRefDto>>> AddViewer(int playerId, CancellationToken ct) =>
+        Ok(await _sizes.SetViewerAsync(playerId, true, ct));
+
+    /// <summary>Quita a un jugador el acceso al resumen de tallas (administrador).</summary>
+    [HttpDelete("api/clothing-sizes/viewers/{playerId:int}"), AdminOnly]
+    public async Task<ActionResult<IReadOnlyList<PlayerRefDto>>> RemoveViewer(int playerId, CancellationToken ct) =>
+        Ok(await _sizes.SetViewerAsync(playerId, false, ct));
+
     /// <summary>Tallas de todos los jugadores (administrador).</summary>
     [HttpGet("api/clothing-sizes"), AdminOnly]
     public async Task<ActionResult<IReadOnlyList<ClothingSizeDto>>> All(CancellationToken ct) =>

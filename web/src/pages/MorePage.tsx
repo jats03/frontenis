@@ -24,13 +24,9 @@ export default function MorePage() {
         {(isAdmin || device.me) && (
           <Link className="card link-card" to="/tallas">
             <strong>Tallas de ropa</strong>
-            <span className="muted">{isAdmin ? 'Camiseta y pantalón de cada jugador, para hacer el pedido.' : 'Indica tu talla de camiseta y pantalón y la de tus apadrinados.'}</span>
+            <span className="muted">{isAdmin ? 'Resumen de las tallas de todos los jugadores y quién puede verlo.' : device.me?.canViewSizes ? 'Indica tus tallas y mira el resumen de todos los jugadores.' : 'Indica tu talla de camiseta y pantalón y la de tus apadrinados.'}</span>
           </Link>
         )}
-        <Link className="card link-card" to="/plantillas">
-          <strong>Plantillas de WhatsApp</strong>
-          <span className="muted">Genera el cuadro semanal de entrenamientos listo para copiar y pegar.</span>
-        </Link>
       </div>
       {isAdmin && (
         <>

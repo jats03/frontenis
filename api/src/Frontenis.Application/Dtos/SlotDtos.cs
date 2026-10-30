@@ -30,7 +30,8 @@ public sealed record AttendanceRequest(int PlayerId);
 
 // ---------- Dispositivos y apadrinados ----------
 public sealed record PlayerRefDto(int Id, string Name);
-public sealed record DeviceMeDto(PlayerRefDto Owner, IReadOnlyList<PlayerRefDto> Delegates);
+/// <param name="CanViewSizes">El administrador le ha dado acceso al resumen de tallas de todos los jugadores.</param>
+public sealed record DeviceMeDto(PlayerRefDto Owner, IReadOnlyList<PlayerRefDto> Delegates, bool CanViewSizes = false);
 /// <param name="Replace">Confirma que se quiere quedar con un jugador ya vinculado a otro dispositivo (el otro deja de estar identificado).</param>
 public sealed record LinkDeviceRequest(int PlayerId, bool Replace = false);
 /// <summary>Jugador que se puede elegir al identificarse; <paramref name="Linked"/> indica que ya tiene un dispositivo vinculado.</summary>

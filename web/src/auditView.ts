@@ -19,6 +19,8 @@ const RULES: [RegExp, string][] = [
   [/^POST \/api\/device\/link/, 'Vincula su dispositivo («Soy yo»)'],
   [/^DELETE \/api\/device\/link/, 'Desvincula su dispositivo'],
   [/^DELETE \/api\/device-links\/(\d+)/, 'Libera el dispositivo del jugador $1'],
+  [/^PUT \/api\/clothing-sizes\/viewers\/(\d+)/, 'Da acceso al resumen de tallas al jugador $1'],
+  [/^DELETE \/api\/clothing-sizes\/viewers\/(\d+)/, 'Quita el acceso al resumen de tallas al jugador $1'],
   [/^PUT \/api\/device\/sizes\/(\d+)/, 'Indica las tallas de ropa del jugador $1'],
   [/^PUT \/api\/trainings\/(\d+)\/matches\/(\d+)$/, 'Corrige el partido $2 del entreno $1 (jugadores, marcador o bola)'],
   [/^POST \/api\/trainings\/(\d+)\/matches/, 'Registra un partido en el entreno $1'],
