@@ -530,3 +530,4 @@ button.secondary.fut-close { background: var(--card); }
 .pname-faces svg { flex: none; }
 .pname-faces svg + svg { margin-left: -.5rem; box-shadow: -2px 0 0 var(--card); border-radius: 50%; }
 .device-hash { font-size: .75rem; font-family: ui-monospace, Menlo, Consolas, monospace; overflow-wrap: anywhere; min-width: 12rem; }
+.swal2-html-container { white-space: pre-line; }

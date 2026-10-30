@@ -63,10 +63,10 @@ public sealed class TrainingsController : ControllerBase
         return Ok(await _commands.AddMatchAsync(id, request, ct));
     }
 
-    /// <summary>Cambia los jugadores de un partido ya guardado, para corregir errores al registrarlo (administrador).</summary>
-    [HttpPut("{id:int}/matches/{matchId:int}/players"), AdminOnly]
-    public async Task<ActionResult<TrainingDetailDto>> UpdateMatchPlayers(int id, int matchId, UpdateTrainingMatchPlayersRequest request, CancellationToken ct) =>
-        Ok(await _commands.UpdateMatchPlayersAsync(id, matchId, request, ct)); // el registro de actividad anota quién y cuándo
+    /// <summary>Corrige un partido ya guardado (jugadores, marcador y bola), para arreglar errores al registrarlo (administrador).</summary>
+    [HttpPut("{id:int}/matches/{matchId:int}"), AdminOnly]
+    public async Task<ActionResult<TrainingDetailDto>> UpdateMatch(int id, int matchId, UpdateTrainingMatchRequest request, CancellationToken ct) =>
+        Ok(await _commands.UpdateMatchAsync(id, matchId, request, ct)); // el registro de actividad anota quién y cuándo
 
     /// <summary>Elimina un partido de la sesión (administrador).</summary>
     [HttpDelete("{id:int}/matches/{matchId:int}"), AdminOnly]

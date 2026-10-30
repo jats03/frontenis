@@ -47,10 +47,8 @@ public sealed class TrainingSession
     public TrainingMatch AddMatch(int home1, int home2, int away1, int away2, int homeScore, int awayScore, BallType? ball = null)
     {
         ValidatePlayers(home1, home2, away1, away2);
-        if (homeScore < 0 || awayScore < 0 || homeScore > 999 || awayScore > 999)
-            throw new DomainException("Marcador no válido.");
-        if (homeScore == awayScore) throw new DomainException("No puede haber empate.");
-        if (ball is { } b && !Enum.IsDefined(b)) throw new DomainException("Tipo de bola no válido.");
+        ValidateScore(homeScore, awayScore);
+        if (ball is { } b) ValidateBall(b);
         if (_matches.Count >= MaxMatches) throw new DomainException($"La sesión ya tiene el máximo de {MaxMatches} partidos.");
         var order = _matches.Count == 0 ? 1 : _matches.Max(m => m.Order) + 1;
         var match = new TrainingMatch(order, home1, home2, away1, away2, homeScore, awayScore, ball ?? BallTypes.Default);
@@ -59,18 +57,32 @@ public sealed class TrainingSession
     }
 
     /// <summary>
-    /// Cambia los cuatro jugadores de un partido ya guardado (para corregir errores al registrarlo). El marcador, la bola,
-    /// el orden y la hora del partido se conservan.
+    /// Corrige un partido ya guardado (para arreglar errores al registrarlo): los cuatro jugadores, el marcador y la bola.
+    /// El orden y la hora del partido se conservan.
     /// </summary>
-    /// <exception cref="DomainException">Faltan jugadores o hay jugadores repetidos.</exception>
+    /// <exception cref="DomainException">Jugadores repetidos o faltantes, marcador no válido, empate o bola no válida.</exception>
     /// <exception cref="NotFoundException">El partido no existe en la sesión.</exception>
-    public TrainingMatch UpdateMatchPlayers(int matchId, int home1, int home2, int away1, int away2)
+    public TrainingMatch UpdateMatch(int matchId, int home1, int home2, int away1, int away2, int homeScore, int awayScore, BallType ball)
     {
         var match = _matches.FirstOrDefault(m => m.Id == matchId)
             ?? throw new NotFoundException("Partido no encontrado.");
         ValidatePlayers(home1, home2, away1, away2);
-        match.ChangePlayers(home1, home2, away1, away2);
+        ValidateScore(homeScore, awayScore);
+        ValidateBall(ball);
+        match.Correct(home1, home2, away1, away2, homeScore, awayScore, ball);
         return match;
+    }
+
+    private static void ValidateScore(int homeScore, int awayScore)
+    {
+        if (homeScore < 0 || awayScore < 0 || homeScore > 999 || awayScore > 999)
+            throw new DomainException("Marcador no válido.");
+        if (homeScore == awayScore) throw new DomainException("No puede haber empate.");
+    }
+
+    private static void ValidateBall(BallType ball)
+    {
+        if (!Enum.IsDefined(ball)) throw new DomainException("Tipo de bola no válido.");
     }
 
     private static void ValidatePlayers(int home1, int home2, int away1, int away2)
