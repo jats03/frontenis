@@ -1,5 +1,7 @@
 import type { ClothingSize } from '../api/types'
 import { isIncomplete, sizeCounts, sizeLabel } from '../clothing'
+import { exportSizesImage } from '../imageExport'
+import ShareImageButton from './ShareImageButton'
 
 /** Resumen de tallas de todos los jugadores: recuento por talla (para el pedido) y lista por jugador. */
 export default function ClothingSizesSummary({ rows }: { rows: ClothingSize[] }) {
@@ -9,6 +11,9 @@ export default function ClothingSizesSummary({ rows }: { rows: ClothingSize[] })
   return (
     <>
       <p className="muted">{done} de {rows.length} jugadores con las dos tallas</p>
+      {ordered.some(r => r.topSize || r.bottomSize) && (
+        <ShareImageButton label="Enviar por WhatsApp en imagen" onShare={() => exportSizesImage(rows)} />
+      )}
       <h2 className="section-title">Camisetas</h2>
       <Chips rows={sizeCounts(rows, r => r.topSize)} />
       <h2 className="section-title">Pantalones</h2>
