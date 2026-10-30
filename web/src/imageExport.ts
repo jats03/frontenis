@@ -1,4 +1,5 @@
-import type { Group, GroupStandings, MatchDto, Slot } from './api/types'
+import type { ClothingSize, Group, GroupStandings, MatchDto, Slot } from './api/types'
+import { sizeLabel } from './clothing'
 import { formatDate, formatTime } from './dates'
 import { resultText, setsText } from './pdf'
 
@@ -246,4 +247,18 @@ export async function exportAttendanceImage(title: string, slots: Slot[], filena
     })),
   }))
   await deliver(await render(title, null, blocks, 560), filename)
+}
+
+/** Imagen con la camiseta y el pantalón de quienes ya han elegido alguna talla, para mandarla por WhatsApp. */
+export async function exportSizesImage(rows: ClothingSize[]) {
+  const chosen = rows.filter(r => r.topSize || r.bottomSize)
+  const blocks: Block[] = [{
+    tables: [{
+      head: ['Jugador', 'Camiseta', 'Pantalón'],
+      rows: chosen.map(r => [r.name, r.topSize ? sizeLabel(r.topSize) : '—', r.bottomSize ? sizeLabel(r.bottomSize) : '—']),
+      widths: [38, 31, 31],
+      aligns: ['left', 'left', 'left'] as ('left' | 'center')[],
+    }],
+  }]
+  await deliver(await render('Tallas de ropa', `${chosen.length} ${chosen.length === 1 ? 'jugador' : 'jugadores'}`, blocks, 600), 'tallas_de_ropa.png')
 }
