@@ -265,6 +265,10 @@ details.present summary { cursor: pointer; font-weight: 600; min-height: 32px; d
 .tm-score { display: grid; text-align: right; font-variant-numeric: tabular-nums; }
 .tm-score strong { font-size: 1.15rem; }
 .tm-del { grid-column: 1 / -1; justify-self: start; margin-left: 0; }
+.tm-actions { grid-column: 1 / -1; justify-content: flex-start; gap: .4rem; }
+.tm-actions button.small { margin-left: 0; }
+.tm-edit { grid-column: 1 / -1; display: grid; gap: .5rem; padding: .6rem; border: 1px solid var(--border); border-radius: 10px; }
+.tm-edit .muted { margin: 0; font-size: .8rem; }
 /* Etiqueta pequeña con la bola del partido; la bola por defecto (preolímpica) va sin color para no llamar la atención. */
 .ball-tag { --ball: var(--muted); display: inline-block; justify-self: end; margin-top: .15rem; padding: .05rem .5rem; border-radius: 99px; border: 1px solid color-mix(in srgb, var(--ball) 45%, transparent); background: transparent; color: var(--ball); font-size: .7rem; font-weight: 600; line-height: 1.5; }
 .ball-Slow { --ball: #2563eb; }
@@ -547,3 +551,4 @@ button.secondary.fut-close { background: var(--card); }
   .size-state.warn { background: #422006; color: #fde68a; }
   .size-state.ok { background: #064e3b; color: #a7f3d0; }
 }
+.swal2-html-container { white-space: pre-line; }

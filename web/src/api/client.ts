@@ -1,7 +1,7 @@
 import type {
   CompetitionDetail, CompetitionSummary, CreateCompetition, GroupStandings, MatchDto,
   PairDto, PairingPreview, Player, PlayerHistory, PlayerHistoryRow, Position, SetScore,
-  HistoryFilter, NewTrainingMatch, TrainingDetail, TrainingSuggestion, TrainingSummary,
+  HistoryFilter, NewTrainingMatch, TrainingMatchEdit, TrainingDetail, TrainingSuggestion, TrainingSummary,
   AuditPage, AuditQuery, ClothingSize, PendingResult, RejectedResult, DeviceLink, DeviceMe, DevicePlayer, PlayerDelegateRow, SaveSlot, SaveSlotTemplate, Slot, SlotTemplate,
 } from './types'
 import { deviceHeaders, deviceToken, hasDeviceToken } from '../device'
@@ -185,6 +185,12 @@ export const api = {
     addMatch: async (id: number, m: NewTrainingMatch) => {
       const d = await request<TrainingDetail>('POST', `/api/trainings/${id}/matches`, m)
       responseCache.remove('/api/trainings')
+      return d
+    },
+    updateMatch: async (id: number, matchId: number, edit: TrainingMatchEdit) => {
+      const d = await request<TrainingDetail>('PUT', `/api/trainings/${id}/matches/${matchId}`, edit)
+      responseCache.remove('/api/trainings')
+      responseCache.remove(`/api/trainings/${id}`)
       return d
     },
     removeMatch: async (id: number, matchId: number) => {
