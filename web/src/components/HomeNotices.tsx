@@ -30,7 +30,7 @@ export default function HomeNotices({ me }: { me: DeviceMe }) {
     ? []
     : people.filter(p => !weekSlots.some(s => s.attendees.some(a => a.playerId === p.id)))
 
-  const notices: { key: string; text: string; to: string; cta: string }[] = []
+  const notices: { key: string; text: string; to?: string; cta?: string }[] = []
   if (missingSizes.length > 0) {
     notices.push({
       key: 'tallas',
@@ -48,7 +48,6 @@ export default function HomeNotices({ me }: { me: DeviceMe }) {
       text: you && others.length === 0
         ? 'Aún no te has apuntado a ningún entreno de esta semana.'
         : `Sin ningún entreno apuntado esta semana: ${joinNames([...(you ? ['tú'] : []), ...others])}.`,
-      to: '/reservas', cta: 'Ver entrenos',
     })
   }
 
@@ -61,7 +60,7 @@ export default function HomeNotices({ me }: { me: DeviceMe }) {
             <path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z" /><path d="M12 9v4" /><path d="M12 17h.01" />
           </svg>
           <span className="notice-text">{n.text}</span>
-          <Link className="button small" to={n.to}>{n.cta}</Link>
+          {n.to && <Link className="button small" to={n.to}>{n.cta}</Link>}
         </div>
       ))}
     </section>
