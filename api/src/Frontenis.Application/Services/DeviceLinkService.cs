@@ -32,9 +32,10 @@ public sealed class DeviceLinkService : IDeviceLinkService
         var access = await _access.FindAsync(deviceToken, ct);
         if (access is null) return null;
         var ids = new[] { access.OwnerPlayerId }.Concat(access.DelegateIds).ToList();
-        var names = (await _players.GetByIdsAsync(ids, ct)).ToDictionary(p => p.Id, p => p.Name);
-        PlayerRefDto Ref(int id) => new(id, names.GetValueOrDefault(id, "—"));
-        return new DeviceMeDto(Ref(access.OwnerPlayerId), access.DelegateIds.Select(Ref).ToList());
+        var found = (await _players.GetByIdsAsync(ids, ct)).ToDictionary(p => p.Id);
+        PlayerRefDto Ref(int id) => new(id, found.TryGetValue(id, out var p) ? p.Name : "—");
+        var canViewSizes = found.TryGetValue(access.OwnerPlayerId, out var owner) && owner.CanViewSizes;
+        return new DeviceMeDto(Ref(access.OwnerPlayerId), access.DelegateIds.Select(Ref).ToList(), canViewSizes);
     }
 
     public async Task<IReadOnlyList<PlayerRefDto>> ListAvailablePlayersAsync(CancellationToken ct = default)

@@ -15,6 +15,7 @@ import LoginPage from './pages/LoginPage'
 import MorePage from './pages/MorePage'
 import PlayerDetailPage from './pages/PlayerDetailPage'
 import PlayerHistoryPage from './pages/PlayerHistoryPage'
+import ClothingSizesPage from './pages/ClothingSizesPage'
 import PlayersRoute from './pages/PlayersRoute'
 import ReservasGestionPage from './pages/ReservasGestionPage'
 import ReservasPage from './pages/ReservasPage'
@@ -62,6 +63,7 @@ export default function App() {
           <Route path="/competiciones" element={<CompetitionsPage />} />
           <Route path="/mas" element={<MorePage />} />
           <Route path="/registro" element={<AuditPage />} />
+          <Route path="/tallas" element={<ClothingSizesPage />} />
           <Route path="/competiciones/nueva" element={<CompetitionNewPage />} />
           <Route path="/competiciones/:id" element={<CompetitionDetailPage />} />
           <Route path="/competiciones/:id/partidos/:matchId" element={<MatchPlayPage />} />

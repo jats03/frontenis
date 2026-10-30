@@ -2,10 +2,12 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import PageHeader from '../components/PageHeader'
 import { useDocumentTitle } from '../hooks'
+import { useDevice } from '../useDevice'
 
 export default function MorePage() {
   useDocumentTitle('Más')
   const { isAdmin, username, logout } = useAuth()
+  const device = useDevice()
   return (
     <>
       <PageHeader title="Más" subtitle="Herramientas y cuenta" />
@@ -19,10 +21,12 @@ export default function MorePage() {
           <strong>Cronómetro</strong>
           <span className="muted">Cuenta atrás para los partidos y los turnos.</span>
         </Link>
-        <Link className="card link-card" to="/plantillas">
-          <strong>Plantillas de WhatsApp</strong>
-          <span className="muted">Genera el cuadro semanal de entrenamientos listo para copiar y pegar.</span>
-        </Link>
+        {(isAdmin || device.me) && (
+          <Link className="card link-card" to="/tallas">
+            <strong>Tallas de ropa</strong>
+            <span className="muted">{isAdmin ? 'Resumen de las tallas de todos los jugadores y quién puede verlo.' : device.me?.canViewSizes ? 'Indica tus tallas y mira el resumen de todos los jugadores.' : 'Indica tu talla de camiseta y pantalón y la de tus apadrinados.'}</span>
+          </Link>
+        )}
       </div>
       {isAdmin && (
         <>

@@ -44,6 +44,9 @@ public sealed class FrontenisDbContext : DbContext, IUnitOfWork
             e.ToTable(t => t.HasCheckConstraint("CK_Players_NameLength", $"char_length(\"Name\") <= {Frontenis.Domain.Services.PlayerNameRules.MaxLength}"));
             e.Property(x => x.Position).HasConversion<byte>();
             e.Property(x => x.IsReserve).HasDefaultValue(false);
+            e.Property(x => x.CanViewSizes).HasDefaultValue(false);
+            e.Property(x => x.TopSize).HasMaxLength(Frontenis.Domain.Services.ClothingSizes.MaxLength);
+            e.Property(x => x.BottomSize).HasMaxLength(Frontenis.Domain.Services.ClothingSizes.MaxLength);
         });
 
         b.Entity<Pair>(e =>

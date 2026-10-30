@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { api } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
 import DeviceLinkPanel from '../components/DeviceLinkPanel'
+import HomeNotices from '../components/HomeNotices'
 import EmptyState from '../components/EmptyState'
 import LoadingBlock from '../components/LoadingBlock'
 import PageHeader from '../components/PageHeader'
@@ -11,7 +12,7 @@ import { statusText, typeLabel } from '../labels'
 import { formatDate } from '../dates'
 import { useDevice } from '../useDevice'
 
-/** Portada: lo que está pasando ahora (competiciones en curso y último entrenamiento) y accesos rápidos. */
+/** Portada: avisos y tallas de ropa de quien se ha identificado, y lo que está pasando ahora (competiciones en curso y último entrenamiento). */
 export default function HomePage() {
   useDocumentTitle('Inicio')
   const { isAdmin } = useAuth()
@@ -34,6 +35,7 @@ export default function HomePage() {
 function HomeContent() {
   useDocumentTitle('Inicio')
   const { isAdmin } = useAuth()
+  const device = useDevice()
   const comps = useAsync(() => api.competitions.list(), [], '/api/competitions')
   const trainings = useAsync(() => api.trainings.list(), [], '/api/trainings')
 
@@ -44,6 +46,8 @@ function HomeContent() {
   return (
     <>
       <PageHeader title="Club Frontenis Ciudad de Jaén" subtitle="Ligas, torneos y entrenamientos" />
+
+      {!isAdmin && device.me && <HomeNotices me={device.me} />}
 
       <ReservasButton label="Reservas Entrenamientos" />
 
@@ -86,15 +90,6 @@ function HomeContent() {
             ))}
           </div>
         )}
-      </section>
-
-      <section aria-labelledby="h-acceso">
-        <h2 id="h-acceso" className="section-title">Accesos rápidos</h2>
-        <div className="quick-links">
-          <Link className="card link-card" to="/jugadores/historico"><strong>Histórico</strong><span className="muted">Victorias, puntos y compañeros</span></Link>
-          <Link className="card link-card" to="/jugadores?vista=sorteos"><strong>Sorteos</strong><span className="muted">Pareja o partido al azar</span></Link>
-          <Link className="card link-card" to="/cronometro"><strong>Cronómetro</strong><span className="muted">Cuenta atrás</span></Link>
-        </div>
       </section>
     </>
   )

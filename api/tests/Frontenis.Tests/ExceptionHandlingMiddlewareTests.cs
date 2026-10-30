@@ -142,6 +142,7 @@ public class ExceptionHandlingMiddlewareTests
         { new DomainException("Regla rota"), StatusCodes.Status400BadRequest },
         { new NotFoundException("No existe"), StatusCodes.Status404NotFound },
         { new UnauthorizedAppException("Sin sesión"), StatusCodes.Status401Unauthorized },
+        { new ForbiddenAppException("Sin permiso"), StatusCodes.Status403Forbidden },
         { new TooManyAttemptsException(TimeSpan.FromSeconds(90)), StatusCodes.Status429TooManyRequests },
         { new ConflictException("Ya existe"), StatusCodes.Status409Conflict },
         { new InvalidOperationException("boom"), StatusCodes.Status500InternalServerError },

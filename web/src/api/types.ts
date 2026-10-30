@@ -154,6 +154,8 @@ export interface Slot {
   attendeeCount: number
   attendees: SlotAttendee[]
 }
+/** Tallas de ropa de un jugador: camiseta (arriba) y pantalón (abajo); null = sin indicar. */
+export interface ClothingSize { playerId: number; name: string; topSize: string | null; bottomSize: string | null }
 export interface SlotTemplate { id: number; day: WeekDay; start: string; end: string; active: boolean }
 export interface SaveSlotTemplate { day: WeekDay; start: string; end: string; active: boolean }
 export interface SaveSlot { date: string; start: string; end: string; opensAt?: string | null }
@@ -163,7 +165,8 @@ export interface PlayerRef { id: number; name: string }
 /** Jugador titular de este dispositivo y los jugadores a los que además puede apuntar. */
 /** Jugador que se puede elegir al identificarse; `linked`: ya tiene un dispositivo vinculado. */
 export interface DevicePlayer { id: number; name: string; linked: boolean }
-export interface DeviceMe { owner: PlayerRef; delegates: PlayerRef[] }
+/** `canViewSizes`: el administrador le ha dado acceso al resumen de tallas de todos los jugadores. */
+export interface DeviceMe { owner: PlayerRef; delegates: PlayerRef[]; canViewSizes?: boolean }
 export interface DeviceLink { playerId: number; playerName: string; linkedAtUtc: string; id: number; deviceHash: string }
 export interface PlayerDelegateRow { ownerId: number; ownerName: string; delegateId: number; delegateName: string }
 
