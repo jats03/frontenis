@@ -1,0 +1,15 @@
+PUT {"topSize":"SM","bottomSize":"4XLH"}
+{"playerId":1,"name":"Ana","topSize":"SM","bottomSize":"4XLH"}
+HTTP 200
+PUT {"topSize":"XS","bottomSize":"3XL"}
+{"playerId":1,"name":"Ana","topSize":"XS","bottomSize":"3XL"}
+HTTP 200
+PUT {"topSize":"5XLM","bottomSize":"M"}
+{"title":"Solicitud no válida","status":400,"detail":"Talla no válida.","instance":"/api/device/sizes/1","traceId":"0HNPMJB4MPRGO:00000001"}
+HTTP 400
+PUT {"topSize":"XSM","bottomSize":"M"}
+{"title":"Solicitud no válida","status":400,"detail":"Talla no válida.","instance":"/api/device/sizes/1","traceId":"0HNPMJB4MPRGP:00000001"}
+HTTP 400
+PUT {"topSize":"mh","bottomSize":"12"}
+{"playerId":1,"name":"Ana","topSize":"MH","bottomSize":"12"}
+HTTP 200
