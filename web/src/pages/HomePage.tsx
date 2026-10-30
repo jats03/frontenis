@@ -49,7 +49,7 @@ function HomeContent() {
 
       {!isAdmin && device.me && <HomeNotices me={device.me} />}
 
-      <ReservasButton label="Reservas Entrenamientos" />
+      <ReservasButton />
 
       <section aria-labelledby="h-entreno">
         <h2 id="h-entreno" className="section-title">Entrenamiento</h2>
