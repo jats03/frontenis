@@ -12,6 +12,10 @@ public sealed record AddTrainingMatchRequest(
     /// <summary>Bola del partido; si se omite, preolímpica.</summary>
     BallType? Ball = null);
 
+/// <summary>Corrección de un partido ya guardado (administrador): jugadores, marcador y bola.</summary>
+public sealed record UpdateTrainingMatchRequest(
+    int Home1Id, int Home2Id, int Away1Id, int Away2Id, int HomeScore, int AwayScore, BallType Ball);
+
 public sealed record TrainingSuggestRequest(IReadOnlyList<int> PlayerIds, int Count = 5);
 
 public sealed record TrainingSummaryDto(
