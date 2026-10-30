@@ -14,6 +14,10 @@ public interface ITrainingCommands
     /// <summary>Registra un partido (dos parejas, tantos objetivo y marcador) y devuelve la sesión actualizada.</summary>
     /// <exception cref="Frontenis.Domain.Exceptions.NotFoundException">Algún jugador no existe.</exception>
     Task<TrainingDetailDto> AddMatchAsync(int id, AddTrainingMatchRequest request, CancellationToken ct = default);
+    /// <summary>Cambia los cuatro jugadores de un partido ya guardado y devuelve la sesión actualizada (marcador, bola, orden y hora no cambian).</summary>
+    /// <exception cref="Frontenis.Domain.Exceptions.NotFoundException">El partido o algún jugador no existe.</exception>
+    /// <exception cref="Frontenis.Domain.Exceptions.DomainException">Faltan jugadores o hay repetidos.</exception>
+    Task<TrainingDetailDto> UpdateMatchPlayersAsync(int id, int matchId, UpdateTrainingMatchPlayersRequest request, CancellationToken ct = default);
     /// <summary>Elimina un partido de la sesión y devuelve la sesión actualizada.</summary>
     Task<TrainingDetailDto> RemoveMatchAsync(int id, int matchId, CancellationToken ct = default);
 }

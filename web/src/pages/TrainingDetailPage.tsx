@@ -6,7 +6,7 @@ import PageHeader from '../components/PageHeader'
 import { formatClock, formatShortDate } from '../dates'
 import { confirmDelete, notify, promptText } from '../alerts'
 import { api } from '../api/client'
-import type { Player, TrainingDetail, TrainingRow, TrainingSuggestion } from '../api/types'
+import type { Player, TrainingDetail, TrainingMatch, TrainingRow, TrainingSuggestion } from '../api/types'
 import { useAuth } from '../auth/AuthContext'
 import { useDevice } from '../useDevice'
 import PlayerPicker from '../components/PlayerPicker'
@@ -73,6 +73,10 @@ export default function TrainingDetailPage() {
   const [formError, setFormError] = useState<string | null>(null)
   // Bola elegida a mano; mientras no se toque se propone la del último partido de la sesión (o la preolímpica).
   const [ballChoice, setBallChoice] = useState<BallType | null>(null)
+  // Partido cuyos jugadores está corrigiendo el administrador (con la selección en curso).
+  const [editing, setEditing] = useState<{ matchId: number; slots: Slots } | null>(null)
+  const [editError, setEditError] = useState<string | null>(null)
+  const [editBusy, setEditBusy] = useState(false)
   const [presentChosen, setPresentChosen] = useState<Set<number> | null>(null) // null = los que ya han jugado
   const [suggestions, setSuggestions] = useState<TrainingSuggestion[] | null>(null)
   const [suggestError, setSuggestError] = useState<string | null>(null)
@@ -121,6 +125,26 @@ export default function TrainingDetailPage() {
     setData(d)
   }
 
+  function startEdit(m: TrainingMatch) {
+    setEditError(null)
+    setEditing({ matchId: m.id, slots: [...m.homePlayerIds, ...m.awayPlayerIds].map(String) as Slots })
+  }
+
+  async function saveEdit() {
+    if (!editing) return
+    if (editing.slots.some(s => s === '')) { setEditError('Elige los cuatro jugadores.'); return }
+    const [home1Id, home2Id, away1Id, away2Id] = editing.slots.map(Number)
+    setEditBusy(true)
+    setEditError(null)
+    try {
+      commit(await api.trainings.updateMatchPlayers(id, editing.matchId, { home1Id, home2Id, away1Id, away2Id }))
+      notify('Parejas corregidas')
+      setEditing(null)
+      if (suggestions) void suggest()
+    } catch (e) { setEditError(e instanceof Error ? e.message : 'Error') }
+    finally { setEditBusy(false) }
+  }
+
   async function removeMatch(matchId: number) {
     if (!(await confirmDelete('¿Borrar este partido?'))) return
     try { commit(await api.trainings.removeMatch(id, matchId)); notify('Partido eliminado'); if (suggestions) void suggest() }
@@ -161,6 +185,14 @@ export default function TrainingDetailPage() {
   if (!data) return loading ? <LoadingBlock /> : null
 
   const s = data.summary
+  const editSelect = (i: number, label: string) => (
+    <label>{label}
+      <select value={editing?.slots[i] ?? ''} onChange={e => setEditing(prev => (prev ? { ...prev, slots: prev.slots.map((v, k) => (k === i ? e.target.value : v)) as Slots } : prev))}>
+        <option value="">—</option>
+        {list.filter(p => !editing?.slots.some((v, k) => k !== i && v === String(p.id))).map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+      </select>
+    </label>
+  )
   const slotSelect = (i: number, label: string) => (
     <label>{label}
       <select value={slots[i]} onChange={e => setSlots(prev => prev.map((v, k) => (k === i ? e.target.value : v)) as Slots)}>
@@ -235,7 +267,28 @@ export default function TrainingDetailPage() {
                       <strong>{m.homeScore} - {m.awayScore}</strong>
                       <span className={`ball-tag ball-${m.ball}`}>{ballLabel(m.ball)}</span>
                     </div>
-                    {isAdmin && <button className="secondary small tm-del" onClick={() => void removeMatch(m.id)}>Borrar</button>}
+                    {isAdmin && editing?.matchId !== m.id && (
+                      <div className="row tm-actions">
+                        <button className="secondary small" onClick={() => startEdit(m)}>Editar parejas</button>
+                        <button className="secondary small" onClick={() => void removeMatch(m.id)}>Borrar</button>
+                      </div>
+                    )}
+                    {isAdmin && editing?.matchId === m.id && (
+                      <div className="tm-edit" role="group" aria-label="Editar las parejas del partido">
+                        <div className="cols">
+                          {editSelect(0, 'Pareja A · jugador 1')}{editSelect(1, 'Pareja A · jugador 2')}
+                        </div>
+                        <div className="cols">
+                          {editSelect(2, 'Pareja B · jugador 1')}{editSelect(3, 'Pareja B · jugador 2')}
+                        </div>
+                        <p className="muted">El marcador, la bola y la hora del partido no cambian.</p>
+                        {editError && <p className="error">{editError}</p>}
+                        <div className="row">
+                          <button disabled={editBusy} onClick={() => void saveEdit()}>Guardar parejas</button>
+                          <button className="secondary" disabled={editBusy} onClick={() => setEditing(null)}>Cancelar</button>
+                        </div>
+                      </div>
+                    )}
                   </li>
                 ))}
               </ol>

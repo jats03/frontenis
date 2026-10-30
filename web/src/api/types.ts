@@ -119,6 +119,8 @@ export interface TrainingSuggestion {
   homePlayerIds: number[]; awayPlayerIds: number[]; homeName: string; awayName: string
   homeLevel: number; awayLevel: number; balance: number; reason: string
 }
+/** Nuevos jugadores de un partido de entrenamiento ya guardado (corrección del administrador). */
+export interface TrainingMatchPlayers { home1Id: number; home2Id: number; away1Id: number; away2Id: number }
 export interface NewTrainingMatch {
   home1Id: number; home2Id: number; away1Id: number; away2Id: number
   homeScore: number; awayScore: number

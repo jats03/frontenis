@@ -29,6 +29,12 @@ public sealed class TrainingMatch
     /// <summary>Bola con la que se jugó (los partidos anteriores a este dato figuran con la bola por defecto).</summary>
     public BallType Ball { get; private set; } = BallTypes.Default;
 
+    /// <summary>Cambia los cuatro jugadores (corrección de un error al registrar el partido); marcador, bola, orden y hora no cambian.</summary>
+    internal void ChangePlayers(int home1, int home2, int away1, int away2)
+    {
+        Home1Id = home1; Home2Id = home2; Away1Id = away1; Away2Id = away2;
+    }
+
     /// <summary>Indica si ganó la pareja local.</summary>
     public bool HomeWon => HomeScore > AwayScore;
 }

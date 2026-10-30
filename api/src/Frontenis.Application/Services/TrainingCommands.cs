@@ -58,6 +58,17 @@ public sealed class TrainingCommands : ITrainingCommands
         return await _detail.BuildAsync(session, ct);
     }
 
+    public async Task<TrainingDetailDto> UpdateMatchPlayersAsync(int id, int matchId, UpdateTrainingMatchPlayersRequest r, CancellationToken ct = default)
+    {
+        var session = await _trainings.GetOrThrowAsync(id, ct);
+        var ids = new[] { r.Home1Id, r.Home2Id, r.Away1Id, r.Away2Id };
+        var found = await _players.GetByIdsAsync(ids.Where(i => i > 0).Distinct().ToList(), ct);
+        if (found.Count != ids.Where(i => i > 0).Distinct().Count()) throw new NotFoundException("Algún jugador no existe.");
+        session.UpdateMatchPlayers(matchId, r.Home1Id, r.Home2Id, r.Away1Id, r.Away2Id);
+        await _uow.SaveChangesAsync(ct);
+        return await _detail.BuildAsync(session, ct);
+    }
+
     public async Task<TrainingDetailDto> RemoveMatchAsync(int id, int matchId, CancellationToken ct = default)
     {
         var session = await _trainings.GetOrThrowAsync(id, ct);

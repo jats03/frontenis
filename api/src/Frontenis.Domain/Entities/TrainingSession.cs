@@ -46,9 +46,7 @@ public sealed class TrainingSession
     /// <exception cref="DomainException">Jugadores repetidos, marcador no válido, empate, bola no válida o límite de partidos alcanzado.</exception>
     public TrainingMatch AddMatch(int home1, int home2, int away1, int away2, int homeScore, int awayScore, BallType? ball = null)
     {
-        var players = new[] { home1, home2, away1, away2 };
-        if (players.Any(p => p <= 0)) throw new DomainException("Selecciona los cuatro jugadores.");
-        if (players.Distinct().Count() != 4) throw new DomainException("Los cuatro jugadores deben ser distintos.");
+        ValidatePlayers(home1, home2, away1, away2);
         if (homeScore < 0 || awayScore < 0 || homeScore > 999 || awayScore > 999)
             throw new DomainException("Marcador no válido.");
         if (homeScore == awayScore) throw new DomainException("No puede haber empate.");
@@ -58,6 +56,28 @@ public sealed class TrainingSession
         var match = new TrainingMatch(order, home1, home2, away1, away2, homeScore, awayScore, ball ?? BallTypes.Default);
         _matches.Add(match);
         return match;
+    }
+
+    /// <summary>
+    /// Cambia los cuatro jugadores de un partido ya guardado (para corregir errores al registrarlo). El marcador, la bola,
+    /// el orden y la hora del partido se conservan.
+    /// </summary>
+    /// <exception cref="DomainException">Faltan jugadores o hay jugadores repetidos.</exception>
+    /// <exception cref="NotFoundException">El partido no existe en la sesión.</exception>
+    public TrainingMatch UpdateMatchPlayers(int matchId, int home1, int home2, int away1, int away2)
+    {
+        var match = _matches.FirstOrDefault(m => m.Id == matchId)
+            ?? throw new NotFoundException("Partido no encontrado.");
+        ValidatePlayers(home1, home2, away1, away2);
+        match.ChangePlayers(home1, home2, away1, away2);
+        return match;
+    }
+
+    private static void ValidatePlayers(int home1, int home2, int away1, int away2)
+    {
+        var players = new[] { home1, home2, away1, away2 };
+        if (players.Any(p => p <= 0)) throw new DomainException("Selecciona los cuatro jugadores.");
+        if (players.Distinct().Count() != 4) throw new DomainException("Los cuatro jugadores deben ser distintos.");
     }
 
     /// <summary>Elimina un partido de la sesión.</summary>
