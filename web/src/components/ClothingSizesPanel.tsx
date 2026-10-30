@@ -6,14 +6,14 @@ import { CLOTHING_SIZES, isIncomplete } from '../clothing'
 
 /**
  * Tallas de ropa del jugador de este dispositivo y de sus apadrinados: camiseta (parte de arriba) y pantalón
- * (parte de abajo). Cada cambio se guarda al elegirlo. Se muestra abierto mientras falte alguna talla.
+ * (parte de abajo). Cada cambio se guarda al elegirlo.
  */
 export default function ClothingSizesPanel({ rows, onChange }: { rows: ClothingSize[]; onChange: (rows: ClothingSize[]) => void }) {
   const [error, setError] = useState<string | null>(null)
   const [busyId, setBusyId] = useState<number | null>(null)
   const missing = rows.filter(isIncomplete).length
-  // Abierto al entrar si falta alguna talla; después lo decide quien lo usa (no se cierra solo al completar la última).
-  const [open, setOpen] = useState(missing > 0)
+  // Abierto al entrar; lo decide quien lo usa (no se cierra solo al completar la última talla).
+  const [open, setOpen] = useState(true)
 
   async function save(row: ClothingSize, edit: Partial<Pick<ClothingSize, 'topSize' | 'bottomSize'>>) {
     const next = { topSize: row.topSize, bottomSize: row.bottomSize, ...edit }

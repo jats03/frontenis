@@ -37,7 +37,7 @@ export default function HomeNotices({ me }: { me: DeviceMe }) {
       text: missingSizes.some(r => r.playerId === me.owner.id) && missingSizes.length === 1
         ? 'Aún no has indicado tu talla de ropa.'
         : `Falta la talla de ropa de ${joinNames(missingSizes.map(r => r.name))}.`,
-      to: '/mas#tallas', cta: 'Indicar tallas',
+      to: '/tallas', cta: 'Indicar tallas',
     })
   }
   if (notSignedUp.length > 0) {

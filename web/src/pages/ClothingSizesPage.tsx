@@ -1,17 +1,27 @@
 import { api } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
 import LoadingBlock from '../components/LoadingBlock'
+import MyClothingSizes from '../components/MyClothingSizes'
 import PageHeader from '../components/PageHeader'
 import { isIncomplete, sizeCounts } from '../clothing'
 import { useAsync, useDocumentTitle } from '../hooks'
+import { useDevice } from '../useDevice'
 
-/** Administrador: tallas de camiseta y pantalón de todos los jugadores, con el recuento por talla para el pedido. */
+/**
+ * Tallas de ropa. El administrador ve las de todos los jugadores con el recuento por talla (para el pedido);
+ * quien tiene su dispositivo identificado indica las suyas y las de sus apadrinados.
+ */
 export default function ClothingSizesPage() {
   useDocumentTitle('Tallas de ropa')
   const { isAdmin } = useAuth()
+  const device = useDevice()
   const sizes = useAsync(() => (isAdmin ? api.clothingSizes.all() : Promise.resolve([])), [isAdmin])
 
-  if (!isAdmin) return <><h1>Tallas de ropa</h1><p className="error">Necesitas iniciar sesión como administrador.</p></>
+  if (!isAdmin) {
+    if (device.me === undefined) return <LoadingBlock />
+    if (device.me) return <MyClothingSizes me={device.me} />
+    return <><h1>Tallas de ropa</h1><p className="error">Identifícate en Inicio para indicar tus tallas.</p></>
+  }
   const rows = sizes.data ?? []
   const missing = rows.filter(isIncomplete)
 
