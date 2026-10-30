@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { notify } from '../alerts'
 import { api } from '../api/client'
 import type { ClothingSize } from '../api/types'
-import { CLOTHING_SIZES, isIncomplete } from '../clothing'
+import { CLOTHING_SIZES, isIncomplete, sizeLabel } from '../clothing'
 
 /**
  * Tallas de ropa del jugador de este dispositivo y de sus apadrinados: camiseta (parte de arriba) y pantalón
@@ -32,7 +32,9 @@ export default function ClothingSizesPanel({ rows, onChange }: { rows: ClothingS
       <select value={row[field] ?? ''} disabled={busyId === row.playerId}
         onChange={e => void save(row, { [field]: e.target.value || null })}>
         <option value="">Sin indicar</option>
-        {CLOTHING_SIZES.map(s => <option key={s} value={s}>{s}</option>)}
+        {/* una talla antigua sin sexo (ya no se ofrece) se sigue mostrando mientras siga guardada */}
+        {row[field] && !CLOTHING_SIZES.includes(row[field]!) && <option value={row[field]!}>{sizeLabel(row[field]!)}</option>}
+        {CLOTHING_SIZES.map(s => <option key={s} value={s}>{sizeLabel(s)}</option>)}
       </select>
     </label>
   )

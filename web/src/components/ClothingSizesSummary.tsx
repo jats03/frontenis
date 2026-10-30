@@ -1,5 +1,5 @@
 import type { ClothingSize } from '../api/types'
-import { isIncomplete, sizeCounts } from '../clothing'
+import { isIncomplete, sizeCounts, sizeLabel } from '../clothing'
 
 /** Resumen de tallas de todos los jugadores: recuento por talla (para el pedido) y lista por jugador. */
 export default function ClothingSizesSummary({ rows }: { rows: ClothingSize[] }) {
@@ -19,8 +19,8 @@ export default function ClothingSizesSummary({ rows }: { rows: ClothingSize[] })
             {rows.map(r => (
               <tr key={r.playerId}>
                 <td>{r.name}</td>
-                <td className={r.topSize ? '' : 'size-missing'}>{r.topSize ?? 'Falta'}</td>
-                <td className={r.bottomSize ? '' : 'size-missing'}>{r.bottomSize ?? 'Falta'}</td>
+                <td className={r.topSize ? '' : 'size-missing'}>{r.topSize ? sizeLabel(r.topSize) : 'Falta'}</td>
+                <td className={r.bottomSize ? '' : 'size-missing'}>{r.bottomSize ? sizeLabel(r.bottomSize) : 'Falta'}</td>
               </tr>
             ))}
           </tbody>
@@ -32,5 +32,5 @@ export default function ClothingSizesSummary({ rows }: { rows: ClothingSize[] })
 
 function Chips({ rows }: { rows: { size: string; count: number }[] }) {
   if (rows.length === 0) return <p className="muted">Aún no hay ninguna.</p>
-  return <ul className="size-chips">{rows.map(c => <li key={c.size}><strong>{c.size}</strong> × {c.count}</li>)}</ul>
+  return <ul className="size-chips">{rows.map(c => <li key={c.size}><strong>{sizeLabel(c.size)}</strong> × {c.count}</li>)}</ul>
 }
