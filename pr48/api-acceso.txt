@@ -1,0 +1,34 @@
+== Antes de dar acceso ==
+-- Ana pide el resumen (sin permiso)
+{"title":"Sin permiso","status":403,"detail":"No tienes acceso al resumen de tallas.","instance":"/api/device/sizes/all","traceId":"0HNPMIVU8NMVE:00000001"}
+HTTP 403
+-- dispositivo sin vincular
+{"title":"No autorizado","status":401,"detail":"Este dispositivo no est√° vinculado a ning√∫n jugador.","instance":"/api/device/sizes/all","traceId":"0HNPMIVU8NMVF:00000001"}
+HTTP 401
+-- /api/me de Ana
+{"owner":{"id":1,"name":"Ana"},"delegates":[{"id":2,"name":"Beto"}],"canViewSizes":false}
+
+== Administrador ==
+PUT viewers sin sesiÛn: 401
+GET viewers sin sesiÛn: 401
+-- da acceso a Ana
+[{"id":1,"name":"Ana"}]
+HTTP 200
+-- jugador inexistente
+{"title":"No encontrado","status":404,"detail":"Jugador no encontrado.","instance":"/api/clothing-sizes/viewers/999","traceId":"0HNPMIVU8NMVK:00000001"}
+HTTP 404
+
+== Despu√©s ==
+-- Ana pide el resumen
+[{"playerId":1,"name":"Ana","topSize":"M","bottomSize":"L"},{"playerId":2,"name":"Beto","topSize":"12","bottomSize":"10"},{"playerId":3,"name":"Carla","topSize":"S","bottomSize":"M"},{"playerId":4,"name":"Dani","topSize":"XL","bottomSize":"L"}]
+HTTP 200
+-- Carla (sin acceso) sigue sin permiso
+{"title":"Sin permiso","status":403,"detail":"No tienes acceso al resumen de tallas.","instance":"/api/device/sizes/all","traceId":"0HNPMIVU8NMVM:00000001"}
+HTTP 403
+-- /api/me de Ana
+{"owner":{"id":1,"name":"Ana"},"delegates":[{"id":2,"name":"Beto"}],"canViewSizes":true}
+
+== Registro de actividad ==
+"method":"PUT","path":"/api/clothing-sizes/viewers/999","status":404
+"method":"PUT","path":"/api/clothing-sizes/viewers/1","status":200
+"method":"PUT","path":"/api/clothing-sizes/viewers/1","status":401
