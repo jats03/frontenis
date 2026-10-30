@@ -1,0 +1,8 @@
+== Permisos y validaciones de PUT /api/trainings/{id}/matches/{matchId}/players
+sin sesion de administrador (debe ser 401): 401
+jugadores repetidos (400): {"title":"Solicitud no válida","status":400,"detail":"Los cuatro jugadores deben ser distintos.","instance":"/api/trainings/2/matches/1/players","traceId":"0HNPMICJQ4ROH:00000001"} -> 400
+{"title":"Solicitud no válida","status":400,"detail":"Selecciona los cuatro jugadores.","instance":"/api/trainings/2/matches/1/players","traceId":"0HNPMICJQ4ROJ:00000001"} -> 400
+jugador que no existe (404): {"title":"No encontrado","status":404,"detail":"Algún jugador no existe.","instance":"/api/trainings/2/matches/1/players","traceId":"0HNPMICJQ4ROK:00000001"} -> 404
+partido que no existe (404): {"title":"No encontrado","status":404,"detail":"Partido no encontrado.","instance":"/api/trainings/2/matches/99/players","traceId":"0HNPMICJQ4ROL:00000001"} -> 404
+== Sin cambios tras los intentos fallidos:
+Ana / Beto 15 - 9 Carla / Dani

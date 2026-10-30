@@ -1,0 +1,16 @@
+== Clasificacion por jugador del entreno 2 tras la correccion (Elena y Hugo ahora cuentan el partido 1; Carla y Dani lo pierden)
+1 Beto PJ 6 G 5 P 1 Pts 5
+2 Ana PJ 6 G 4 P 2 Pts 4
+3 Dani PJ 5 G 3 P 2 Pts 3
+4 Elena PJ 1 G 0 P 1 Pts 0
+5 Hugo PJ 1 G 0 P 1 Pts 0
+6 Carla PJ 5 G 0 P 5 Pts 0
+== Otro entrenamiento (id 1): registrar un partido y corregirlo
+registrar (200): 200
+partido 7
+]}corregir (200): 200
+
+Ana / Elena 15 - 12 Carla / Fran Olympic
+== Registro de actividad (ultimas acciones PUT de partidos)
+PUT /api/trainings/1/matches/7/players 200 admin
+PUT /api/trainings/2/matches/1/players 200 admin

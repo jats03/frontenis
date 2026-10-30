@@ -1,0 +1,4 @@
+Navegador, con la API y Postgres en local:
+- Identificado como jugador (Fran, "Soy yo") en /entrenamientos/2: se ven los 6 partidos, puede registrar partidos, pero hay 0 botones "Editar parejas" y 0 botones "Borrar".
+- Como administrador: 6 botones "Editar parejas" (uno por partido) y el editor se abre en la propia fila con los cuatro jugadores actuales.
+API: sin sesion de administrador, PUT /api/trainings/2/matches/1/players responde 401.
