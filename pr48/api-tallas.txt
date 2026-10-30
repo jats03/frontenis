@@ -1,0 +1,33 @@
+== Preparación: vincula el dispositivo con el jugador 1 y apadrina al 2 (administrador) ==
+link: 200
+apadrinar: 400
+
+== Sin dispositivo vinculado ==
+{"title":"No autorizado","status":401,"detail":"Este dispositivo no está vinculado a ningún jugador.","instance":"/api/device/sizes","traceId":"0HNPMIMIIM2QK:00000001"}
+HTTP 401
+
+== Tallas del titular y su apadrinado ==
+[{"playerId":1,"name":"Ana","topSize":null,"bottomSize":null},{"playerId":2,"name":"Beto","topSize":null,"bottomSize":null}]
+HTTP 200
+
+== Guarda tallas del titular (m, L) y del apadrinado (12, 10) ==
+{"playerId":1,"name":"Ana","topSize":"M","bottomSize":"L"}
+HTTP 200
+{"playerId":2,"name":"Beto","topSize":"12","bottomSize":"10"}
+HTTP 200
+
+== Errores ==
+-- talla no válida
+{"title":"Solicitud no válida","status":400,"detail":"Talla no válida.","instance":"/api/device/sizes/1","traceId":"0HNPMIMIIM2QO:00000001"}
+HTTP 400
+-- jugador que no es suyo ni apadrinado
+{"title":"Solicitud no válida","status":400,"detail":"Desde este dispositivo no puedes cambiar las tallas de ese jugador.","instance":"/api/device/sizes/3","traceId":"0HNPMIMIIM2QP:00000001"}
+HTTP 400
+-- dispositivo sin vincular
+{"title":"No autorizado","status":401,"detail":"Este dispositivo no está vinculado a ningún jugador.","instance":"/api/device/sizes/1","traceId":"0HNPMIMIIM2QQ:00000001"}
+HTTP 401
+
+== Vista del administrador ==
+sin sesi�n de administrador: 401
+[{"playerId":1,"name":"Ana","topSize":"M","bottomSize":"L"},{"playerId":2,"name":"Beto","topSize":"12","bottomSize":"10"},{"playerId":3,"name":"Carla","topSize":null,"bottomSize":null},{"playerId":4,"name":"Dani","topSize":null,"bottomSize":null},{"playerId":5,"name":"Elena","topSize":null,"bottomSize":null},{"playerId":6,"name":"Fran","topSize":null,"bottomSize":null},{"playerId":7,"name":"Gema",...
+HTTP 200
