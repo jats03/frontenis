@@ -149,6 +149,8 @@ export interface Slot {
   attendeeCount: number
   attendees: SlotAttendee[]
 }
+/** Tallas de ropa de un jugador: camiseta (arriba) y pantalón (abajo); null = sin indicar. */
+export interface ClothingSize { playerId: number; name: string; topSize: string | null; bottomSize: string | null }
 export interface SlotTemplate { id: number; day: WeekDay; start: string; end: string; active: boolean }
 export interface SaveSlotTemplate { day: WeekDay; start: string; end: string; active: boolean }
 export interface SaveSlot { date: string; start: string; end: string; opensAt?: string | null }

@@ -2,7 +2,7 @@ import type {
   CompetitionDetail, CompetitionSummary, CreateCompetition, GroupStandings, MatchDto,
   PairDto, PairingPreview, Player, PlayerHistory, PlayerHistoryRow, Position, SetScore,
   HistoryFilter, NewTrainingMatch, TrainingDetail, TrainingSuggestion, TrainingSummary,
-  AuditPage, AuditQuery, PendingResult, RejectedResult, DeviceLink, DeviceMe, DevicePlayer, PlayerDelegateRow, SaveSlot, SaveSlotTemplate, Slot, SlotTemplate,
+  AuditPage, AuditQuery, ClothingSize, PendingResult, RejectedResult, DeviceLink, DeviceMe, DevicePlayer, PlayerDelegateRow, SaveSlot, SaveSlotTemplate, Slot, SlotTemplate,
 } from './types'
 import { deviceHeaders, deviceToken, hasDeviceToken } from '../device'
 import type { BallType } from '../balls'
@@ -232,7 +232,14 @@ export const api = {
     /** `replace`: el jugador ya tenía otro dispositivo y se confirma que eres tú (el otro deja de estar identificado). */
     link: (playerId: number, replace = false) => request<DeviceMe>('POST', '/api/device/link', { playerId, replace }, deviceHeaders()),
     unlink: () => request<void>('DELETE', '/api/device/link', undefined, deviceHeaders()),
+    /** Tallas de ropa del titular de este dispositivo y de sus apadrinados. */
+    sizes: () => request<ClothingSize[]>('GET', '/api/device/sizes', undefined, deviceHeaders()),
+    saveSizes: (playerId: number, sizes: { topSize: string | null; bottomSize: string | null }) =>
+      request<ClothingSize>('PUT', `/api/device/sizes/${playerId}`, sizes, deviceHeaders()),
   },
+
+  /** Tallas de ropa de todos los jugadores (solo administrador). */
+  clothingSizes: { all: () => request<ClothingSize[]>('GET', '/api/clothing-sizes') },
 
   audit: {
     /** Registro de actividad (solo administrador). Las fechas son días locales (aaaa-mm-dd). */

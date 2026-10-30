@@ -8,8 +8,12 @@ CREATE TABLE IF NOT EXISTS "Players" (
     "Name" varchar(100) NOT NULL,
     "Position" smallint NOT NULL,            -- 1 = Delantero, 2 = Zaguero
     "GroupNumber" integer NULL,              -- grupo de jugadores (1, 2, 3…) para seleccionarlos juntos
-    "IsReserve" boolean NOT NULL DEFAULT false  -- true = comodín «Jugador reserva» (no es un jugador real)
+    "IsReserve" boolean NOT NULL DEFAULT false,  -- true = comodín «Jugador reserva» (no es un jugador real)
+    "TopSize" varchar(4) NULL,               -- talla de camiseta (XS…3XL o 6…16); NULL = sin indicar
+    "BottomSize" varchar(4) NULL             -- talla de pantalón
 );
+ALTER TABLE "Players" ADD COLUMN IF NOT EXISTS "TopSize" varchar(4) NULL;
+ALTER TABLE "Players" ADD COLUMN IF NOT EXISTS "BottomSize" varchar(4) NULL;
 
 CREATE TABLE IF NOT EXISTS "AutoTrainingRuns" (
     "Date" date NOT NULL PRIMARY KEY          -- día cuyo entreno automático (martes/jueves) ya se gestionó

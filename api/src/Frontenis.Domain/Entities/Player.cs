@@ -23,6 +23,21 @@ public sealed class Player
     /// <summary>Jugador comodín «Jugador reserva»: cubre la ausencia de un jugador en un partido. No es un jugador real, no puntúa ni aparece en listas.</summary>
     public bool IsReserve { get; private set; }
 
+    /// <summary>Talla de la parte de arriba (camiseta); null = aún sin indicar.</summary>
+    public string? TopSize { get; private set; }
+    /// <summary>Talla de la parte de abajo (pantalón); null = aún sin indicar.</summary>
+    public string? BottomSize { get; private set; }
+
+    /// <summary>Guarda las tallas de ropa (vacío = sin indicar).</summary>
+    /// <exception cref="DomainException">Alguna talla no es válida.</exception>
+    public void SetClothingSizes(string? top, string? bottom)
+    {
+        var t = Services.ClothingSizes.Normalize(top);
+        var b = Services.ClothingSizes.Normalize(bottom);
+        TopSize = t;
+        BottomSize = b;
+    }
+
     /// <summary>Nombre con el que se muestra al jugador reserva.</summary>
     public const string ReserveName = "Jugador reserva";
 

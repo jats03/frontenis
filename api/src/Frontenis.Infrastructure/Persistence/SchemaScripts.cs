@@ -106,6 +106,10 @@ internal static class SchemaScripts
         // Jugador comodín «Jugador reserva» (cubre a un jugador ausente en un partido de liga rotatoria).
         "ALTER TABLE \"Players\" ADD COLUMN IF NOT EXISTS \"IsReserve\" boolean NOT NULL DEFAULT false;",
 
+        // Tallas de ropa de cada jugador (camiseta y pantalón).
+        "ALTER TABLE \"Players\" ADD COLUMN IF NOT EXISTS \"TopSize\" varchar(4) NULL;",
+        "ALTER TABLE \"Players\" ADD COLUMN IF NOT EXISTS \"BottomSize\" varchar(4) NULL;",
+
         // Ligas rotatorias con jornadas manuales: los grupos guardan sus jugadores aunque aún no tengan partidos.
         "ALTER TABLE \"Competitions\" ADD COLUMN IF NOT EXISTS \"ManualRounds\" boolean NOT NULL DEFAULT false;",
         """
