@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { lazy, Suspense, useEffect, useRef } from 'react'
 import { logPageView } from './audit'
 import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { useAuth } from './auth/AuthContext'
@@ -6,25 +6,26 @@ import { useDevice } from './useDevice'
 import ApiStatus from './components/ApiStatus'
 import AppNav from './components/AppNav'
 import LoadingBlock from './components/LoadingBlock'
+import ChunkErrorBoundary from './components/ChunkErrorBoundary'
 import LoadingSpinner from './components/LoadingSpinner'
-import CompetitionDetailPage from './pages/CompetitionDetailPage'
-import CompetitionNewPage from './pages/CompetitionNewPage'
-import CompetitionsPage from './pages/CompetitionsPage'
 import HomePage from './pages/HomePage'
 import LoginPage from './pages/LoginPage'
-import MorePage from './pages/MorePage'
-import PlayerDetailPage from './pages/PlayerDetailPage'
-import PlayerHistoryPage from './pages/PlayerHistoryPage'
-import PlayersRoute from './pages/PlayersRoute'
-import ReservasGestionPage from './pages/ReservasGestionPage'
-import ReservasPage from './pages/ReservasPage'
-import AccountPage from './pages/AccountPage'
-import TrainingDetailPage from './pages/TrainingDetailPage'
-import TrainingsPage from './pages/TrainingsPage'
-import AuditPage from './pages/AuditPage'
-import WhatsappPage from './pages/WhatsappPage'
-import TimerPage from './pages/TimerPage'
-import MatchPlayPage from './pages/MatchPlayPage'
+const CompetitionDetailPage = lazy(() => import('./pages/CompetitionDetailPage'))
+const CompetitionNewPage = lazy(() => import('./pages/CompetitionNewPage'))
+const CompetitionsPage = lazy(() => import('./pages/CompetitionsPage'))
+const MorePage = lazy(() => import('./pages/MorePage'))
+const PlayerDetailPage = lazy(() => import('./pages/PlayerDetailPage'))
+const PlayerHistoryPage = lazy(() => import('./pages/PlayerHistoryPage'))
+const PlayersRoute = lazy(() => import('./pages/PlayersRoute'))
+const ReservasGestionPage = lazy(() => import('./pages/ReservasGestionPage'))
+const ReservasPage = lazy(() => import('./pages/ReservasPage'))
+const AccountPage = lazy(() => import('./pages/AccountPage'))
+const TrainingDetailPage = lazy(() => import('./pages/TrainingDetailPage'))
+const TrainingsPage = lazy(() => import('./pages/TrainingsPage'))
+const AuditPage = lazy(() => import('./pages/AuditPage'))
+const WhatsappPage = lazy(() => import('./pages/WhatsappPage'))
+const TimerPage = lazy(() => import('./pages/TimerPage'))
+const MatchPlayPage = lazy(() => import('./pages/MatchPlayPage'))
 
 export default function App() {
   const { pathname } = useLocation()
@@ -57,6 +58,8 @@ export default function App() {
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         ) : (
+        <ChunkErrorBoundary resetKey={pathname}>
+        <Suspense fallback={<LoadingBlock />}>
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/competiciones" element={<CompetitionsPage />} />
@@ -78,6 +81,8 @@ export default function App() {
           <Route path="/acceso" element={<LoginPage />} />
           <Route path="*" element={<><h1>Página no encontrada</h1><p><Link to="/">Volver al inicio</Link></p></>} />
         </Routes>
+        </Suspense>
+        </ChunkErrorBoundary>
         )}
       </main>
     </div>
