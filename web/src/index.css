@@ -395,9 +395,9 @@ li.card.inactive { opacity: .65; }
 .device-who svg { flex: none; border-radius: 50%; }
 /* Reservas: lo más usado de la app. Objetivos táctiles grandes y botones de acceso destacados. */
 .slot-actions button, .share-reminder { min-height: 48px; font-size: 1.02rem; }
-.reservas-cta { display: flex; justify-content: center; align-items: center; gap: .6rem; width: 100%; min-height: 56px; margin: .4rem 0 1rem;
-  font-size: 1.1rem; font-weight: 700; text-align: center; }
-.reservas-cta svg { width: 1.5rem; height: 1.5rem; flex: none; }
+.reservas-cta { display: flex; justify-content: center; align-items: center; gap: .7rem; width: 100%; min-height: 76px; margin: .4rem 0 1rem;
+  font-size: 1.35rem; font-weight: 700; text-align: center; }
+.reservas-cta svg { width: 2rem; height: 2rem; flex: none; }
 .slot-when { margin: .2rem 0 .5rem; }
 .slot-when .slot-day::first-letter { text-transform: uppercase; }
 
