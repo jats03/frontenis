@@ -1,4 +1,5 @@
-import type { Group, GroupStandings, MatchDto } from './api/types'
+import type { Group, GroupStandings, MatchDto, Slot } from './api/types'
+import { formatDate, formatTime } from './dates'
 import { resultText, setsText } from './pdf'
 
 /** Imagen (PNG) de la clasificación o de los partidos, para guardarla en la galería o compartirla. */
@@ -59,8 +60,8 @@ function wrap(ctx: CanvasRenderingContext2D, text: string, max: number): string[
 
 interface RowLayout { lines: string[][]; height: number }
 
-function layoutTable(ctx: CanvasRenderingContext2D, t: Table): { xs: number[]; rows: RowLayout[] } {
-  const inner = W - PAD * 2
+function layoutTable(ctx: CanvasRenderingContext2D, t: Table, width: number): { xs: number[]; rows: RowLayout[] } {
+  const inner = width - PAD * 2
   const total = t.widths.reduce((acc, c) => acc + c, 0)
   const xs: number[] = []
   let acc = PAD
@@ -78,7 +79,7 @@ function layoutTable(ctx: CanvasRenderingContext2D, t: Table): { xs: number[]; r
   return { xs, rows }
 }
 
-async function render(title: string, subtitle: string, blocks: Block[]): Promise<Blob> {
+async function render(title: string, subtitle: string, blocks: Block[], width = W): Promise<Blob> {
   const logo = await loadLogo()
   const measure = document.createElement('canvas').getContext('2d')!
   const layouts = new Map<Table, ReturnType<typeof layoutTable>>()
@@ -87,31 +88,31 @@ async function render(title: string, subtitle: string, blocks: Block[]): Promise
   for (const b of blocks) {
     if (b.heading) height += 44
     for (const t of b.tables) {
-      const l = layoutTable(measure, t)
+      const l = layoutTable(measure, t, width)
       layouts.set(t, l)
       height += (t.title ? 34 : 0) + ROW + l.rows.reduce((s, r) => s + r.height, 0) + 24
     }
   }
   const canvas = document.createElement('canvas')
-  canvas.width = W * SCALE
+  canvas.width = width * SCALE
   canvas.height = height * SCALE
   const ctx = canvas.getContext('2d')!
   ctx.scale(SCALE, SCALE)
   ctx.fillStyle = '#ffffff'
-  ctx.fillRect(0, 0, W, height)
+  ctx.fillRect(0, 0, width, height)
   ctx.textBaseline = 'middle'
 
   if (logo) ctx.drawImage(logo, PAD, 24, 70, 70)
   const tx = logo ? PAD + 90 : PAD
   ctx.fillStyle = '#111827'
   ctx.font = 'bold 30px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif'
-  ctx.fillText(title, tx, 48, W - tx - PAD)
+  ctx.fillText(title, tx, 48, width - tx - PAD)
   ctx.fillStyle = '#6b7280'
   ctx.font = '18px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif'
   ctx.fillText(subtitle, tx, 82)
 
   let y = headerH + 10
-  const inner = W - PAD * 2
+  const inner = width - PAD * 2
   for (const b of blocks) {
     if (b.heading) {
       ctx.fillStyle = '#111827'
@@ -221,4 +222,26 @@ export async function exportMatchesImage(competitionName: string, matches: Match
   const sub = round === undefined ? 'Partidos' : `Partidos · Jornada ${round}`
   await deliver(await render(competitionName, sub, blocks),
     `partidos_${safe(competitionName, 'competicion')}${round === undefined ? '' : `_jornada_${round}`}.png`)
+}
+
+/**
+ * Imagen de los apuntados a cada entreno, tal como se ven en la app, para mandarla por WhatsApp en vez de la
+ * plantilla de texto (`reminders.ts`, que se conserva). Las franjas se agrupan por día.
+ */
+export async function exportAttendanceImage(title: string, subtitle: string, slots: Slot[], filename: string) {
+  const days = new Map<string, Slot[]>()
+  for (const s of [...slots].sort((a, b) => a.date.localeCompare(b.date) || a.start.localeCompare(b.start))) {
+    days.set(s.date, [...(days.get(s.date) ?? []), s])
+  }
+  const blocks: Block[] = [...days.entries()].map(([date, list]) => ({
+    heading: formatDate(date),
+    tables: list.map(s => ({
+      title: `${formatTime(s.start)} a ${formatTime(s.end)} · ${s.attendees.length === 1 ? '1 apuntado' : `${s.attendees.length} apuntados`}`,
+      head: ['#', 'Jugador'],
+      rows: s.attendees.length > 0 ? s.attendees.map((a, i) => [String(i + 1), a.name]) : [['', 'Nadie apuntado todavía']],
+      widths: [8, 92],
+      aligns: ['center', 'left'] as ('left' | 'center')[],
+    })),
+  }))
+  await deliver(await render(title, subtitle, blocks, 560), filename)
 }

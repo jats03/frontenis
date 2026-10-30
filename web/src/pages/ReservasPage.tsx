@@ -8,11 +8,12 @@ import EmptyState from '../components/EmptyState'
 import PageHeader from '../components/PageHeader'
 import SlotAdminActions from '../components/SlotAdminActions'
 import SlotCard from '../components/SlotCard'
-import ShareReminderButton from '../components/ShareReminderButton'
+import ShareImageButton from '../components/ShareImageButton'
 import SlotSignUp from '../components/SlotSignUp'
 import { addDaysIso, formatDate, mondayOfIso, todayIso, weekTitle } from '../dates'
 import { useAsync, useDocumentTitle } from '../hooks'
-import { isRemindable, reservasLink, slotReminder, weekReminder } from '../reminders'
+import { exportAttendanceImage } from '../imageExport'
+import { isRemindable } from '../reminders'
 import { useDevice } from '../useDevice'
 import LoadingBlock from '../components/LoadingBlock'
 
@@ -47,7 +48,6 @@ export default function ReservasPage() {
     }
     return [...byWeek.entries()].map(([monday, days]) => ({ monday, days: [...days.entries()] }))
   }, [slots.data])
-  const link = reservasLink()
 
   /** Ejecuta una acción del administrador y sustituye la franja devuelta; si falla, muestra el motivo. */
   async function run(action: () => Promise<Slot>, done?: string) {
@@ -101,8 +101,8 @@ export default function ReservasPage() {
           <div key={monday} className="slot-week">
             <h2 className="week-title">{weekTitle(monday)}</h2>
             {weekSlots.some(isRemindable) && (
-              <ShareReminderButton label="Recordar la semana por WhatsApp"
-                message={weekReminder(weekSlots, monday, link)} />
+              <ShareImageButton label="Recordar la semana por WhatsApp"
+                onShare={() => exportAttendanceImage('Entrenamientos', weekTitle(monday), weekSlots.filter(isRemindable), `entrenos_${monday}.png`)} />
             )}
             {days.map(([date, daySlots]) => (
               <section key={date} aria-labelledby={`dia-${date}`}>
@@ -123,9 +123,9 @@ export default function ReservasPage() {
                       <SlotSignUp slot={slot} me={device.me} onToggle={(id, attending) => void toggle(slot, id, attending)} />
                     )}
                     {isRemindable(slot) && (
-                      <ShareReminderButton label="Avisar por WhatsApp"
+                      <ShareImageButton label="Avisar por WhatsApp"
                         ariaLabel={`Avisar por WhatsApp del entreno de ${formatDate(slot.date)}`}
-                        message={slotReminder(slot, link)} />
+                        onShare={() => exportAttendanceImage('Entrenamiento', formatDate(slot.date), [slot], `entreno_${slot.date}_${slot.start.slice(0, 2)}h.png`)} />
                     )}
                   </SlotCard>
                 ))}
