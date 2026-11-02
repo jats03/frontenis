@@ -1,0 +1,19 @@
+== Antes de abrir la app: Ana sin registrar (vinculo antiguo), Beto hace 2 h, Carla ahora, Dani hace 30 min ==
+Ana | (sin registrar)
+Beto | 02/11 20:30:01
+Carla | 02/11 22:30:01
+Dani | 02/11 22:00:01
+
+== Tras abrir la app 3 veces seguidas cada uno (12 aperturas) ==
+Ana | 02/11 22:30:02
+Beto | 02/11 22:30:02
+Carla | 02/11 22:30:01
+Dani | 02/11 22:00:01
+
+== UPDATE de DeviceLinks lanzados por esas 12 aperturas ==
+2
+== Resto de escrituras (INSERT/UPDATE/DELETE) ==
+0
+
+== Linea de log de uno de los UPDATE ==
+      UPDATE "DeviceLinks" AS d
