@@ -3,7 +3,7 @@ using Frontenis.Domain.Exceptions;
 namespace Frontenis.Domain.Services;
 
 /// <summary>
-/// Tallas de ropa admitidas (camiseta y pantalón): de niño (6…16) y de adulto de la S a la 4XL, cada una de mujer (sufijo «M»,
+/// Tallas de ropa admitidas (parte de arriba y de abajo): de niño (6…16) y de adulto de la XS a la 4XL, cada una de mujer (sufijo «M»,
 /// por ejemplo «SM») o de hombre (sufijo «H», por ejemplo «SH»). Las tallas de adulto sin sexo que ya se habían guardado
 /// (XS, S, M, L, XL, XXL, 3XL) se siguen aceptando, aunque ya no se ofrezcan.
 /// </summary>
@@ -11,7 +11,7 @@ public static class ClothingSizes
 {
     private static readonly string[] Children = { "6", "8", "10", "12", "14", "16" };
     /// <summary>Tallas de adulto que se ofrecen (sin el sexo).</summary>
-    private static readonly string[] Adult = { "S", "M", "L", "XL", "XXL", "3XL", "4XL" };
+    private static readonly string[] Adult = { "XS", "S", "M", "L", "XL", "XXL", "3XL", "4XL" };
     /// <summary>Tallas de adulto sin sexo guardadas antes de separar mujer y hombre.</summary>
     private static readonly string[] Legacy = { "XS", "S", "M", "L", "XL", "XXL", "3XL" };
 

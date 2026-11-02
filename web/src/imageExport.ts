@@ -249,12 +249,12 @@ export async function exportAttendanceImage(title: string, slots: Slot[], filena
   await deliver(await render(title, null, blocks, 560), filename)
 }
 
-/** Imagen con la camiseta y el pantalón de quienes ya han elegido alguna talla, para mandarla por WhatsApp. */
+/** Imagen con la parte de arriba y la de abajo de quienes ya han elegido alguna talla, para mandarla por WhatsApp. */
 export async function exportSizesImage(rows: ClothingSize[]) {
   const chosen = rows.filter(r => r.topSize || r.bottomSize)
   const blocks: Block[] = [{
     tables: [{
-      head: ['Jugador', 'Camiseta', 'Pantalón'],
+      head: ['Jugador', 'Parte de arriba', 'Parte de abajo'],
       rows: chosen.map(r => [r.name, r.topSize ? sizeLabel(r.topSize) : '—', r.bottomSize ? sizeLabel(r.bottomSize) : '—']),
       widths: [38, 31, 31],
       aligns: ['left', 'left', 'left'] as ('left' | 'center')[],

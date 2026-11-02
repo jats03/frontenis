@@ -24,7 +24,7 @@ export default function MorePage() {
         {(isAdmin || device.me) && (
           <Link className="card link-card" to="/tallas">
             <strong>Tallas de ropa</strong>
-            <span className="muted">{isAdmin ? 'Resumen de las tallas de todos los jugadores y quién puede verlo.' : device.me?.canViewSizes ? 'Indica tus tallas y mira el resumen de todos los jugadores.' : 'Indica tu talla de camiseta y pantalón y la de tus apadrinados.'}</span>
+            <span className="muted">{isAdmin ? 'Resumen de las tallas de todos los jugadores y quién puede verlo.' : device.me?.canViewSizes ? 'Indica tus tallas y mira el resumen de todos los jugadores.' : 'Indica tu talla de la parte de arriba y de abajo y la de tus apadrinados.'}</span>
           </Link>
         )}
       </div>

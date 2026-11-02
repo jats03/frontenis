@@ -29,6 +29,8 @@ public class ClothingSizeTests
     }
 
     [Theory]
+    [InlineData("xsm", "XSM")]
+    [InlineData("xsh", "XSH")]
     [InlineData("sm", "SM")]
     [InlineData(" 4xlh ", "4XLH")]
     [InlineData("XXLM", "XXLM")]
@@ -40,12 +42,12 @@ public class ClothingSizeTests
     }
 
     [Fact]
-    public void Offered_sizes_are_children_plus_each_adult_size_for_woman_and_man_without_the_XS()
+    public void Offered_sizes_are_children_plus_each_adult_size_from_XS_to_4XL_for_woman_and_man()
     {
         Assert.Equal(new[] { "6", "8", "10", "12", "14", "16" }, ClothingSizes.Offered.Take(6));
-        Assert.Equal(new[] { "SM", "SH", "MM", "MH", "LM", "LH", "XLM", "XLH", "XXLM", "XXLH", "3XLM", "3XLH", "4XLM", "4XLH" },
+        Assert.Equal(new[] { "XSM", "XSH", "SM", "SH", "MM", "MH", "LM", "LH", "XLM", "XLH", "XXLM", "XXLH", "3XLM", "3XLH", "4XLM", "4XLH" },
             ClothingSizes.Offered.Skip(6));
-        Assert.DoesNotContain("XS", ClothingSizes.Offered);
+        Assert.DoesNotContain("XS", ClothingSizes.Offered); // la XS sin sexo solo se acepta si ya estaba guardada
         Assert.All(ClothingSizes.Offered, s => Assert.Contains(s, ClothingSizes.Allowed));
     }
 
@@ -75,7 +77,7 @@ public class ClothingSizeTests
     [Theory]
     [InlineData("XXXL")]
     [InlineData("5XLM")]
-    [InlineData("XSM")]
+    [InlineData("XXSM")]
     [InlineData("SX")]
     [InlineData("7")]
     [InlineData("grande")]

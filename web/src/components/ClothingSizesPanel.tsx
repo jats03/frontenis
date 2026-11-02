@@ -5,8 +5,8 @@ import type { ClothingSize } from '../api/types'
 import { CLOTHING_SIZES, isIncomplete, sizeLabel } from '../clothing'
 
 /**
- * Tallas de ropa del jugador de este dispositivo y de sus apadrinados: camiseta (parte de arriba) y pantalón
- * (parte de abajo). Cada cambio se guarda al elegirlo.
+ * Tallas de ropa del jugador de este dispositivo y de sus apadrinados: parte de arriba y parte de abajo.
+ * Cada cambio se guarda al elegirlo.
  */
 export default function ClothingSizesPanel({ rows, onChange }: { rows: ClothingSize[]; onChange: (rows: ClothingSize[]) => void }) {
   const [error, setError] = useState<string | null>(null)
@@ -47,15 +47,15 @@ export default function ClothingSizesPanel({ rows, onChange }: { rows: ClothingS
           {missing > 0 ? (missing === 1 ? 'Falta 1 persona' : `Faltan ${missing} personas`) : 'Completas'}
         </span>
       </summary>
-      <p className="muted">Indica la talla de camiseta y de pantalón.</p>
+      <p className="muted">Indica la talla de la parte de arriba y la de la parte de abajo.</p>
       {error && <p className="error" role="alert">{error}</p>}
       <ul className="plain sizes-list">
         {rows.map(r => (
           <li key={r.playerId} className="size-row">
             <strong>{r.name}</strong>
             <div className="cols">
-              {select(r, 'topSize', 'Camiseta')}
-              {select(r, 'bottomSize', 'Pantalón')}
+              {select(r, 'topSize', 'Parte de arriba')}
+              {select(r, 'bottomSize', 'Parte de abajo')}
             </div>
           </li>
         ))}
