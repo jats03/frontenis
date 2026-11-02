@@ -26,7 +26,7 @@ public sealed class DeviceAccessResolver : IDeviceAccessResolver
         var link = await _links.GetByHashAsync(_hasher.Hash(deviceToken!), ct);
         if (link is null) return null;
         var delegates = await _delegates.ListByOwnerAsync(link.PlayerId, ct);
-        return new DeviceAccess(link.PlayerId, delegates.Select(d => d.DelegatePlayerId).ToList());
+        return new DeviceAccess(link.PlayerId, delegates.Select(d => d.DelegatePlayerId).ToList(), link.Id, link.LastSeenUtc);
     }
 
     public async Task<DeviceAccess> ResolveAsync(string? deviceToken, CancellationToken ct = default) =>

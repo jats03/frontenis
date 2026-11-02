@@ -17,9 +17,15 @@ public sealed class DeviceLinkService : IDeviceLinkService
     private readonly IPlayerRepository _players;
     private readonly IUnitOfWork _uow;
 
+    /// <summary>Cada cuánto, como mucho, se anota el último acceso de un dispositivo (una escritura a la hora).</summary>
+    public static readonly TimeSpan LastSeenEvery = TimeSpan.FromHours(1);
+
+    private readonly TimeProvider _time;
+
     public DeviceLinkService(IDeviceTokenHasher hasher, IDeviceAccessResolver access, IDeviceLinkRepository links,
-        IPlayerRepository players, IUnitOfWork uow)
+        IPlayerRepository players, IUnitOfWork uow, TimeProvider? time = null)
     {
+        _time = time ?? TimeProvider.System;
         _hasher = hasher;
         _access = access;
         _links = links;
@@ -31,6 +37,10 @@ public sealed class DeviceLinkService : IDeviceLinkService
     {
         var access = await _access.FindAsync(deviceToken, ct);
         if (access is null) return null;
+        // La persona acaba de abrir la app: se anota su último acceso, pero solo si el anotado tiene más de una hora.
+        var now = _time.GetUtcNow().UtcDateTime;
+        if (access.LinkId > 0 && (access.LastSeenUtc is null || now - access.LastSeenUtc.Value >= LastSeenEvery))
+            await _links.TouchAsync(access.LinkId, now, now - LastSeenEvery, ct);
         var ids = new[] { access.OwnerPlayerId }.Concat(access.DelegateIds).ToList();
         var found = (await _players.GetByIdsAsync(ids, ct)).ToDictionary(p => p.Id);
         PlayerRefDto Ref(int id) => new(id, found.TryGetValue(id, out var p) ? p.Name : "—");
