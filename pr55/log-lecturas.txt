@@ -1,0 +1,12 @@
+== Peticiones con el mismo dispositivo, tras reiniciar la API (memoria vacia) ==
+AUDIT Visitor visitante GET /api/slots -> 200 (335 ms)
+AUDIT Player Ana GET /api/device/me -> 200 (402 ms)
+AUDIT Player Ana GET /api/slots -> 200 (14 ms)
+AUDIT Player Ana GET /api/competitions -> 200 (63 ms)
+AUDIT Player Ana GET /api/trainings -> 200 (50 ms)
+AUDIT Visitor visitante GET /api/slots -> 200 (16 ms)
+
+== Consultas a la BD (Executed DbCommand) ==
+durante GET /api/device/me: 3
+en las 4 lecturas siguientes (slots, competitions, trainings, slots de otro dispositivo): 4
+de esas, sobre DeviceLinks / PlayerDelegates / Players (identificar a alguien): 0
