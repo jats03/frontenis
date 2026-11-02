@@ -17,7 +17,7 @@ namespace Frontenis.Api.Auditing;
 public sealed class ActorResolver : IActorResolver
 {
     public const string DeviceHeader = AuditDevice.TokenHeader;
-    private static readonly TimeSpan Remember = TimeSpan.FromMinutes(30);
+    private static readonly TimeSpan RememberFor = TimeSpan.FromMinutes(30);
 
     private readonly IDeviceAccessResolver _devices;
     private readonly IPlayerRepository _players;
@@ -50,13 +50,20 @@ public sealed class ActorResolver : IActorResolver
             var player = access is null ? null : await _players.GetByIdAsync(access.OwnerPlayerId, ct);
             if (player is null) return RequestActor.Visitor; // sin vínculo no se recuerda: así un «Soy yo» se nota enseguida
             var actor = new RequestActor(ActorKind.Player, AuditText.Clean(player.Name, 100), player.Id);
-            _cache.Set(key, actor, Remember);
+            _cache.Set(key, actor, RememberFor);
             return actor;
         }
         catch (Exception) when (!ct.IsCancellationRequested)
         {
             return RequestActor.Visitor; // el registro nunca debe romper la petición
         }
+    }
+
+    public void Remember(HttpContext context, int playerId, string playerName)
+    {
+        var token = context.Request.Headers[DeviceHeader].ToString();
+        if (string.IsNullOrWhiteSpace(token)) return;
+        _cache.Set("actor:" + token, new RequestActor(ActorKind.Player, AuditText.Clean(playerName, 100), playerId), RememberFor);
     }
 
     public void Forget(HttpContext context)

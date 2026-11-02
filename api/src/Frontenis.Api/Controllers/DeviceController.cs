@@ -1,3 +1,4 @@
+using Frontenis.Api.Auditing.Interfaces;
 using Frontenis.Api.RateLimiting;
 using Frontenis.Application.Dtos;
 using Frontenis.Application.Interfaces.Services;
@@ -17,14 +18,19 @@ public sealed class DeviceController : ControllerBase
     public const string TokenHeader = "X-Device-Token";
 
     private readonly IDeviceLinkService _devices;
-    public DeviceController(IDeviceLinkService devices) { _devices = devices; }
+    private readonly IActorResolver _actors;
+    public DeviceController(IDeviceLinkService devices, IActorResolver actors) { _devices = devices; _actors = actors; }
 
     /// <summary>Jugador titular y apadrinados de este dispositivo; 204 si aún no está vinculado.</summary>
     [HttpGet("me")]
     public async Task<ActionResult<DeviceMeDto>> Me([FromHeader(Name = TokenHeader)] string? token, CancellationToken ct)
     {
         var me = await _devices.GetMeAsync(token, ct);
-        return me is null ? NoContent() : Ok(me);
+        if (me is null) return NoContent();
+        // Ya se ha consultado la BD para esto: se recuerda quién es el dispositivo para el registro de actividad
+        // (las lecturas siguientes salen con su nombre sin consultar nada más).
+        _actors.Remember(HttpContext, me.Owner.Id, me.Owner.Name);
+        return Ok(me);
     }
 
     /// <summary>Jugadores que aún no tienen dispositivo y se pueden elegir al vincular.</summary>
