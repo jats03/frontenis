@@ -14,6 +14,11 @@ public sealed class DeviceLink
     public string DeviceHash { get; private set; }
     public int PlayerId { get; private set; }
     public DateTime LinkedAtUtc { get; private set; }
+    /// <summary>
+    /// Último acceso del dispositivo (la última vez que la persona abrió la app), con una precisión de una hora para no
+    /// escribir en la BD en cada petición; <c>null</c> si aún no se ha registrado ninguno (vínculos anteriores a esta columna).
+    /// </summary>
+    public DateTime? LastSeenUtc { get; private set; }
 
     /// <summary>Vincula un dispositivo (por su hash) con un jugador.</summary>
     /// <exception cref="DomainException">Hash vacío o jugador no válido.</exception>
@@ -21,6 +26,7 @@ public sealed class DeviceLink
     {
         if (string.IsNullOrWhiteSpace(deviceHash)) throw new DomainException("Dispositivo no válido.");
         if (playerId <= 0) throw new DomainException("Jugador no válido.");
-        return new DeviceLink { DeviceHash = deviceHash, PlayerId = playerId, LinkedAtUtc = DateTime.UtcNow };
+        var now = DateTime.UtcNow;
+        return new DeviceLink { DeviceHash = deviceHash, PlayerId = playerId, LinkedAtUtc = now, LastSeenUtc = now };
     }
 }

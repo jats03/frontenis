@@ -36,7 +36,8 @@ public sealed record DeviceMeDto(PlayerRefDto Owner, IReadOnlyList<PlayerRefDto>
 public sealed record LinkDeviceRequest(int PlayerId, bool Replace = false);
 /// <summary>Jugador que se puede elegir al identificarse; <paramref name="Linked"/> indica que ya tiene un dispositivo vinculado.</summary>
 public sealed record DevicePlayerDto(int Id, string Name, bool Linked);
-public sealed record DeviceLinkDto(int PlayerId, string PlayerName, DateTime LinkedAtUtc, int Id, string DeviceHash);
+/// <param name="LastSeenUtc">Último acceso (con precisión de una hora); <c>null</c> si aún no se ha registrado ninguno.</param>
+public sealed record DeviceLinkDto(int PlayerId, string PlayerName, DateTime LinkedAtUtc, int Id, string DeviceHash, DateTime? LastSeenUtc = null);
 /// <summary>Tallas de ropa de un jugador (parte de arriba y parte de abajo); null = sin indicar.</summary>
 public sealed record ClothingSizeDto(int PlayerId, string Name, string? TopSize, string? BottomSize);
 public sealed record SaveClothingSizeRequest(string? TopSize, string? BottomSize);

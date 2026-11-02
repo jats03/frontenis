@@ -167,7 +167,8 @@ export interface PlayerRef { id: number; name: string }
 export interface DevicePlayer { id: number; name: string; linked: boolean }
 /** `canViewSizes`: el administrador le ha dado acceso al resumen de tallas de todos los jugadores. */
 export interface DeviceMe { owner: PlayerRef; delegates: PlayerRef[]; canViewSizes?: boolean }
-export interface DeviceLink { playerId: number; playerName: string; linkedAtUtc: string; id: number; deviceHash: string }
+/** `lastSeenUtc`: último acceso (con precisión de una hora); null si aún no se ha registrado ninguno. */
+export interface DeviceLink { playerId: number; playerName: string; linkedAtUtc: string; id: number; deviceHash: string; lastSeenUtc: string | null }
 export interface PlayerDelegateRow { ownerId: number; ownerName: string; delegateId: number; delegateName: string }
 
 /** Quién hace una acción registrada. */

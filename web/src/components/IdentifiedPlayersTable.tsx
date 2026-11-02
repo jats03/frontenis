@@ -27,7 +27,7 @@ export default function IdentifiedPlayersTable() {
   return (
     <>
       <PageHeader title="Jugadores identificados"
-        subtitle="Dispositivos vinculados a un jugador. Del dispositivo solo se guarda el hash de su identificador, nunca el identificador en claro. Si un jugador cambia de móvil, libera su dispositivo para que pueda volver a identificarse." />
+        subtitle="Dispositivos vinculados a un jugador, con la última vez que abrieron la app (se anota como mucho una vez por hora). Del dispositivo solo se guarda el hash de su identificador, nunca el identificador en claro. Si un jugador cambia de móvil, libera su dispositivo para que pueda volver a identificarse." />
       {(error ?? links.error) && <p className="error">{error ?? links.error}</p>}
       {!links.data && !links.error && <LoadingBlock />}
       {links.data && (
@@ -35,7 +35,7 @@ export default function IdentifiedPlayersTable() {
           <div className="table-wrap">
             <table className="audit-table">
               <thead>
-                <tr><th>Id</th><th>Jugador</th><th>Id jugador</th><th>Hash del dispositivo</th><th>Vinculado (Madrid)</th><th></th></tr>
+                <tr><th>Id</th><th>Jugador</th><th>Id jugador</th><th>Hash del dispositivo</th><th>Vinculado</th><th>Último acceso</th><th></th></tr>
               </thead>
               <tbody>
                 {links.data.map(l => (
@@ -45,6 +45,7 @@ export default function IdentifiedPlayersTable() {
                     <td>{l.playerId}</td>
                     <td className="device-hash"><code>{l.deviceHash}</code></td>
                     <td className="nowrap">{when(l.linkedAtUtc)}</td>
+                    <td className="nowrap">{l.lastSeenUtc ? when(l.lastSeenUtc) : '—'}</td>
                     <td><button type="button" className="secondary" onClick={() => void release(l.playerId, l.playerName)}>Liberar</button></td>
                   </tr>
                 ))}
