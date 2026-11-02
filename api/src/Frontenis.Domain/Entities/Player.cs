@@ -23,9 +23,9 @@ public sealed class Player
     /// <summary>Jugador comodín «Jugador reserva»: cubre la ausencia de un jugador en un partido. No es un jugador real, no puntúa ni aparece en listas.</summary>
     public bool IsReserve { get; private set; }
 
-    /// <summary>Talla de la parte de arriba (camiseta); null = aún sin indicar.</summary>
+    /// <summary>Talla de la parte de arriba; null = aún sin indicar.</summary>
     public string? TopSize { get; private set; }
-    /// <summary>Talla de la parte de abajo (pantalón); null = aún sin indicar.</summary>
+    /// <summary>Talla de la parte de abajo; null = aún sin indicar.</summary>
     public string? BottomSize { get; private set; }
 
     /// <summary>El administrador le ha dado acceso al resumen de tallas de todos los jugadores.</summary>

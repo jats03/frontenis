@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.RateLimiting;
 
 namespace Frontenis.Api.Controllers;
 
-/// <summary>Tallas de ropa (camiseta y pantalón): las indica cada jugador desde su dispositivo; el administrador las consulta todas.</summary>
+/// <summary>Tallas de ropa (parte de arriba y de abajo): las indica cada jugador desde su dispositivo; el administrador las consulta todas.</summary>
 [ApiController]
 public sealed class ClothingSizesController : ControllerBase
 {

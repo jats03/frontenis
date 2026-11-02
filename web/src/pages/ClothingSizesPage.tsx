@@ -45,7 +45,7 @@ function AdminSizes() {
   const sizes = useAsync(() => api.clothingSizes.all(), [])
   return (
     <>
-      <PageHeader title="Tallas de ropa" subtitle="Camiseta y pantalón de cada jugador" />
+      <PageHeader title="Tallas de ropa" subtitle="Parte de arriba y parte de abajo de cada jugador" />
       {sizes.error && <p className="error">{sizes.error}</p>}
       {sizes.loading && !sizes.data && <LoadingBlock />}
       {sizes.data && <ClothingSizesSummary rows={sizes.data} />}

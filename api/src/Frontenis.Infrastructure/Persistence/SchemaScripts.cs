@@ -106,7 +106,7 @@ internal static class SchemaScripts
         // Jugador comodín «Jugador reserva» (cubre a un jugador ausente en un partido de liga rotatoria).
         "ALTER TABLE \"Players\" ADD COLUMN IF NOT EXISTS \"IsReserve\" boolean NOT NULL DEFAULT false;",
 
-        // Tallas de ropa de cada jugador (camiseta y pantalón).
+        // Tallas de ropa de cada jugador (parte de arriba y de abajo).
         "ALTER TABLE \"Players\" ADD COLUMN IF NOT EXISTS \"TopSize\" varchar(4) NULL;",
         "ALTER TABLE \"Players\" ADD COLUMN IF NOT EXISTS \"BottomSize\" varchar(4) NULL;",
         "ALTER TABLE \"Players\" ADD COLUMN IF NOT EXISTS \"CanViewSizes\" boolean NOT NULL DEFAULT false;",

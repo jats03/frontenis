@@ -6,7 +6,7 @@ import ShareImageButton from './ShareImageButton'
 /** Resumen de tallas de todos los jugadores: recuento por talla (para el pedido) y lista por jugador. */
 export default function ClothingSizesSummary({ rows }: { rows: ClothingSize[] }) {
   const done = rows.filter(r => !isIncomplete(r)).length
-  // Primero quienes ya han elegido alguna talla (camiseta, pantalón o las dos); dentro de cada grupo se mantiene el orden por nombre.
+  // Primero quienes ya han elegido alguna talla (parte de arriba, de abajo o las dos); dentro de cada grupo se mantiene el orden por nombre.
   const ordered = [...rows.filter(r => r.topSize || r.bottomSize), ...rows.filter(r => !r.topSize && !r.bottomSize)]
   return (
     <>
@@ -14,14 +14,14 @@ export default function ClothingSizesSummary({ rows }: { rows: ClothingSize[] })
       {ordered.some(r => r.topSize || r.bottomSize) && (
         <ShareImageButton label="Enviar por WhatsApp en imagen" onShare={() => exportSizesImage(rows)} />
       )}
-      <h2 className="section-title">Camisetas</h2>
+      <h2 className="section-title">Parte de arriba</h2>
       <Chips rows={sizeCounts(rows, r => r.topSize)} />
-      <h2 className="section-title">Pantalones</h2>
+      <h2 className="section-title">Parte de abajo</h2>
       <Chips rows={sizeCounts(rows, r => r.bottomSize)} />
       <h2 className="section-title">Por jugador</h2>
       <div className="card">
         <table className="size-table">
-          <thead><tr><th>Jugador</th><th>Camiseta</th><th>Pantalón</th></tr></thead>
+          <thead><tr><th>Jugador</th><th>Parte de arriba</th><th>Parte de abajo</th></tr></thead>
           <tbody>
             {ordered.map(r => (
               <tr key={r.playerId}>
