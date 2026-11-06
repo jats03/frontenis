@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS "Players" (
 ALTER TABLE "Players" ADD COLUMN IF NOT EXISTS "TopSize" varchar(4) NULL;
 ALTER TABLE "Players" ADD COLUMN IF NOT EXISTS "BottomSize" varchar(4) NULL;
 ALTER TABLE "Players" ADD COLUMN IF NOT EXISTS "CanViewSizes" boolean NOT NULL DEFAULT false;
-ALTER TABLE "Players" ADD COLUMN IF NOT EXISTS "AvatarSeed" integer NULL;  -- avatar elegido (1 a 36); NULL = el de siempre  -- puede ver el resumen de tallas de todos
+ALTER TABLE "Players" ADD COLUMN IF NOT EXISTS "AvatarSeed" integer NULL;  -- avatar elegido (1 a 72); NULL = el de siempre  -- puede ver el resumen de tallas de todos
 
 CREATE TABLE IF NOT EXISTS "AutoTrainingRuns" (
     "Date" date NOT NULL PRIMARY KEY          -- día cuyo entreno automático (martes/jueves) ya se gestionó

@@ -2,7 +2,7 @@ import { useSyncExternalStore } from 'react'
 import { responseCache } from './api/client'
 
 /**
- * Avatar elegido por cada jugador (1 a 36; ausente = el de siempre, que sale de su identificador). Se llena con la lista
+ * Avatar elegido por cada jugador (1 a 72; ausente = el de siempre, que sale de su identificador). Se llena con la lista
  * de jugadores, que ya incluye el avatar, y se actualiza al instante cuando alguien cambia el suyo, para que todas las
  * pantallas (saludo, carta, listas, clasificaciones) lo muestren sin recargar.
  */

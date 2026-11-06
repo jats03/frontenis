@@ -30,7 +30,7 @@ public sealed class Player
     public int? AvatarSeed { get; private set; }
 
     /// <summary>Cuántos avatares se pueden elegir (la web ofrece los mismos).</summary>
-    public const int MaxAvatar = 36;
+    public const int MaxAvatar = 72;
 
     /// <summary>Cambia el avatar (vacío = volver al de siempre).</summary>
     /// <exception cref="DomainException">El avatar no está entre 1 y <see cref="MaxAvatar"/>.</exception>
