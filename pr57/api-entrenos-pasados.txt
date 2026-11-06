@@ -1,0 +1,15 @@
+== Entreno del 04/11 (pasado) y entreno de hoy 06/11 (hoy = 06/11) ==
+-- jugador (Ana) en el entreno pasado
+{"title":"Solicitud no válida","status":400,"detail":"Este entrenamiento ya pasó: ya no se pueden registrar partidos.","instance":"/api/trainings/1/matches","traceId":"0HNPRSVNDGA8B:00000001"}
+HTTP 400
+-- jugador (Ana) en el entreno de hoy
+HTTP 200
+-- administrador en el entreno pasado
+HTTP 200
+-- partidos guardados en el entreno pasado (solo el del administrador)
+"id":1,"name":"Entreno del miercoles","date":"2026-11-04T00:00:00","pointsPerWin":3,"pointsPerLoss":1,"matchCount":1
+
+== Registro de actividad ==
+"actorName":"admin","playerId":null,"method":"POST","path":"/api/trainings/1/matches","status":200
+"actorName":"Ana","playerId":1,"method":"POST","path":"/api/trainings/2/matches","status":200
+"actorName":"Ana","playerId":1,"method":"POST","path":"/api/trainings/1/matches","status":400
