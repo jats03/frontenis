@@ -1,0 +1,42 @@
+== Preparación: apadrinar a Beto (jugador 2) a Ana (jugador 1) ==
+apadrinar 400
+
+== Avatar ==
+-- titular (Ana) elige el 7
+{"playerId":1,"avatarSeed":7}
+HTTP 200
+-- apadrinado (Beto) elige el mismo 7: permitido
+{"playerId":2,"avatarSeed":7}
+HTTP 200
+-- jugador ajeno (Carla, 3): rechazado
+{"title":"Solicitud no válida","status":400,"detail":"Desde este dispositivo no puedes cambiar el avatar de ese jugador.","instance":"/api/device/avatar/3","traceId":"0HNPRT37BFRD4:00000001"}
+HTTP 400
+-- avatar fuera de rango (37)
+{"title":"Solicitud no válida","status":400,"detail":"Avatar no válido.","instance":"/api/device/avatar/1","traceId":"0HNPRT37BFRD5:00000001"}
+HTTP 400
+-- avatar 0
+{"title":"Solicitud no válida","status":400,"detail":"Avatar no válido.","instance":"/api/device/avatar/1","traceId":"0HNPRT37BFRD6:00000001"}
+HTTP 400
+-- dispositivo sin vincular
+{"title":"No autorizado","status":401,"detail":"Este dispositivo no está vinculado a ningún jugador.","instance":"/api/device/avatar/1","traceId":"0HNPRT37BFRD7:00000001"}
+HTTP 401
+
+== La lista de jugadores ya lleva el avatar elegido (los demás, sin) ==
+"id":1,"name":"Ana","position":"Delantero","groupNumber":null,"avatarSeed":7}
+"id":2,"name":"Beto","position":"Delantero","groupNumber":null,"avatarSeed":7}
+"id":3,"name":"Carla","position":"Delantero","groupNumber":null,"avatarSeed":null}
+"id":4,"name":"Dani","position":"Delantero","groupNumber":null,"avatarSeed":null}
+-- Beto vuelve al avatar de siempre (vacío)
+{"playerId":2,"avatarSeed":null}
+HTTP 200
+"id":2,"name":"Beto","position":"Delantero","groupNumber":null,"avatarSeed":null}
+
+== Registro de actividad ==
+"method":"PUT","path":"/api/device/avatar/2","status":200
+"method":"PUT","path":"/api/device/avatar/1","status":401
+"method":"PUT","path":"/api/device/avatar/1","status":400
+"method":"PUT","path":"/api/device/avatar/1","status":400
+"method":"PUT","path":"/api/device/avatar/3","status":400
+"method":"PUT","path":"/api/device/avatar/2","status":200
+"method":"PUT","path":"/api/device/avatar/1","status":200
+"method":"PUT","path":"/api/device/avatar/2","status":429
