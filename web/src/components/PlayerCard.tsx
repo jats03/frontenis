@@ -77,7 +77,12 @@ export default function PlayerCard({ playerId, onClose }: Props) {
                 <span title={summary.position}>{positionCode(summary.position)}</span>
               </div>
             )}
-            <PlayerAvatar playerId={playerId} size={150} className="fut-avatar" />
+            {/* Quien puede cambiar el avatar lo abre también pulsando el avatar grande (además del botón de debajo). */}
+            {canChangeAvatar
+              ? <button type="button" className="fut-avatar-btn" aria-label="Cambiar avatar" onClick={() => setPicking(true)}>
+                  <PlayerAvatar playerId={playerId} size={150} className="fut-avatar" />
+                </button>
+              : <PlayerAvatar playerId={playerId} size={150} className="fut-avatar" />}
           </div>
           <h2 className="fut-name">{summary.name}</h2>
           <p className="fut-position">{summary.position}</p>

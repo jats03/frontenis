@@ -454,6 +454,9 @@ body:has(.loading-block) .spinner-overlay { display: none; }
 .fut-rating { position: absolute; left: 0; top: 0; display: grid; justify-items: center; line-height: 1; }
 .fut-rating strong { font-size: 2.6rem; font-weight: 800; }
 .fut-rating span { font-size: 1rem; font-weight: 700; letter-spacing: .06em; border-top: 2px solid currentColor; margin-top: .2rem; padding-top: .2rem; }
+.fut-avatar-btn { all: unset; cursor: pointer; display: inline-flex; margin-top: .6rem; border-radius: 50%; }
+.fut-avatar-btn .fut-avatar { margin-top: 0; }
+.fut-avatar-btn:focus-visible { outline: 3px solid var(--fut-ink); outline-offset: 3px; }
 .fut-avatar { margin-top: .6rem; border-radius: 50%; box-shadow: 0 0 0 4px rgba(255, 255, 255, .6), 0 6px 14px rgba(0, 0, 0, .3); }
 .fut-name { margin: .7rem 0 0; font-size: 1.35rem; text-transform: uppercase; letter-spacing: .04em; border-bottom: 2px solid rgba(0, 0, 0, .25); padding-bottom: .4rem; overflow-wrap: anywhere; }
 .fut-position { margin: .3rem 0 .2rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; font-size: .85rem; }
