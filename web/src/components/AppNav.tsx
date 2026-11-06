@@ -5,7 +5,7 @@ import { greetingFor } from '../avatar'
 import { startPresence } from '../timerStore'
 import { useDevice } from '../useDevice'
 import PlayerAvatar from './PlayerAvatar'
-import PlayerCard, { askMotionPermission } from './PlayerCard'
+import PlayerCard from './PlayerCard'
 import { CalendarIcon, HomeIcon, MoreIcon, TrophyIcon, UsersIcon } from './Icons'
 // El logo va incrustado en el JavaScript (data URI): no depende de una petición aparte que pueda fallar o tardar.
 import logoUrl from '../assets/logo-128.png?inline'
@@ -38,7 +38,7 @@ export default function AppNav() {
             <span className="greeting-hello">{greetingFor(new Date())}<span className="greeting-comma">,</span></span>
             <strong className="greeting-name">{fullName}</strong>
           </span>
-          <button type="button" className="greeting-avatar-btn" aria-label="Ver mi carta de jugador" onClick={() => { askMotionPermission(); setShowCard(true) }}>
+          <button type="button" className="greeting-avatar-btn" aria-label="Ver mi carta de jugador" onClick={() => setShowCard(true)}>
             <PlayerAvatar playerId={me!.owner.id} size={40} className="greeting-avatar" />
           </button>
         </span>

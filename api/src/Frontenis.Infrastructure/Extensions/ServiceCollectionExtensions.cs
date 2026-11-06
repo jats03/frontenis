@@ -130,6 +130,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IMatchSubmissionService, MatchSubmissionService>();
         services.AddScoped<IDeviceAttendanceCommands, DeviceAttendanceCommands>();
         services.AddScoped<IClothingSizeService, ClothingSizeService>();
+        services.AddScoped<IAvatarService, AvatarService>();
         services.AddScoped<PlayerDelegateService>();
         services.AddScoped<IPlayerDelegateQueries>(sp => sp.GetRequiredService<PlayerDelegateService>());
         services.AddScoped<IPlayerDelegateCommands>(sp => sp.GetRequiredService<PlayerDelegateService>());

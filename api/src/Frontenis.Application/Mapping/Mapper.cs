@@ -7,7 +7,7 @@ namespace Frontenis.Application.Mapping;
 /// <summary>Conversión de entidades de competiciones y jugadores a DTO.</summary>
 internal static class Mapper
 {
-    public static PlayerDto ToDto(this Player p) => new(p.Id, p.Name, p.Position, p.GroupNumber);
+    public static PlayerDto ToDto(this Player p) => new(p.Id, p.Name, p.Position, p.GroupNumber, p.AvatarSeed);
 
     public static PairDto ToDto(this CompetitionEntry e) => new(
         e.Id, e.PairId, e.Pair.DisplayName, e.Pair.Player1.ToDto(), e.Pair.Player2.ToDto(), e.GroupId);

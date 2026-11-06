@@ -8,6 +8,9 @@ export interface AvatarParts {
   mouth: 'smile' | 'grin'
 }
 
+/** Cuántos avatares se pueden elegir (los mismos que valida el servidor). */
+export const AVATAR_CHOICES = 36
+
 const SKINS = ['#fdeee0', '#fbe6d4', '#f9dfca']
 const HAIRS = ['#2b1d14', '#5a3a22', '#a5672b', '#d9a441', '#c8473a', '#4a4a55']
 const SHIRTS = ['#0f766e', '#e4572e', '#3b6fd4', '#f2a900', '#8e44ad', '#2e9e5b', '#d6336c']

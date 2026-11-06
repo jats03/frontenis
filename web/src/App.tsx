@@ -4,6 +4,7 @@ import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { useAuth } from './auth/AuthContext'
 import { useDevice } from './useDevice'
 import ApiStatus from './components/ApiStatus'
+import AvatarSync from './components/AvatarSync'
 import AppNav from './components/AppNav'
 import LoadingBlock from './components/LoadingBlock'
 import LoadingSpinner from './components/LoadingSpinner'
@@ -46,6 +47,7 @@ export default function App() {
     <div className="app">
       <a className="skip-link" href="#contenido" onClick={e => { e.preventDefault(); main.current?.focus() }}>Saltar al contenido</a>
       <AppNav />
+      <AvatarSync />
       <ApiStatus />
       <LoadingSpinner />
       <main id="contenido" className="content" tabIndex={-1} ref={main}>

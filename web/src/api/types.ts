@@ -4,7 +4,8 @@ export type CompetitionType = 'League' | 'Tournament' | 'RotatingLeague'
 export type CompetitionStatus = 'Draft' | 'GroupStage' | 'Playoffs' | 'Finished'
 export type MatchPhase = 'Group' | 'Playoff'
 
-export interface Player { id: number; name: string; position: Position; groupNumber?: number | null }
+/** `avatarSeed`: avatar elegido (1 a 36); null o ausente = el de siempre. */
+export interface Player { id: number; name: string; position: Position; groupNumber?: number | null; avatarSeed?: number | null }
 export interface PairDto {
   entryId: number; pairId: number; name: string
   player1: Player; player2: Player; groupId: number | null

@@ -23,6 +23,23 @@ public sealed class Player
     /// <summary>Jugador comodín «Jugador reserva»: cubre la ausencia de un jugador en un partido. No es un jugador real, no puntúa ni aparece en listas.</summary>
     public bool IsReserve { get; private set; }
 
+    /// <summary>
+    /// Avatar elegido por el jugador (1 a <see cref="MaxAvatar"/>); null = el de siempre, que sale de su identificador.
+    /// Varias personas pueden tener el mismo.
+    /// </summary>
+    public int? AvatarSeed { get; private set; }
+
+    /// <summary>Cuántos avatares se pueden elegir (la web ofrece los mismos).</summary>
+    public const int MaxAvatar = 36;
+
+    /// <summary>Cambia el avatar (vacío = volver al de siempre).</summary>
+    /// <exception cref="DomainException">El avatar no está entre 1 y <see cref="MaxAvatar"/>.</exception>
+    public void SetAvatar(int? seed)
+    {
+        if (seed is < 1 or > MaxAvatar) throw new DomainException("Avatar no válido.");
+        AvatarSeed = seed;
+    }
+
     /// <summary>Talla de la parte de arriba; null = aún sin indicar.</summary>
     public string? TopSize { get; private set; }
     /// <summary>Talla de la parte de abajo; null = aún sin indicar.</summary>

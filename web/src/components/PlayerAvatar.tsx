@@ -1,7 +1,10 @@
 import { avatarParts, type AvatarParts } from '../avatar'
+import { useAvatarSeed } from '../avatarStore'
 
 interface Props {
   playerId: number
+  /** Fuerza un avatar concreto (para la cuadrícula de elección); si no, el que eligió el jugador o el de siempre. */
+  seed?: number
   /** Lado en píxeles. */
   size?: number
   className?: string
@@ -50,11 +53,12 @@ function HairFront({ style, color, shirt }: { style: AvatarParts['hairStyle']; c
 }
 
 /**
- * Muñeco del jugador: rasgos fijos (pelo, piel, camiseta) elegidos a partir de su identificador.
+ * Muñeco del jugador: rasgos fijos (pelo, piel, camiseta) elegidos a partir de su identificador o del avatar que haya elegido.
  * Es decorativo, por eso va oculto para lectores de pantalla.
  */
-export default function PlayerAvatar({ playerId, size = 40, className }: Props) {
-  const p = avatarParts(playerId)
+export default function PlayerAvatar({ playerId, seed, size = 40, className }: Props) {
+  const chosen = useAvatarSeed(playerId)
+  const p = avatarParts(seed ?? chosen ?? playerId)
   return (
     <svg className={className} width={size} height={size} viewBox="0 0 64 64" aria-hidden="true" focusable="false">
       <circle cx="32" cy="32" r="32" fill={p.background} />
