@@ -19,7 +19,13 @@ public sealed class DeviceController : ControllerBase
 
     private readonly IDeviceLinkService _devices;
     private readonly IActorResolver _actors;
-    public DeviceController(IDeviceLinkService devices, IActorResolver actors) { _devices = devices; _actors = actors; }
+    private readonly ILogger<DeviceController> _logger;
+    public DeviceController(IDeviceLinkService devices, IActorResolver actors, ILogger<DeviceController> logger)
+    {
+        _devices = devices;
+        _actors = actors;
+        _logger = logger;
+    }
 
     /// <summary>Jugador titular y apadrinados de este dispositivo; 204 si aún no está vinculado.</summary>
     [HttpGet("me")]
@@ -45,8 +51,14 @@ public sealed class DeviceController : ControllerBase
 
     /// <summary>Vincula este dispositivo con el jugador elegido.</summary>
     [HttpPost("link"), EnableRateLimiting(RateLimitPolicies.PublicWrite)]
-    public async Task<ActionResult<DeviceMeDto>> Link([FromHeader(Name = TokenHeader)] string? token, LinkDeviceRequest request, CancellationToken ct) =>
-        Ok(await _devices.LinkAsync(token, request.PlayerId, request.Replace, ct));
+    public async Task<ActionResult<DeviceMeDto>> Link([FromHeader(Name = TokenHeader)] string? token, LinkDeviceRequest request, CancellationToken ct)
+    {
+        var me = await _devices.LinkAsync(token, request.PlayerId, request.Replace, ct);
+        // Solo al identificarse y solo en el log (nunca en la base de datos): una pista de quién se vincula y desde dónde.
+        _logger.LogInformation("Dispositivo identificado como {Player} (id {PlayerId}) desde la IP {Ip}",
+            me.Owner.Name, me.Owner.Id, HttpContext.Connection.RemoteIpAddress?.ToString() ?? "desconocida");
+        return Ok(me);
+    }
 
     /// <summary>Desvincula este dispositivo («no soy yo»).</summary>
     [HttpDelete("link"), EnableRateLimiting(RateLimitPolicies.PublicWrite)]
