@@ -1,0 +1,2 @@
+Enlace roto provocado a mano: liga 1 -> 999 (esa liga no existe)
+Tras reiniciar la API: liga 1 -> NULL (reparado)

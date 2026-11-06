@@ -1,0 +1,13 @@
+== Liga rotatoria 1 (8 jugadores, 2 grupos de 4)
+sorteo: HTTP 200
+estado (4 = terminada): 4
+== 1. Crear la siguiente liga
+{"id":2,"name":"Liga (2)","type":"RotatingLeague","status":"GroupStage","pairCount":8,"groupCount":2,"pairsPerGroup":4,"
+liga 1 -> "nextCompetitionId":2
+== 2. Eliminar la siguiente liga (id 2)
+DELETE: HTTP 204
+liga 1 -> "nextCompetitionId":null   (antes del arreglo quedaba apuntando a la liga borrada)
+== 3. Volver a crear la siguiente liga
+{"id":3,"name":"Liga (2)","type":"RotatingLeague","status":"GroupStage","pairCount":8,"groupCount":2,"pairsPerGroup":4,"
+liga 1 -> "nextCompetitionId":3
+GET liga %s: HTTP 200
