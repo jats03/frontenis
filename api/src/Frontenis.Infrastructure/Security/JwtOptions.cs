@@ -7,5 +7,5 @@ public sealed class JwtOptions
     public string Issuer { get; set; } = "frontenis";
     public string Audience { get; set; } = "frontenis-clients";
     public string Key { get; set; } = string.Empty;   // mínimo 32 caracteres
-    public int ExpiresMinutes { get; set; } = 240;
+    public int ExpiresMinutes { get; set; } = 1440;
 }

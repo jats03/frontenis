@@ -35,7 +35,7 @@ Cualquier visitante puede consultar; solo el administrador crea o modifica datos
 - Límite de intentos: 5 fallos seguidos bloquean al usuario 15 minutos y 20 fallos bloquean la IP; además, 8 peticiones por minuto
   y por IP a `/api/auth/*` y 300 por minuto al resto. Responde 429 con `Retry-After`.
 - Respuesta idéntica y mismo tiempo para «usuario inexistente» y «contraseña incorrecta».
-- JWT firmado con HS256 (algoritmo fijado), caduca a las 4 h (`Jwt:ExpiresMinutes`).
+- JWT firmado con HS256 (algoritmo fijado), caduca a las 24 h (`Jwt:ExpiresMinutes`).
 - El administrador puede cambiar su contraseña en `/cuenta` (pide la actual; mínimo 12 caracteres).
 - Cabeceras de seguridad en la API y CSP en la web (`web/public/_headers`).
 
