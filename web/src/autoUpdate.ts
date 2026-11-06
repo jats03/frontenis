@@ -1,12 +1,17 @@
 /**
  * Actualización automática de la app (PWA). Cuando hay una versión nueva desplegada, el service worker nuevo toma el
  * control y la página se recarga sola, para que nadie se quede con una versión antigua o rota.
- * Para no interrumpir a quien está usando la app, la recarga se aplica al salir de ella (pestaña en segundo plano)
- * o enseguida si todavía no ha tocado nada. Nunca recarga más de una vez por minuto, para evitar bucles.
+ * Al abrir la app se enseña primero la versión guardada y la nueva llega unos segundos después: si llega nada más
+ * entrar (primeros segundos de la visita) se recarga enseguida, aunque la persona ya haya tocado algo. En una visita
+ * ya larga no se la interrumpe: la recarga se aplica al salir de la app (pestaña en segundo plano).
+ * Nunca recarga más de una vez por minuto, para evitar bucles.
  */
 const RELOAD_KEY = 'frontenis.auto-reload'
 const MIN_GAP_MS = 60_000
 const CHECK_EVERY_MS = 60 * 60 * 1000
+/** «Nada más entrar»: durante este tiempo desde que se abre la app, una versión nueva se aplica al instante. */
+export const ENTRY_WINDOW_MS = 30_000
+const openedAt = Date.now()
 
 function reloadedRecently(): boolean {
   const last = Number(sessionStorage.getItem(RELOAD_KEY))
@@ -32,11 +37,11 @@ export function reloadOnce(reason: string): boolean {
 }
 
 let pendingReason: string | null = null
-let userInteracted = false
 
 function applyUpdate(reason: string) {
-  // Si la pestaña está en segundo plano o la persona aún no ha tocado nada, recargar no molesta a nadie.
-  if (document.hidden || !userInteracted) {
+  // Nada más entrar (o con la pestaña en segundo plano) se recarga ya: hay poco o nada que perder y así nadie se queda
+  // con la versión antigua. Pasados esos primeros segundos, se espera a que la persona salga de la app.
+  if (document.hidden || Date.now() - openedAt < ENTRY_WINDOW_MS) {
     reloadOnce(reason)
     return
   }
@@ -46,10 +51,6 @@ function applyUpdate(reason: string) {
 
 export function startAutoUpdate() {
   if (!('serviceWorker' in navigator)) return
-
-  for (const type of ['pointerdown', 'keydown']) {
-    window.addEventListener(type, () => { userInteracted = true }, { once: true, passive: true })
-  }
 
   // Solo cuenta el cambio si la página ya estaba controlada por un service worker (no en la primera instalación).
   const hadController = navigator.serviceWorker.controller !== null
@@ -80,6 +81,8 @@ export function startAutoUpdate() {
     }
   })
   window.setInterval(checkForUpdate, CHECK_EVERY_MS)
+  // Nada más abrir la app se pregunta si hay versión nueva (sin esperar a volver a ella ni a la hora siguiente).
+  navigator.serviceWorker.ready.then(registration => registration.update()).catch(() => undefined)
 
   // Vite avisa cuando no se puede descargar un trozo de código (p. ej. porque ya no existe tras un despliegue).
   // Solo se cancela el error si de verdad se recarga; si no (ya se recargó hace poco), el error sigue su camino hasta
