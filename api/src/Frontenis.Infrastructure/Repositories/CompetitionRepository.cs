@@ -44,6 +44,10 @@ public sealed class CompetitionRepository : ICompetitionRepository
         await strategy.ExecuteAsync(async token =>
         {
             await using var tx = await _db.Database.BeginTransactionAsync(token);
+            // Si esta liga era la «siguiente» de otra, esa deja de apuntar a ella (si no, quedaría un enlace roto y no
+            // se podría volver a crear la siguiente liga).
+            await _db.Competitions.Where(c => c.NextCompetitionId == id)
+                .ExecuteUpdateAsync(s => s.SetProperty(c => c.NextCompetitionId, (int?)null), token);
             await _db.Matches.Where(m => m.CompetitionId == id)
                 .ExecuteUpdateAsync(s => s.SetProperty(m => m.NextMatchId, (int?)null), token);
             await _db.Matches.Where(m => m.CompetitionId == id).ExecuteDeleteAsync(token);

@@ -115,6 +115,10 @@ internal static class SchemaScripts
         // Avatar elegido por el jugador (1 a 36); NULL = el de siempre, que sale de su identificador.
         "ALTER TABLE \"Players\" ADD COLUMN IF NOT EXISTS \"AvatarSeed\" integer NULL;",
 
+        // Repara enlaces rotos: una liga cuya «siguiente liga» se eliminó seguía apuntando a ella y no dejaba crear otra.
+        "UPDATE \"Competitions\" SET \"NextCompetitionId\" = NULL WHERE \"NextCompetitionId\" IS NOT NULL " +
+            "AND NOT EXISTS (SELECT 1 FROM \"Competitions\" n WHERE n.\"Id\" = \"Competitions\".\"NextCompetitionId\");",
+
         // Ligas rotatorias con jornadas manuales: los grupos guardan sus jugadores aunque aún no tengan partidos.
         "ALTER TABLE \"Competitions\" ADD COLUMN IF NOT EXISTS \"ManualRounds\" boolean NOT NULL DEFAULT false;",
         """
