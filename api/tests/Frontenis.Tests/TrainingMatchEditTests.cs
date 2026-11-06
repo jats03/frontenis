@@ -82,7 +82,8 @@ public class TrainingMatchEditTests
         var trainings = new FakeTrainings();
         trainings.Items.Add(SessionWithMatch(out _).WithId(1));
         var uow = new FakeUow();
-        return (new TrainingCommands(trainings, fakePlayers, new TrainingDetailBuilder(fakePlayers), uow), uow);
+        var clock = new FakeClock { Now = new DateTime(2026, 10, 13, 20, 0, 0) };
+        return (new TrainingCommands(trainings, fakePlayers, new TrainingDetailBuilder(fakePlayers), uow, clock), uow);
     }
 
     [Fact]

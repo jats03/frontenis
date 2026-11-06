@@ -54,13 +54,17 @@ public sealed class TrainingsController : ControllerBase
     public async Task<ActionResult<TrainingSummaryDto>> Rename(int id, RenameTrainingRequest request, CancellationToken ct) =>
         Ok(await _commands.RenameAsync(id, request, ct));
 
-    /// <summary>Registrar un partido de la sesión: solo el administrador o un jugador con el dispositivo vinculado. Borrar sigue siendo solo del administrador.</summary>
+    /// <summary>
+    /// Registrar un partido de la sesión: solo el administrador o un jugador con el dispositivo vinculado, y los jugadores solo
+    /// hasta el día del entreno (400 si ya pasó). Borrar sigue siendo solo del administrador.
+    /// </summary>
     [HttpPost("{id:int}/matches"), EnableRateLimiting(RateLimitPolicies.PublicWrite)]
     public async Task<ActionResult<TrainingDetailDto>> AddMatch(
         int id, AddTrainingMatchRequest request, [FromHeader(Name = DeviceController.TokenHeader)] string? deviceToken, CancellationToken ct)
     {
-        if (!User.IsInRole(Roles.Admin)) await _devices.ResolveAsync(deviceToken, ct); // 401 si el dispositivo no está vinculado
-        return Ok(await _commands.AddMatchAsync(id, request, ct));
+        var admin = User.IsInRole(Roles.Admin);
+        if (!admin) await _devices.ResolveAsync(deviceToken, ct); // 401 si el dispositivo no está vinculado
+        return Ok(await _commands.AddMatchAsync(id, request, admin, ct));
     }
 
     /// <summary>Corrige un partido ya guardado (jugadores, marcador y bola), para arreglar errores al registrarlo (administrador).</summary>
