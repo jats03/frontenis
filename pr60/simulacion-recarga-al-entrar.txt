@@ -1,0 +1,34 @@
+OK  1. Se abre la app y ya se ha tocado algo; a los 5 s llega la versión nueva (service worker nuevo)
+      esperado: se recarga ya (1) | obtenido: 1
+      consola: Recargando para aplicar la versión nueva (service worker nuevo)
+OK  2. Igual, pero el aviso llega como mensaje del service worker nuevo (a los 8 s)
+      esperado: responde "ok" y se recarga (1) | obtenido: respuesta=ok, recargas=1
+      consola: Recargando para aplicar la versión nueva (aviso del service worker)
+OK  3. Visita ya larga (10 min) con la pestaña visible: llega la versión nueva
+      esperado: no se interrumpe (0 recargas) | obtenido: 0
+      consola: Versión nueva lista (service worker nuevo): se aplicará al salir de la app
+OK  4. Igual que la 3 y después la persona sale de la app (pestaña en segundo plano)
+      esperado: se recarga al salir (1) | obtenido: 1
+      consola: Versión nueva lista (service worker nuevo): se aplicará al salir de la app
+      consola: Recargando para aplicar la versión nueva (service worker nuevo)
+OK  5. Visita larga con la pestaña ya en segundo plano: llega la versión nueva
+      esperado: se recarga ya (1) | obtenido: 1
+      consola: Recargando para aplicar la versión nueva (service worker nuevo)
+OK  6. Dos versiones nuevas seguidas en menos de un minuto
+      esperado: solo una recarga (sin bucle) | obtenido: 1
+      consola: Recargando para aplicar la versión nueva (service worker nuevo)
+      consola: (aviso) Recarga automática omitida (service worker nuevo): ya se recargó hace menos de un minuto
+OK  7. Primera instalación (la página no tenía service worker)
+      esperado: no se recarga (0) | obtenido: 0
+OK  8. Nada más abrir la app, sin esperar a nada
+      esperado: se pregunta ya si hay versión nueva (1 comprobación) | obtenido: 1
+OK  9. Al volver a la app tras un rato en segundo plano
+      esperado: se vuelve a preguntar (2 comprobaciones en total) | obtenido: 2
+OK  10. Justo en el límite de «nada más entrar» (29,9 s y 30,1 s)
+      esperado: a los 29,9 s se recarga (1) | obtenido: 1
+      consola: Recargando para aplicar la versión nueva (service worker nuevo)
+OK  11. Pasados 30,1 s desde abrir la app
+      esperado: se espera a que salga (0) | obtenido: 0
+      consola: Versión nueva lista (service worker nuevo): se aplicará al salir de la app
+
+11 de 11 casos correctos

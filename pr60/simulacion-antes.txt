@@ -1,0 +1,23 @@
+FALLA  1. Se abre la app y ya se ha tocado algo; a los 5 s llega la versión nueva (service worker nuevo)
+      esperado: se recarga ya (1) | obtenido: 0
+FALLA  2. Igual, pero el aviso llega como mensaje del service worker nuevo (a los 8 s)
+      esperado: responde "ok" y se recarga (1) | obtenido: respuesta=ok, recargas=0
+FALLA  3. Visita ya larga (10 min) con la pestaña visible: llega la versión nueva
+      esperado: no se interrumpe (0 recargas) | obtenido: 1
+OK  4. Igual que la 3 y después la persona sale de la app (pestaña en segundo plano)
+      esperado: se recarga al salir (1) | obtenido: 1
+OK  5. Visita larga con la pestaña ya en segundo plano: llega la versión nueva
+      esperado: se recarga ya (1) | obtenido: 1
+OK  6. Dos versiones nuevas seguidas en menos de un minuto
+      esperado: solo una recarga (sin bucle) | obtenido: 1
+OK  7. Primera instalación (la página no tenía service worker)
+      esperado: no se recarga (0) | obtenido: 0
+FALLA  8. Nada más abrir la app, sin esperar a nada
+      esperado: se pregunta ya si hay versión nueva (1 comprobación) | obtenido: 0
+FALLA  9. Al volver a la app tras un rato en segundo plano
+      esperado: se vuelve a preguntar (2 comprobaciones en total) | obtenido: 1
+OK  10. Justo en el límite de «nada más entrar» (29,9 s y 30,1 s)
+      esperado: a los 29,9 s se recarga (1) | obtenido: 1
+FALLA  11. Pasados 30,1 s desde abrir la app
+      esperado: se espera a que salga (0) | obtenido: 1
+5 de 11 casos correctos
