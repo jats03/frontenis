@@ -56,7 +56,8 @@ public class BallTypeTests
         var trainings = new FakeTrainings();
         trainings.Items.Add(Session().WithId(1));
         var uow = new FakeUow();
-        return (new TrainingCommands(trainings, players, new TrainingDetailBuilder(players), uow), uow);
+        var clock = new FakeClock { Now = new DateTime(2026, 10, 13, 20, 0, 0) }; // el mismo día del entreno
+        return (new TrainingCommands(trainings, players, new TrainingDetailBuilder(players), uow, clock), uow);
     }
 
     [Fact]

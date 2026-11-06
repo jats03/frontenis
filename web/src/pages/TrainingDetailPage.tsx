@@ -3,10 +3,10 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import Disclosure from '../components/Disclosure'
 import ActionMenu from '../components/ActionMenu'
 import PageHeader from '../components/PageHeader'
-import { formatClock, formatShortDate } from '../dates'
+import { formatClock, formatShortDate, todayIso } from '../dates'
 import { confirmAction, confirmDelete, notify, promptText } from '../alerts'
 import { api } from '../api/client'
-import type { Player, TrainingDetail, TrainingMatch, TrainingRow, TrainingSuggestion } from '../api/types'
+import type { Player, TrainingDetail, TrainingMatch, TrainingRow, TrainingSuggestion, TrainingSummary } from '../api/types'
 import { useAuth } from '../auth/AuthContext'
 import { useDevice } from '../useDevice'
 import PlayerPicker from '../components/PlayerPicker'
@@ -60,6 +60,14 @@ export default function TrainingDetailPage() {
   const canRegister = isAdmin || !!me
   const { data, setData, error, loading } = useAsync(() => api.trainings.get(id), [id], `/api/trainings/${id}`)
   const players = useAsync(() => api.players.list(), [], '/api/players')
+  const trainings = useAsync(() => api.trainings.list(), [], '/api/trainings')
+  // Pasado el día del entreno los jugadores ya no registran partidos (el servidor lo comprueba con la hora de Madrid; aquí
+  // solo se evita ofrecer algo que se va a rechazar). El administrador sí puede, para correcciones.
+  const isPast = !!data && data.summary.date.slice(0, 10) < todayIso()
+  const closedForMe = !isAdmin && isPast
+  // El último entrenamiento (el de fecha más reciente), al que se ofrece ir desde uno anterior.
+  const latest = (trainings.data ?? []).reduce<TrainingSummary | null>(
+    (best, t) => (!best || t.date > best.date || (t.date === best.date && t.id > best.id) ? t : best), null)
   useDocumentTitle(data?.summary.name ?? 'Entrenamiento')
 
   const [tab, setTab] = useState<'pairs' | 'players'>('pairs')
@@ -227,14 +235,24 @@ export default function TrainingDetailPage() {
       <PageHeader title={s.name}
         subtitle={<>{formatShortDate(s.date)} · {s.pointsPerWin} pts por victoria{s.pointsPerLoss > 0 && ` · ${s.pointsPerLoss} por derrota`}</>}
         actions={<>
-          {canRegister && !formOpen && <button onClick={() => setFormOpen(true)}>+ Registrar partido</button>}
+          {canRegister && !closedForMe && !formOpen && <button onClick={() => setFormOpen(true)}>+ Registrar partido</button>}
           <ActionMenu items={[
             { label: 'Todas las sesiones', onSelect: () => navigate('/entrenamientos') },
             { label: 'Editar nombre', hidden: !isAdmin, onSelect: () => void rename() },
             { label: 'Eliminar sesión', danger: true, hidden: !isAdmin, onSelect: () => void removeSession() },
           ]} />
         </>} />
-      {!isAdmin && me === null && (
+      {/* Solo se avisa si hay un entrenamiento más reciente al que ir; si este ya es el último, simplemente no se puede registrar. */}
+      {closedForMe && latest && latest.id !== id && (
+        <div className="notice" role="status">
+          <svg className="notice-icon" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z" /><path d="M12 9v4" /><path d="M12 17h.01" />
+          </svg>
+          <span className="notice-text">Este entrenamiento ya pasó: ya no se pueden registrar partidos.</span>
+          <Link className="button small" to={`/entrenamientos/${latest.id}`}>Ir al último entrenamiento</Link>
+        </div>
+      )}
+      {!isAdmin && !closedForMe && me === null && (
         <p className="muted" role="note">
           Para registrar partidos tienes que identificarte como jugador: <Link to="/reservas">elige «Soy yo» en Reservas</Link>.
         </p>
@@ -243,7 +261,7 @@ export default function TrainingDetailPage() {
 
       <div className="training-layout">
         <div>
-          {canRegister && formOpen && (
+          {canRegister && !closedForMe && formOpen && (
             <section className="card form" id="nuevo-partido" aria-label="Registrar partido">
               <h2>Registrar partido</h2>
               <p className="muted">Pueden registrar partidos el administrador y los jugadores identificados; solo el administrador puede borrarlos. Lo que rellenes se guarda en este móvil hasta que guardes el partido o pulses «Limpiar».</p>
@@ -331,7 +349,7 @@ export default function TrainingDetailPage() {
         </section>
       </div>
 
-      <section className="card">
+      {!closedForMe && <section className="card">
         <h2>Siguiente partido</h2>
         <details className="how">
           <summary>¿Cómo se elige?</summary>
@@ -370,7 +388,7 @@ export default function TrainingDetailPage() {
         {suggestions && suggestions.length > 0 && nameOf.size > 0 && (
           <p className="muted">Sugerencias para: {[...present].map(pid => nameOf.get(pid)).filter(Boolean).join(', ')}.</p>
         )}
-      </section>
+      </section>}
     </>
   )
 }

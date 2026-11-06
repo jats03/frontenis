@@ -9,7 +9,7 @@ import PageHeader from '../components/PageHeader'
 import ReservasButton from '../components/ReservasButton'
 import { useAsync, useDocumentTitle } from '../hooks'
 import { statusText, typeLabel } from '../labels'
-import { formatDate } from '../dates'
+import { formatDate, todayIso } from '../dates'
 import { useDevice } from '../useDevice'
 
 /** Portada: avisos y tallas de ropa de quien se ha identificado, y lo que está pasando ahora (competiciones en curso y último entrenamiento). */
@@ -57,7 +57,8 @@ function HomeContent() {
           <Link to={`/entrenamientos/${lastTraining.id}`} className="card link-card highlight">
             <strong>{lastTraining.name}</strong>
             <span className="muted">{formatDate(lastTraining.date)} · {lastTraining.matchCount} partido(s)</span>
-            <span className="cta">Registrar un partido o ver la clasificación →</span>
+            {/* pasado el día del entreno ya no se registran partidos: solo se puede ver la clasificación */}
+            <span className="cta">{isAdmin || lastTraining.date.slice(0, 10) >= todayIso() ? 'Registrar un partido o ver la clasificación →' : 'Ver la clasificación →'}</span>
           </Link>
         ) : (
           <EmptyState title="Aún no hay entrenamientos"

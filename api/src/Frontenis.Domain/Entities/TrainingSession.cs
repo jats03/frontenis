@@ -42,6 +42,15 @@ public sealed class TrainingSession
         Name = name.Trim();
     }
 
+    /// <summary>Texto del error al intentar registrar un partido en un entreno cuyo día ya pasó.</summary>
+    public const string ClosedMessage = "Este entrenamiento ya pasó: ya no se pueden registrar partidos.";
+
+    /// <summary>
+    /// El día del entreno ya pasó: desde las 00:00 del día siguiente los jugadores no pueden registrar partidos.
+    /// <paramref name="todayMadrid"/> es la fecha de hoy en Madrid (<see cref="Interfaces.IClock.Now"/>).
+    /// </summary>
+    public bool IsClosedFor(DateTime todayMadrid) => SessionDate.Date < todayMadrid.Date;
+
     /// <summary>Añade un partido 2 contra 2 a la sesión. Si no se indica la bola, se toma la preolímpica.</summary>
     /// <exception cref="DomainException">Jugadores repetidos, marcador no válido, empate, bola no válida o límite de partidos alcanzado.</exception>
     public TrainingMatch AddMatch(int home1, int home2, int away1, int away2, int homeScore, int awayScore, BallType? ball = null)

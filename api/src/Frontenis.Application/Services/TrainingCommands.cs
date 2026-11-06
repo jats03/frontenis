@@ -5,6 +5,7 @@ using Frontenis.Application.Interfaces.Services;
 using Frontenis.Application.Mapping;
 using Frontenis.Domain.Entities;
 using Frontenis.Domain.Exceptions;
+using Frontenis.Domain.Interfaces;
 
 namespace Frontenis.Application.Services;
 
@@ -15,10 +16,12 @@ public sealed class TrainingCommands : ITrainingCommands
     private readonly IPlayerRepository _players;
     private readonly ITrainingDetailBuilder _detail;
     private readonly IUnitOfWork _uow;
+    private readonly IClock _clock;
 
     public TrainingCommands(ITrainingRepository trainings, IPlayerRepository players,
-        ITrainingDetailBuilder detail, IUnitOfWork uow)
+        ITrainingDetailBuilder detail, IUnitOfWork uow, IClock clock)
     {
+        _clock = clock;
         _trainings = trainings;
         _players = players;
         _detail = detail;
@@ -47,9 +50,11 @@ public sealed class TrainingCommands : ITrainingCommands
         await _uow.SaveChangesAsync(ct);
     }
 
-    public async Task<TrainingDetailDto> AddMatchAsync(int id, AddTrainingMatchRequest r, CancellationToken ct = default)
+    public async Task<TrainingDetailDto> AddMatchAsync(int id, AddTrainingMatchRequest r, bool byAdmin = false, CancellationToken ct = default)
     {
         var session = await _trainings.GetOrThrowAsync(id, ct);
+        // Pasado el día del entreno ya no se registran partidos (el administrador sí, para correcciones).
+        if (!byAdmin && session.IsClosedFor(_clock.Now)) throw new DomainException(TrainingSession.ClosedMessage);
         var ids = new[] { r.Home1Id, r.Home2Id, r.Away1Id, r.Away2Id };
         var found = await _players.GetByIdsAsync(ids.Distinct().ToList(), ct);
         if (found.Count != ids.Distinct().Count()) throw new NotFoundException("Algún jugador no existe.");
