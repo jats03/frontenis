@@ -112,6 +112,8 @@ internal static class SchemaScripts
         "ALTER TABLE \"Players\" ADD COLUMN IF NOT EXISTS \"TopSize\" varchar(4) NULL;",
         "ALTER TABLE \"Players\" ADD COLUMN IF NOT EXISTS \"BottomSize\" varchar(4) NULL;",
         "ALTER TABLE \"Players\" ADD COLUMN IF NOT EXISTS \"CanViewSizes\" boolean NOT NULL DEFAULT false;",
+        // Avatar elegido por el jugador (1 a 36); NULL = el de siempre, que sale de su identificador.
+        "ALTER TABLE \"Players\" ADD COLUMN IF NOT EXISTS \"AvatarSeed\" integer NULL;",
 
         // Ligas rotatorias con jornadas manuales: los grupos guardan sus jugadores aunque aún no tengan partidos.
         "ALTER TABLE \"Competitions\" ADD COLUMN IF NOT EXISTS \"ManualRounds\" boolean NOT NULL DEFAULT false;",

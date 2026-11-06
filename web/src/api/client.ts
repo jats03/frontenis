@@ -242,6 +242,9 @@ export const api = {
     sizes: () => request<ClothingSize[]>('GET', '/api/device/sizes', undefined, deviceHeaders()),
     /** Resumen de tallas de todos los jugadores (solo si el administrador ha dado acceso). */
     allSizes: () => request<ClothingSize[]>('GET', '/api/device/sizes/all', undefined, deviceHeaders()),
+    /** Cambia el avatar del titular o de un apadrinado (null = el de siempre). */
+    setAvatar: (playerId: number, avatar: number | null) =>
+      request<{ playerId: number; avatarSeed: number | null }>('PUT', `/api/device/avatar/${playerId}`, { avatar }, deviceHeaders()),
     saveSizes: (playerId: number, sizes: { topSize: string | null; bottomSize: string | null }) =>
       request<ClothingSize>('PUT', `/api/device/sizes/${playerId}`, sizes, deviceHeaders()),
   },

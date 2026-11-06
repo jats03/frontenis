@@ -1,46 +1,33 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import type { PointerEvent } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { notify } from '../alerts'
 import { api } from '../api/client'
 import type { HistoryFilter } from '../api/types'
+import { setAvatarSeed, useAvatarSeed } from '../avatarStore'
+import { AVATAR_CHOICES } from '../avatar'
 import { cardFromHistory, positionCode } from '../cardStats'
-import type { CardTier } from '../cardStats'
 import { useAsync } from '../hooks'
+import { useDevice } from '../useDevice'
 import LoadingBlock from './LoadingBlock'
 import PlayerAvatar from './PlayerAvatar'
 
 // La carta de nivel cuenta todos los partidos jugados, sea cual sea la bola.
 const ALL: HistoryFilter = { competitionIds: [], trainingIds: [] }
 
-const TIER_RANK: Record<CardTier, number> = { bronze: 0, silver: 1, gold: 2 }
-const TIER_NAME: Record<CardTier, string> = { bronze: 'bronce', silver: 'plata', gold: 'oro' }
-const CONFETTI_COLORS = ['#f6e27a', '#ffffff', '#9be3d9', '#f28c6b', '#c79a2b']
-/** En iOS el giroscopio pide permiso, y solo se puede pedir desde un toque del usuario (p. ej. al abrir la carta). */
-export function askMotionPermission() {
-  try {
-    const ctor = (typeof DeviceOrientationEvent !== 'undefined' ? DeviceOrientationEvent : undefined) as
-      (typeof DeviceOrientationEvent & { requestPermission?: () => Promise<string> }) | undefined
-    void ctor?.requestPermission?.().catch(() => undefined)
-  } catch { /* sin giroscopio */ }
-}
-const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n))
-const calm = () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
-
-/** Compara con el último nivel que este dispositivo vio de ese jugador; devuelve el nivel nuevo solo si ha subido. */
-function tierRise(playerId: number, tier: CardTier): CardTier | null {
-  const key = `frontenis.cardTier.${playerId}`
-  try {
-    const before = localStorage.getItem(key) as CardTier | null
-    localStorage.setItem(key, tier)
-    return before && before in TIER_RANK && TIER_RANK[tier] > TIER_RANK[before] ? tier : null
-  } catch { return null }
-}
+const CHOICES = Array.from({ length: AVATAR_CHOICES }, (_, i) => i + 1)
 
 interface Props { playerId: number; onClose: () => void }
 
-/** Carta del jugador (estilo videojuego de fútbol) en una superposición: avatar grande, posición y estadísticas. */
+/** Carta del jugador (estilo videojuego de fútbol) en una superposición: avatar grande, posición y estadísticas. Sin animaciones. */
 export default function PlayerCard({ playerId, onClose }: Props) {
   const ref = useRef<HTMLDialogElement>(null)
   const { data, error } = useAsync(() => api.players.playerHistory(playerId, ALL), [playerId])
+  const { me } = useDevice()
+  // El avatar lo cambia el titular del dispositivo o uno de sus apadrinados.
+  const canChangeAvatar = !!me && (me.owner.id === playerId || me.delegates.some(d => d.id === playerId))
+  const current = useAvatarSeed(playerId)
+  const [picking, setPicking] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const [avatarError, setAvatarError] = useState<string | null>(null)
 
   useEffect(() => {
     const d = ref.current
@@ -51,54 +38,6 @@ export default function PlayerCard({ playerId, onClose }: Props) {
   const card = summary ? cardFromHistory(summary) : null
   const name = summary?.name ?? ''
   const [hint, setHint] = useState<string | null>(null)
-  const tiltRef = useRef<HTMLDivElement>(null)
-  const [rise, setRise] = useState<CardTier | null>(null)
-  const confetti = useMemo(() => Array.from({ length: 36 }, (_, i) => ({
-    left: Math.random() * 100, delay: Math.random() * .6, dur: 1.8 + Math.random() * 1.4,
-    drift: Math.round(Math.random() * 120 - 60), spin: Math.round(Math.random() * 720 - 360),
-    color: CONFETTI_COLORS[i % CONFETTI_COLORS.length],
-  })), [])
-  const tier = card?.played ? card.tier : null
-  useEffect(() => { if (tier) setRise(tierRise(playerId, tier)) }, [playerId, tier])
-
-  // En el móvil la carta también sigue al giro del teléfono (la posición inicial es la «plana»).
-  const hasCard = card !== null
-  useEffect(() => {
-    if (!hasCard || calm()) return
-    let base: { b: number; g: number } | null = null
-    const onTurn = (e: DeviceOrientationEvent) => {
-      const el = tiltRef.current
-      if (!el || el.classList.contains('tilting') || e.beta === null || e.gamma === null) return
-      base ??= { b: e.beta, g: e.gamma }
-      const ry = clamp(e.gamma - base.g, -15, 15)
-      const rx = clamp(base.b - e.beta, -15, 15)
-      el.style.setProperty('--ry', `${ry.toFixed(1)}deg`)
-      el.style.setProperty('--rx', `${rx.toFixed(1)}deg`)
-      el.style.setProperty('--mx', `${(50 + ry * 3).toFixed(0)}%`)
-      el.style.setProperty('--my', `${(40 - rx * 3).toFixed(0)}%`)
-    }
-    window.addEventListener('deviceorientation', onTurn)
-    return () => window.removeEventListener('deviceorientation', onTurn)
-  }, [hasCard])
-
-  /** Inclina la carta hacia el puntero y mueve el reflejo; se desactiva con «reducir movimiento». */
-  function tilt(e: PointerEvent<HTMLDivElement>) {
-    if (calm()) return
-    const el = e.currentTarget
-    const r = el.getBoundingClientRect()
-    const x = (e.clientX - r.left) / r.width
-    const y = (e.clientY - r.top) / r.height
-    el.style.setProperty('--ry', `${((x - .5) * 24).toFixed(1)}deg`)
-    el.style.setProperty('--rx', `${((.5 - y) * 24).toFixed(1)}deg`)
-    el.style.setProperty('--mx', `${(x * 100).toFixed(0)}%`)
-    el.style.setProperty('--my', `${(y * 100).toFixed(0)}%`)
-    el.classList.add('tilting')
-  }
-  function untilt(e: PointerEvent<HTMLDivElement>) {
-    const el = e.currentTarget
-    el.classList.remove('tilting')
-    for (const v of ['--rx', '--ry', '--mx', '--my']) el.style.removeProperty(v)
-  }
   const diff = summary ? summary.tantosFor - summary.tantosAgainst : 0
   const counts: [string, string, string][] = summary ? [
     ['V', 'Victorias', String(summary.won)], ['D', 'Derrotas', String(summary.lost)], ['SET', 'Sets ganados', String(summary.setsFor)],
@@ -107,13 +46,29 @@ export default function PlayerCard({ playerId, onClose }: Props) {
   ] : []
   const hinted = counts.find(([label]) => label === hint)
 
+  /** Guarda el avatar elegido (vacío = el de siempre) y lo refleja al instante en toda la app. */
+  async function chooseAvatar(seed: number | null) {
+    setAvatarError(null)
+    setBusy(true)
+    try {
+      const saved = await api.device.setAvatar(playerId, seed)
+      setAvatarSeed(playerId, saved.avatarSeed)
+      notify('Avatar cambiado')
+      setPicking(false)
+    } catch (e) { setAvatarError(e instanceof Error ? e.message : 'Error') }
+    finally { setBusy(false) }
+  }
+
   return (
     <dialog ref={ref} className="card-dialog" aria-label={name ? `Carta de ${name}` : 'Carta del jugador'}
-      onClose={onClose} onClick={() => ref.current?.close()}>
+      onClose={onClose} onClick={e => { if (e.target === e.currentTarget) ref.current?.close() /* solo si se pulsa fuera de la carta */ }}>
       {!summary || !card ? (
         error ? <p role="alert">{error}</p> : <LoadingBlock />
-      ) : (
-        <div className="fut-tilt" ref={tiltRef} onPointerDown={tilt} onPointerMove={tilt} onPointerLeave={untilt} onPointerCancel={untilt}>
+      ) : picking ? null /* al elegir avatar solo se ve la cuadrícula, para que quepa en pantallas pequeñas */ : (
+        <div className="fut-wrap">
+        <button type="button" className="fut-x" aria-label="Cerrar la carta" onClick={() => ref.current?.close()}>
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
+        </button>
         <div className={`fut-card ${card.tier}`}>
           <div className="fut-top">
             {card.played > 0 && (
@@ -147,18 +102,34 @@ export default function PlayerCard({ playerId, onClose }: Props) {
         </div>
         </div>
       )}
-      {rise && (
-        <>
-          <p className="fut-levelup" role="status">¡Sube a {TIER_NAME[rise]}!</p>
-          <div className="fut-confetti" aria-hidden="true">
-            {confetti.map((c, i) => (
-              <i key={i} style={{ left: `${c.left}%`, background: c.color, animationDelay: `${c.delay}s`, animationDuration: `${c.dur}s`,
-                '--drift': `${c.drift}px`, '--spin': `${c.spin}deg` } as React.CSSProperties} />
-            ))}
-          </div>
-        </>
+      {summary && canChangeAvatar && (
+        <div className="avatar-change" onClick={e => e.stopPropagation()}>
+          {!picking
+            ? <button type="button" className="secondary fut-close" onClick={() => setPicking(true)}>Cambiar avatar</button>
+            : (
+              <section className="card avatar-picker" aria-label="Elegir avatar">
+                <h2 className="avatar-title">Avatar de {name}</h2>
+                {avatarError && <p className="error" role="alert">{avatarError}</p>}
+                <div className="avatar-grid" role="radiogroup" aria-label="Avatares">
+                  {/* El de siempre del jugador: vuelve a él. Lleva «Actual» solo si es el que tiene ahora. */}
+                  <button type="button" role="radio" aria-checked={current === null} aria-label={current === null ? 'Avatar original (actual)' : 'Avatar original'}
+                    disabled={busy} className="avatar-option" onClick={() => void chooseAvatar(null)}>
+                    <PlayerAvatar playerId={playerId} seed={playerId} size={48} />
+                    {current === null && <span>Actual</span>}
+                  </button>
+                  {CHOICES.map(n => (
+                    <button key={n} type="button" role="radio" aria-checked={current === n} aria-label={current === n ? `Avatar ${n} (actual)` : `Avatar ${n}`} disabled={busy}
+                      className="avatar-option" onClick={() => void chooseAvatar(n)}>
+                      <PlayerAvatar playerId={playerId} seed={n} size={48} />
+                      {current === n && <span>Actual</span>}
+                    </button>
+                  ))}
+                </div>
+                <button type="button" className="secondary" onClick={() => setPicking(false)}>Cancelar</button>
+              </section>
+            )}
+        </div>
       )}
-      {summary && <button type="button" className="secondary fut-close" onClick={() => ref.current?.close()}>Cerrar</button>}
     </dialog>
   )
 }
