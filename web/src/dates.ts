@@ -6,6 +6,12 @@ export const todayIso = () => {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
 }
 
+/** Hora local ahora, como la de la API: «18:05:09». */
+export const nowTime = () => {
+  const d = new Date()
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
+}
+
 /** Admite «2026-10-13» o «2026-10-13T00:00:00» (sin zona) y los interpreta como fecha local. */
 export const parseDate = (iso: string) => new Date(iso.length === 10 ? `${iso}T00:00:00` : iso)
 

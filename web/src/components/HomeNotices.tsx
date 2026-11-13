@@ -2,33 +2,29 @@ import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../api/client'
 import type { DeviceMe } from '../api/types'
-import { addDaysIso, mondayOfIso, todayIso } from '../dates'
+import { addDaysIso, mondayOfIso, nowTime, todayIso } from '../dates'
 import { useAsync } from '../hooks'
 import { isIncomplete } from '../clothing'
+import { signUpWeeks } from '../signUpNotices'
 
 /** Nombres con «y»: «Ana», «Ana y Luis», «Ana, Luis y Eva». */
 const joinNames = (names: string[]) => (names.length < 2 ? names.join('') : `${names.slice(0, -1).join(', ')} y ${names[names.length - 1]}`)
 
 /**
- * Para quien tiene identificado su dispositivo: avisos de lo que falta (tallas de ropa y apuntarse a algún entreno
- * de esta semana, también de sus apadrinados) y el formulario de tallas.
+ * Para quien tiene identificado su dispositivo: avisos de lo que falta (tallas de ropa y apuntarse a algún entreno,
+ * también de sus apadrinados): uno para esta semana y otro para la próxima si ya se han abierto sus entrenos.
  */
 export default function HomeNotices({ me }: { me: DeviceMe }) {
-  const week = useMemo(() => { const from = mondayOfIso(todayIso()); return { from, to: addDaysIso(from, 6) } }, [])
+  // Esta semana y la próxima, de lunes a domingo.
+  const week = useMemo(() => { const from = mondayOfIso(todayIso()); return { from, to: addDaysIso(from, 13) } }, [])
   const sizes = useAsync(() => api.device.sizes(), [me.owner.id, me.delegates.length])
   const slots = useAsync(() => api.slots.list(week.from, week.to), [week.from, week.to])
 
   const rows = sizes.data ?? []
   const missingSizes = rows.filter(isIncomplete)
 
-  // Solo se avisa si queda algún entreno de la semana en el que apuntarse ya (abierto y sin empezar).
-  const today = todayIso()
-  const weekSlots = (slots.data ?? []).filter(s => s.status !== 'Cancelled')
-  const canSignUp = weekSlots.some(s => s.status === 'Open' && s.date >= today)
   const people = [me.owner, ...me.delegates]
-  const notSignedUp = !slots.data || !canSignUp
-    ? []
-    : people.filter(p => !weekSlots.some(s => s.attendees.some(a => a.playerId === p.id)))
+  const weeks = slots.data ? signUpWeeks(slots.data, people, todayIso(), nowTime()) : []
 
   const notices: { key: string; text: string; to?: string; cta?: string }[] = []
   if (missingSizes.length > 0) {
@@ -40,15 +36,16 @@ export default function HomeNotices({ me }: { me: DeviceMe }) {
       to: '/tallas', cta: 'Indicar tallas',
     })
   }
-  if (notSignedUp.length > 0) {
-    const you = notSignedUp.some(p => p.id === me.owner.id)
-    const others = notSignedUp.filter(p => p.id !== me.owner.id).map(p => p.name)
-    notices.push({
-      key: 'entreno',
-      text: you && others.length === 0
-        ? 'Aún no te has apuntado a ningún entreno de esta semana.'
-        : `Sin ningún entreno apuntado esta semana: ${joinNames([...(you ? ['tú'] : []), ...others])}.`,
-    })
+  for (const w of weeks) {
+    const you = w.missing.some(p => p.id === me.owner.id)
+    const others = w.missing.filter(p => p.id !== me.owner.id).map(p => p.name)
+    const alone = you && others.length === 0
+    const who = joinNames([...(you ? ['tú'] : []), ...others])
+    notices.push(w.key === 'current'
+      ? { key: 'entreno', text: alone ? 'Aún no te has apuntado a ningún entreno de esta semana.' : `Sin ningún entreno apuntado esta semana: ${who}.` }
+      : { key: 'entreno-proxima', text: alone
+          ? 'Ya están abiertos los entrenos de la próxima semana y aún no te has apuntado a ninguno.'
+          : `Ya están abiertos los entrenos de la próxima semana. Sin ninguno apuntado: ${who}.` })
   }
 
   if (notices.length === 0) return null
