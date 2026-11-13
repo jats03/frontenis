@@ -1,0 +1,22 @@
+OK    1. Esta semana: lunes ya terminado (Ana apuntada) y jueves abierto sin Ana
+      esperado: [current:Ana] | obtenido: [current:Ana]
+OK    2. Esta semana: Ana apuntada al jueves (abierto)
+      esperado: [] | obtenido: []
+OK    3. Esta semana: solo quedan entrenos ya empezados (hoy 18:00 sigue Open en la API pero ya empezó) -> sin aviso
+      esperado: [] | obtenido: []
+OK    4. Esta semana: hoy 21:00 aún no ha empezado -> avisa
+      esperado: [current:Ana] | obtenido: [current:Ana]
+OK    5. Próxima semana abierta y Ana sin apuntar (esta semana ya apuntada)
+      esperado: [next:Ana] | obtenido: [next:Ana]
+OK    6. Próxima semana todavía sin abrir (Pending) -> sin aviso
+      esperado: [] | obtenido: []
+OK    7. Las dos semanas sin apuntar: dos avisos
+      esperado: [current:Ana,next:Ana] | obtenido: [current:Ana,next:Ana]
+OK    8. Con apadrinado: Luis sin apuntar esta semana
+      esperado: [current:Luis] | obtenido: [current:Luis]
+OK    9. Entreno cancelado de la próxima semana no cuenta
+      esperado: [] | obtenido: []
+OK    10. Domingo 15 y lunes siguiente: la semana cambia correctamente
+      esperado: [current:Ana] | obtenido: [current:Ana]
+
+10 de 10 casos correctos
