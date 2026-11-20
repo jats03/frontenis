@@ -4,6 +4,8 @@ import BallPicker from './BallPicker'
 import { api } from '../api/client'
 import type { HistoryFilter } from '../api/types'
 import { useAsync } from '../hooks'
+import { monthKey, monthName } from '../trainingPeriods'
+import SubTabs from './SubTabs'
 
 const parse = (v: string | null): number[] =>
   (v ?? '').split(',').map(Number).filter(n => Number.isInteger(n) && n > 0)
@@ -70,6 +72,21 @@ export default function SourceFilter({ value, onChange }: { value: HistoryFilter
   const comps = useAsync(() => api.competitions.list(), [], '/api/competitions')
   const trainings = useAsync(() => api.trainings.list(), [], '/api/trainings')
   const count = value.competitionIds.length + value.trainingIds.length
+
+  // Por mes: elegir un mes marca los entrenamientos de ese mes (y ninguna competición, que no tienen fecha por partido).
+  const byMonth = new Map<string, number[]>()
+  for (const t of trainings.data ?? []) {
+    const key = monthKey(t.date.slice(0, 10))
+    byMonth.set(key, [...(byMonth.get(key) ?? []), t.id])
+  }
+  const months = [...byMonth.keys()].sort()
+  const manyYears = new Set(months.map(m => m.slice(0, 4))).size > 1
+  const sameIds = (a: number[], b: number[]) => a.length === b.length && a.every(id => b.includes(id))
+  const activeMonth = value.competitionIds.length === 0
+    ? months.find(m => sameIds(byMonth.get(m) ?? [], value.trainingIds)) : undefined
+  const monthTab = count === 0 ? 'all' : activeMonth ?? ''
+  const pickMonth = (key: string) =>
+    onChange({ ...value, competitionIds: [], trainingIds: key === 'all' ? [] : byMonth.get(key) ?? [] })
   return (
     <>
     {/* Siempre hay una bola (y solo una) marcada: no se puede dejar sin elegir ni elegir varias. */}
@@ -80,9 +97,18 @@ export default function SourceFilter({ value, onChange }: { value: HistoryFilter
     <details className="card source-filter" open={count > 0}>
       <summary>
         Filtrar partidos: {count === 0 ? 'todos (competiciones y entrenamientos)'
+          : activeMonth ? `entrenamientos de ${manyYears ? `${monthName(activeMonth)} ${activeMonth.slice(0, 4)}` : monthName(activeMonth)}`
           : `${value.competitionIds.length} competición(es) y ${value.trainingIds.length} entrenamiento(s)`}
       </summary>
-      <p className="muted">Marca una, varias o todas. Sin nada marcado se incluye todo.</p>
+      <p className="muted">Elige un mes, o marca una, varias o todas las competiciones y entrenamientos. Sin nada marcado se incluye todo.</p>
+      {months.length > 0 && (
+        <>
+          <SubTabs label="Mes" value={monthTab} onChange={pickMonth}
+            options={[{ key: 'all', label: 'Todo el histórico' },
+              ...months.map(m => ({ key: m, label: manyYears ? `${monthName(m)} ${m.slice(0, 4)}` : monthName(m) }))]} />
+          {activeMonth && <p className="muted month-note">Por mes solo cuentan los entrenamientos de ese mes: los partidos de competición no tienen fecha por partido.</p>}
+        </>
+      )}
       <div className="source-groups">
         <Group legend="Competiciones" items={comps.data ?? []} selected={value.competitionIds}
           onChange={ids => onChange({ ...value, competitionIds: ids })} />
