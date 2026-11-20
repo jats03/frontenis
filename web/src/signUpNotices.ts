@@ -33,3 +33,18 @@ export function signUpWeeks(slots: readonly Slot[], people: readonly PlayerRef[]
 
   return result.filter(w => w.missing.length > 0)
 }
+
+export interface MySlot {
+  slot: Slot
+  /** Quiénes de la persona (titular y apadrinados) están apuntados a esa franja. */
+  who: PlayerRef[]
+}
+
+/** Próximos entrenos (abiertos y sin empezar) a los que está apuntada la persona o alguno de sus apadrinados, por orden de fecha. */
+export function myUpcomingSlots(slots: readonly Slot[], people: readonly PlayerRef[], todayIso: string, nowTime: string): MySlot[] {
+  return slots
+    .filter(s => s.status === 'Open' && !hasStarted(s, todayIso, nowTime))
+    .map(slot => ({ slot, who: people.filter(p => slot.attendees.some(a => a.playerId === p.id)) }))
+    .filter(m => m.who.length > 0)
+    .sort((a, b) => (a.slot.date + a.slot.start).localeCompare(b.slot.date + b.slot.start))
+}
