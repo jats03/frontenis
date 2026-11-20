@@ -25,7 +25,7 @@ export default function SlotSignUp({ slot, me, onToggle, onToggleAll, busy }: Pr
   const missing = people.filter(p => !attending.has(p.id))
   const all = people.length > 1 && onToggleAll
   const allIn = missing.length === 0
-  const allLabel = allIn ? 'Quitar a todos' : `Apuntar a todos (${missing.length})`
+  const allLabel = allIn ? 'Quitar a todos' : 'Apuntar a todos'
   return (
     <div className={`slot-actions row${all ? ' multi' : ''}`}>
       {all && (
