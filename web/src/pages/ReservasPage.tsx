@@ -10,12 +10,17 @@ import SlotAdminActions from '../components/SlotAdminActions'
 import SlotCard from '../components/SlotCard'
 import ShareImageButton from '../components/ShareImageButton'
 import SlotSignUp from '../components/SlotSignUp'
-import { addDaysIso, formatDate, mondayOfIso, todayIso, weekTitle } from '../dates'
+import { addDaysIso, formatDate, mondayOfIso, parseDate, todayIso, weekTitle } from '../dates'
 import { useAsync, useDocumentTitle } from '../hooks'
 import { exportAttendanceImage } from '../imageExport'
 import { isRemindable } from '../reminders'
 import { useDevice } from '../useDevice'
 import LoadingBlock from '../components/LoadingBlock'
+import SubTabs from '../components/SubTabs'
+
+const WEEKDAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
+/** Día de la semana de una fecha, con el lunes como 0. */
+const weekdayOf = (iso: string) => (parseDate(iso).getDay() + 6) % 7
 
 /** Cuántas semanas (desde la actual) se muestran: todas las que el administrador haya generado. */
 const WEEKS_SHOWN = 8
@@ -36,18 +41,27 @@ export default function ReservasPage() {
 
   // Franjas agrupadas por semana (lunes a domingo) y, dentro de cada una, por día. Los días que ya han pasado
   // se ocultan (si hoy es miércoles, el martes ya no aparece); una semana sin días por venir tampoco.
+  // Días de la semana con entrenos por venir (para los botones de filtro) y el elegido; «Todos» es lo de siempre.
+  const [daySel, setDaySel] = useState<string>('all')
+  const weekdays = useMemo(() => {
+    const today = todayIso()
+    return [...new Set((slots.data ?? []).filter(s => s.date >= today).map(s => weekdayOf(s.date)))].sort((a, b) => a - b)
+  }, [slots.data])
+  const day = daySel !== 'all' && weekdays.includes(Number(daySel)) ? daySel : 'all'
+
   const weeks = useMemo(() => {
     const byWeek = new Map<string, Map<string, Slot[]>>()
     const today = todayIso()
     for (const s of slots.data ?? []) {
       if (s.date < today) continue
+      if (day !== 'all' && weekdayOf(s.date) !== Number(day)) continue
       const monday = mondayOfIso(s.date)
       const days = byWeek.get(monday) ?? new Map<string, Slot[]>()
       days.set(s.date, [...(days.get(s.date) ?? []), s])
       byWeek.set(monday, days)
     }
     return [...byWeek.entries()].map(([monday, days]) => ({ monday, days: [...days.entries()] }))
-  }, [slots.data])
+  }, [slots.data, day])
 
   /** Ejecuta una acción del administrador y sustituye la franja devuelta; si falla, muestra el motivo. */
   async function run(action: () => Promise<Slot>, done?: string) {
@@ -62,6 +76,20 @@ export default function ReservasPage() {
   const toggle = (slot: Slot, playerId: number, attending: boolean) =>
     run(() => (attending ? api.slots.unattend(slot.id, playerId) : api.slots.attend(slot.id, playerId)),
       attending ? 'Te has quitado' : '¡Apuntado!')
+
+  // Apuntar (o quitar) de una vez a todos los de la persona: una petición por jugador, una tras otra.
+  const [bulkBusy, setBulkBusy] = useState<number | null>(null)
+  async function toggleAll(slot: Slot, playerIds: number[], attending: boolean) {
+    setError(null); setBulkBusy(slot.id)
+    let updated: Slot | null = null
+    let failed = false
+    try {
+      for (const id of playerIds) updated = await (attending ? api.slots.unattend(slot.id, id) : api.slots.attend(slot.id, id))
+    } catch (e) { failed = true; setError(e instanceof Error ? e.message : 'Error') }
+    if (updated) { const done = updated; slots.setData(list => (list ?? []).map(s => (s.id === done.id ? done : s))) }
+    if (!failed) { const msg = attending ? 'Quitados todos' : '¡Todos apuntados!'; notify(msg); setAnnouncement(msg) }
+    setBulkBusy(null)
+  }
 
   async function remove(slot: Slot) {
     setError(null)
@@ -95,6 +123,11 @@ export default function ReservasPage() {
         <EmptyState title="No quedan entrenos por venir">Cuando el club publique nuevas franjas las verás aquí.</EmptyState>
       )}
 
+      {weekdays.length > 1 && (
+        <SubTabs label="Día de la semana" value={day} onChange={setDaySel}
+          options={[{ key: 'all', label: 'Todos' }, ...weekdays.map(w => ({ key: String(w), label: WEEKDAYS[w] }))]} />
+      )}
+
       {weeks.map(({ monday, days }) => {
         const weekSlots = days.flatMap(([, list]) => list)
         return (
@@ -120,7 +153,9 @@ export default function ReservasPage() {
                         onSignUp={id => void run(() => api.slots.signUp(slot.id, id))} />
                     )}
                     {!isAdmin && device.me && (
-                      <SlotSignUp slot={slot} me={device.me} onToggle={(id, attending) => void toggle(slot, id, attending)} />
+                      <SlotSignUp slot={slot} me={device.me} busy={bulkBusy === slot.id}
+                        onToggle={(id, attending) => void toggle(slot, id, attending)}
+                        onToggleAll={(ids, attending) => void toggleAll(slot, ids, attending)} />
                     )}
                     {isRemindable(slot) && (
                       <ShareImageButton label="Avisar por WhatsApp"
