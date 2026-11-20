@@ -24,6 +24,7 @@ import StandingsTable from '../components/StandingsTable'
 import { statusText, typeLabel } from '../labels'
 import { holdLoader, useDocumentTitle } from '../hooks'
 import { exportMatchesImage, exportStandingsImage } from '../imageExport'
+import { sendWhatsappLabel } from '../shareLabels'
 import { exportMatchesPdf, exportStandingsPdf } from '../pdf'
 import LoadingBlock from '../components/LoadingBlock'
 
@@ -157,7 +158,7 @@ function CompetitionDetailView({ id }: { id: number }) {
           <ActionMenu items={[
             { label: 'Exportar clasificación a PDF', hidden: standings.length === 0,
               onSelect: () => void exportStandingsPdf(summary.name, standings, isRotating) },
-            { label: 'Guardar clasificación como imagen', hidden: standings.length === 0,
+            { label: sendWhatsappLabel('clasificación'), hidden: standings.length === 0,
               onSelect: () => void exportStandingsImage(summary.name, standings, isRotating) },
             { label: 'Editar nombre', hidden: !isAdmin, onSelect: () => void rename() },
             { label: `Pasar a ${summary.setsPerMatch === 2 ? '1 set' : '2 sets'} por partido`,
@@ -293,7 +294,7 @@ function CompetitionDetailView({ id }: { id: number }) {
                             <button type="button" className="secondary small"
                               onClick={() => void exportMatchesPdf(summary.name, detail.matches, detail.groups, r)}>PDF</button>
                             <button type="button" className="secondary small"
-                              onClick={() => void exportMatchesImage(summary.name, detail.matches, detail.groups, r)}>Imagen</button>
+                              onClick={() => void exportMatchesImage(summary.name, detail.matches, detail.groups, r)}>{sendWhatsappLabel('jornada')}</button>
                           </div>
                         </div>
                         {detail.groups.map(g => {

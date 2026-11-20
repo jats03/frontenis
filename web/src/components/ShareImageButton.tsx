@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { notify } from '../alerts'
+import { sendWhatsappLabel } from '../shareLabels'
 
 interface Props {
-  label: string
+  /** Qué se envía («tallas», «la semana»…): el botón dice siempre «Enviar por WhatsApp: …». */
+  what: string
   /** Texto accesible más descriptivo que la etiqueta visible. */
   ariaLabel?: string
   /** Crea la imagen y la entrega (menú de compartir en el móvil, descarga en el ordenador). */
@@ -10,7 +12,8 @@ interface Props {
 }
 
 /** Genera la imagen de los apuntados para que la persona la mande por WhatsApp al grupo que quiera. */
-export default function ShareImageButton({ label, ariaLabel, onShare }: Props) {
+export default function ShareImageButton({ what, ariaLabel, onShare }: Props) {
+  const label = sendWhatsappLabel(what)
   const [busy, setBusy] = useState(false)
   async function click() {
     setBusy(true)

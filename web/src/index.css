@@ -207,7 +207,8 @@ th[aria-sort="descending"] button.link-button::after { content: ' ▼'; }
 .add-match { margin-top: .8rem; padding-top: .6rem; border-top: 1px solid var(--border); }
 .add-match .cols { margin: .6rem 0; }
 .add-match label { display: grid; gap: .2rem; font-size: .9rem; }
-.round-head { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+.round-head { display: flex; align-items: center; justify-content: space-between; gap: .5rem; flex-wrap: wrap; }
+.round-head h2 { white-space: nowrap; }
 button.small { padding: .15rem .5rem; font-size: .85rem; margin-left: .4rem; }
 
 .source-filter summary { cursor: pointer; font-weight: 600; }

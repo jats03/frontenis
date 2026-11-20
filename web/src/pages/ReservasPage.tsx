@@ -101,7 +101,7 @@ export default function ReservasPage() {
           <div key={monday} className="slot-week">
             <h2 className="week-title">{weekTitle(monday)}</h2>
             {weekSlots.some(isRemindable) && (
-              <ShareImageButton label="Recordar la semana por WhatsApp"
+              <ShareImageButton what="la semana"
                 onShare={() => exportAttendanceImage('Entrenamientos', weekSlots.filter(isRemindable), `entrenos_${monday}.png`)} />
             )}
             {days.map(([date, daySlots]) => (
@@ -123,8 +123,8 @@ export default function ReservasPage() {
                       <SlotSignUp slot={slot} me={device.me} onToggle={(id, attending) => void toggle(slot, id, attending)} />
                     )}
                     {isRemindable(slot) && (
-                      <ShareImageButton label="Avisar por WhatsApp"
-                        ariaLabel={`Avisar por WhatsApp del entreno de ${formatDate(slot.date)}`}
+                      <ShareImageButton what="este entreno"
+                        ariaLabel={`Enviar por WhatsApp el entreno de ${formatDate(slot.date)}`}
                         onShare={() => exportAttendanceImage('Entrenamiento', [slot], `entreno_${slot.date}_${slot.start.slice(0, 2)}h.png`)} />
                     )}
                   </SlotCard>
