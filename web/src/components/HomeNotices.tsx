@@ -1,8 +1,7 @@
-import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../api/client'
-import type { DeviceMe } from '../api/types'
-import { addDaysIso, mondayOfIso, nowTime, todayIso } from '../dates'
+import type { DeviceMe, Slot } from '../api/types'
+import { nowTime, todayIso } from '../dates'
 import { useAsync } from '../hooks'
 import { isIncomplete } from '../clothing'
 import { signUpWeeks } from '../signUpNotices'
@@ -14,17 +13,14 @@ const joinNames = (names: string[]) => (names.length < 2 ? names.join('') : `${n
  * Para quien tiene identificado su dispositivo: avisos de lo que falta (tallas de ropa y apuntarse a algún entreno,
  * también de sus apadrinados): uno para esta semana y otro para la próxima si ya se han abierto sus entrenos.
  */
-export default function HomeNotices({ me }: { me: DeviceMe }) {
-  // Esta semana y la próxima, de lunes a domingo.
-  const week = useMemo(() => { const from = mondayOfIso(todayIso()); return { from, to: addDaysIso(from, 13) } }, [])
+export default function HomeNotices({ me, slots }: { me: DeviceMe; slots: Slot[] | null | undefined }) {
   const sizes = useAsync(() => api.device.sizes(), [me.owner.id, me.delegates.length])
-  const slots = useAsync(() => api.slots.list(week.from, week.to), [week.from, week.to])
 
   const rows = sizes.data ?? []
   const missingSizes = rows.filter(isIncomplete)
 
   const people = [me.owner, ...me.delegates]
-  const weeks = slots.data ? signUpWeeks(slots.data, people, todayIso(), nowTime()) : []
+  const weeks = slots ? signUpWeeks(slots, people, todayIso(), nowTime()) : []
 
   const notices: { key: string; text: string; to?: string; cta?: string }[] = []
   if (missingSizes.length > 0) {
