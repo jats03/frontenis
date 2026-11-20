@@ -12,7 +12,7 @@ export default function ClothingSizesSummary({ rows }: { rows: ClothingSize[] })
     <>
       <p className="muted">{done} de {rows.length} jugadores con las dos tallas</p>
       {ordered.some(r => r.topSize || r.bottomSize) && (
-        <ShareImageButton label="Enviar por WhatsApp en imagen" onShare={() => exportSizesImage(rows)} />
+        <ShareImageButton what="tallas" onShare={() => exportSizesImage(rows)} />
       )}
       <h2 className="section-title">Parte de arriba</h2>
       <Chips rows={sizeCounts(rows, r => r.topSize)} />
