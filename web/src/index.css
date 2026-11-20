@@ -611,6 +611,8 @@ button.secondary.fut-close { background: var(--card); }
 @keyframes tips-scroll { from { transform: translateY(0); } to { transform: translateY(var(--scroll)); } }
 @media (prefers-reduced-motion: reduce) { .tips-scene { transition: none; } .tips-pulse, .tips-pop { animation: none; } .tips-scene.on .tips-menu-scroll { animation: none; transform: translateY(var(--scroll)); } }
 
+.month-note { margin: .2rem 0 .6rem; font-size: .8rem; }
+
 /* Inicio: entrenos a los que estoy apuntado, bajo el botón de reservas */
 .my-slots { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; margin: -.5rem 0 1rem; padding: .1rem .2rem; }
 .my-slots-label { display: inline-flex; align-items: center; gap: .3rem; font-size: .8rem; font-weight: 700; color: var(--muted); white-space: nowrap; }
