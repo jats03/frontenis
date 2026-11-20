@@ -576,3 +576,10 @@ button.secondary.fut-close { background: var(--card); }
 .hl-badge { float: right; margin-left: .5rem; font-size: .75rem; font-weight: 700; padding: .15rem .6rem; border-radius: 99px; }
 .hl-today .hl-badge { background: var(--primary); color: var(--primary-ink); }
 .hl-last .hl-badge { background: color-mix(in srgb, var(--primary) 14%, transparent); color: var(--link); border: 1px solid var(--primary); }
+
+/* Reservas: botón grande para apuntar a todos (yo y mis apadrinados) y botones individuales más discretos */
+.slot-actions.multi { gap: .5rem; }
+.slot-all { flex: 1 1 100%; justify-content: center; gap: .6rem; min-height: 56px; font-size: 1.1rem; font-weight: 700; }
+.slot-all svg { width: 1.5rem; height: 1.5rem; flex: none; }
+.slot-actions.multi button:not(.slot-all) { flex: 1 1 9rem; justify-content: center; }
+.slot-actions.multi button[aria-pressed='true']:not(.slot-all)::before { content: '✓'; margin-right: .4rem; color: var(--link); font-weight: 700; }
