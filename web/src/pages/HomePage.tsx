@@ -3,6 +3,7 @@ import { api } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
 import DeviceLinkPanel from '../components/DeviceLinkPanel'
 import HomeNotices from '../components/HomeNotices'
+import InstallTips from '../components/InstallTips'
 import EmptyState from '../components/EmptyState'
 import LoadingBlock from '../components/LoadingBlock'
 import PageHeader from '../components/PageHeader'
@@ -26,6 +27,7 @@ export default function HomePage() {
       <>
         <PageHeader title="Club Frontenis Ciudad de Jaén" subtitle="Ligas, torneos y entrenamientos" />
         <DeviceLinkPanel device={device} />
+        <InstallTips />
       </>
     )
   }
@@ -92,6 +94,8 @@ function HomeContent() {
           </div>
         )}
       </section>
+
+      <InstallTips />
     </>
   )
 }
