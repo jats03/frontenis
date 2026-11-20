@@ -3,14 +3,16 @@ import { api } from '../api/client'
 import { useAuth } from '../auth/AuthContext'
 import DeviceLinkPanel from '../components/DeviceLinkPanel'
 import HomeNotices from '../components/HomeNotices'
+import MyTrainings from '../components/MyTrainings'
 import InstallTips from '../components/InstallTips'
 import EmptyState from '../components/EmptyState'
 import LoadingBlock from '../components/LoadingBlock'
 import PageHeader from '../components/PageHeader'
 import ReservasButton from '../components/ReservasButton'
 import { useAsync, useDocumentTitle } from '../hooks'
+import { useMemo } from 'react'
 import { statusText, typeLabel } from '../labels'
-import { formatDate, todayIso } from '../dates'
+import { addDaysIso, formatDate, mondayOfIso, todayIso } from '../dates'
 import { useDevice } from '../useDevice'
 
 /** Portada: avisos y tallas de ropa de quien se ha identificado, y lo que está pasando ahora (competiciones en curso y último entrenamiento). */
@@ -40,6 +42,10 @@ function HomeContent() {
   const device = useDevice()
   const comps = useAsync(() => api.competitions.list(), [], '/api/competitions')
   const trainings = useAsync(() => api.trainings.list(), [], '/api/trainings')
+  // Entrenos de esta semana y la próxima (una sola consulta para los avisos y para «Apuntado a»); solo quien se ha identificado.
+  const week = useMemo(() => { const from = mondayOfIso(todayIso()); return { from, to: addDaysIso(from, 13) } }, [])
+  const hasMe = !isAdmin && !!device.me
+  const slots = useAsync(() => (hasMe ? api.slots.list(week.from, week.to) : Promise.resolve([])), [hasMe, week.from, week.to])
 
   const active = (comps.data ?? []).filter(c => c.status !== 'Finished' && c.status !== 'Draft')
   const drafts = (comps.data ?? []).filter(c => c.status === 'Draft')
@@ -49,9 +55,10 @@ function HomeContent() {
     <>
       <PageHeader title="Club Frontenis Ciudad de Jaén" subtitle="Ligas, torneos y entrenamientos" />
 
-      {!isAdmin && device.me && <HomeNotices me={device.me} />}
+      {!isAdmin && device.me && <HomeNotices me={device.me} slots={slots.data} />}
 
       <ReservasButton />
+      {!isAdmin && device.me && <MyTrainings me={device.me} slots={slots.data} />}
 
       <section aria-labelledby="h-entreno">
         <h2 id="h-entreno" className="section-title">Entrenamiento</h2>
