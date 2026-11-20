@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { notify } from '../alerts'
 import { api } from '../api/client'
+import type { TrainingSummary } from '../api/types'
 import { useAuth } from '../auth/AuthContext'
 import EmptyState from '../components/EmptyState'
 import PageHeader from '../components/PageHeader'
@@ -34,6 +35,10 @@ export default function TrainingsPage() {
   const months = monthsOf(dates, season)
   const month = monthSel !== null && months.includes(monthSel) ? monthSel : defaultMonth(months, today)
   const shown = (data ?? []).filter(t => monthKey(t.date.slice(0, 10)) === month)
+  // Se resalta el entreno de hoy; si hoy no hay, el último (el de fecha más reciente).
+  const todayId = (data ?? []).find(t => t.date.slice(0, 10) === today)?.id ?? null
+  const lastId = todayId !== null ? null : (data ?? []).reduce<TrainingSummary | null>(
+    (best, t) => (!best || t.date > best.date || (t.date === best.date && t.id > best.id) ? t : best), null)?.id ?? null
 
   async function create(e: FormEvent) {
     e.preventDefault()
@@ -90,7 +95,9 @@ export default function TrainingsPage() {
       )}
       <div className="grid">
         {shown.map(t => (
-          <Link key={t.id} to={`/entrenamientos/${t.id}`} className="card link-card">
+          <Link key={t.id} to={`/entrenamientos/${t.id}`}
+            className={`card link-card${t.id === todayId ? ' hl-today' : t.id === lastId ? ' hl-last' : ''}`}>
+            {(t.id === todayId || t.id === lastId) && <span className="hl-badge">{t.id === todayId ? 'Hoy' : 'Último Entreno'}</span>}
             <strong>{t.name}</strong>
             <p className="muted">{formatDate(t.date)} · {t.matchCount} partido(s)</p>
           </Link>

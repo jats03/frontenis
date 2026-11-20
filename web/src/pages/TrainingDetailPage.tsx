@@ -16,6 +16,7 @@ import LoadingBlock from '../components/LoadingBlock'
 import PlayerName from '../components/PlayerName'
 import { isDraftEmpty, loadDraft, saveDraft } from '../matchDraft'
 import BallPicker from '../components/BallPicker'
+import PlayerSearch from '../components/PlayerSearch'
 import { ballLabel, DEFAULT_BALL, type BallType } from '../balls'
 
 type Slots = [string, string, string, string]
@@ -101,6 +102,22 @@ export default function TrainingDetailPage() {
     const ids = new Set(list.map(p => String(p.id)))
     setSlots(prev => (prev.every(v => v === '' || ids.has(v)) ? prev : prev.map(v => (ids.has(v) ? v : '')) as Slots))
   }, [list])
+
+  /** Abre el formulario con los jugadores de un partido ya jugado (marcador vacío y su misma bola), para repetirlo. */
+  function openWith(m: TrainingMatch) {
+    setSlots([...m.homePlayerIds, ...m.awayPlayerIds].map(String) as Slots)
+    setHomeScore(''); setAwayScore(''); setFormError(null)
+    setBallChoice(m.ball)
+    setFormOpen(true)
+    setTimeout(() => document.getElementById('nuevo-partido')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 50)
+  }
+
+  /** «+ Registrar partido»: si no hay nada empezado, el formulario sale ya con los jugadores del último partido. */
+  function openForm() {
+    const last = data?.matches.at(-1)
+    if (last && !hasDraft) openWith(last)
+    else setFormOpen(true)
+  }
 
   function clearDraft() { setSlots(EMPTY); setHomeScore(''); setAwayScore(''); setFormError(null) }
   const nameOf = useMemo(() => new Map(list.map(p => [p.id, p.name])), [list])
@@ -221,13 +238,15 @@ export default function TrainingDetailPage() {
       </select>
     </label>
   )
+  // Al elegir a alguien, el foco pasa al siguiente jugador que falte y, si ya están los cuatro, al marcador.
+  const focusNext = (i: number) => setTimeout(() => {
+    const k = slots.findIndex((v, idx) => idx !== i && v === '')
+    document.getElementById(k >= 0 ? `slot-${k}` : 'score-home')?.focus()
+  }, 0)
   const slotSelect = (i: number, label: string) => (
-    <label>{label}
-      <select value={slots[i]} onChange={e => setSlots(prev => prev.map((v, k) => (k === i ? e.target.value : v)) as Slots)}>
-        <option value="">—</option>
-        {list.filter(p => !slots.some((v, k) => k !== i && v === String(p.id))).map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-      </select>
-    </label>
+    <PlayerSearch id={`slot-${i}`} label={label} players={list} value={slots[i]}
+      excludeIds={new Set(slots.filter((v, k) => k !== i && v !== ''))}
+      onChange={v => setSlots(prev => prev.map((x, k) => (k === i ? v : x)) as Slots)} onChosen={() => focusNext(i)} />
   )
 
   return (
@@ -235,7 +254,7 @@ export default function TrainingDetailPage() {
       <PageHeader title={s.name}
         subtitle={<>{formatShortDate(s.date)} · {s.pointsPerWin} pts por victoria{s.pointsPerLoss > 0 && ` · ${s.pointsPerLoss} por derrota`}</>}
         actions={<>
-          {canRegister && !closedForMe && !formOpen && <button onClick={() => setFormOpen(true)}>+ Registrar partido</button>}
+          {canRegister && !closedForMe && !formOpen && <button onClick={openForm}>+ Registrar partido</button>}
           <ActionMenu items={[
             { label: 'Todas las sesiones', onSelect: () => navigate('/entrenamientos') },
             { label: 'Editar nombre', hidden: !isAdmin, onSelect: () => void rename() },
@@ -272,7 +291,7 @@ export default function TrainingDetailPage() {
                 {slotSelect(2, 'Pareja B · jugador 1')}{slotSelect(3, 'Pareja B · jugador 2')}
               </div>
               <div className="cols">
-                <label>Marcador pareja A<input inputMode="numeric" value={homeScore} onChange={e => setHomeScore(e.target.value)} /></label>
+                <label>Marcador pareja A<input id="score-home" inputMode="numeric" value={homeScore} onChange={e => setHomeScore(e.target.value)} /></label>
                 <label>Marcador pareja B<input inputMode="numeric" value={awayScore} onChange={e => setAwayScore(e.target.value)} /></label>
               </div>
               <BallPicker value={ball} onChange={setBallChoice} />
@@ -305,10 +324,11 @@ export default function TrainingDetailPage() {
                       <strong>{m.homeScore} - {m.awayScore}</strong>
                       <span className={`ball-tag ball-${m.ball}`}>{ballLabel(m.ball)}</span>
                     </div>
-                    {isAdmin && editing?.matchId !== m.id && (
+                    {(isAdmin || (canRegister && !closedForMe)) && editing?.matchId !== m.id && (
                       <div className="row tm-actions">
-                        <button className="secondary small" onClick={() => startEdit(m)}>Editar partido</button>
-                        <button className="secondary small" onClick={() => void removeMatch(m.id)}>Borrar</button>
+                        {canRegister && !closedForMe && <button className="secondary small" onClick={() => openWith(m)}>Repetir partido</button>}
+                        {isAdmin && <button className="secondary small" onClick={() => startEdit(m)}>Editar partido</button>}
+                        {isAdmin && <button className="secondary small" onClick={() => void removeMatch(m.id)}>Borrar</button>}
                       </div>
                     )}
                     {isAdmin && editing?.matchId === m.id && (
