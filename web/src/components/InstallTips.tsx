@@ -23,7 +23,7 @@ const TUTORIALS: Record<Platform, Tutorial> = {
     name: 'Android', browser: 'Chrome',
     steps: [
       { title: 'Abre el enlace en Chrome', text: 'Toca los tres puntos de arriba a la derecha.' },
-      { title: 'Elige «Instalar aplicación»', text: 'Si no la ves, busca «Añadir a la pantalla de inicio».' },
+      { title: 'Desliza el menú y elige «Instalar y crear acceso directo»', text: 'Está al final de la lista. Según el móvil se llama «Instalar aplicación» o «Añadir a la pantalla de inicio».' },
       { title: 'Pulsa «Instalar»', text: 'Confirma en la ventana que aparece.' },
       { title: '¡Listo!', text: 'La app queda en tu pantalla de inicio, como cualquier otra.' },
     ],
@@ -119,6 +119,56 @@ const IphoneToolbar = () => (
   </g>
 )
 
+/** Menú de Chrome en Android tal como se ve (fila de botones y lista larga); se desliza hasta la opción de instalar. */
+const MENU_ROWS: (string | null)[] = [
+  'Nueva pestaña', 'Nueva pestaña Incógnito', 'Añadir pestaña a nuevo grupo', null,
+  'Historial', 'Borrar datos de navegación', 'Controles del sitio', null,
+  'Descargas', 'Marcadores', 'Pestañas recientes', null,
+  'Compartir…', 'Buscar en la página', 'Traducir…', 'Escuchar esta página', 'Mostrar modo Lectura',
+  'Instalar y crear acceso directo',
+]
+const MENU_TOP = 74, ROW_H = 24, SEP_H = 10, PANEL_BOTTOM = 350
+const menuLayout = (() => {
+  let y = MENU_TOP
+  return MENU_ROWS.map(label => { const at = y; y += label === null ? SEP_H : ROW_H; return { label, y: at } })
+})()
+const lastRow = menuLayout[menuLayout.length - 1]
+const MENU_SCROLL = Math.max(0, lastRow.y + ROW_H - (PANEL_BOTTOM - 8))
+
+function AndroidMenu() {
+  return (
+    <g>
+      <defs><clipPath id="tips-menu-clip"><rect x="22" y="14" width="168" height="336" rx="14" /></clipPath></defs>
+      <rect x="22" y="14" width="168" height="336" rx="14" fill="#fff" stroke="#dadce0" />
+      <g clipPath="url(#tips-menu-clip)">
+        <g className="tips-menu-scroll" style={{ ['--scroll' as string]: `-${MENU_SCROLL}px` }}>
+          {['←', '→', '☆', '⇩', '↻'].map((g, i) => (
+            <g key={g}>
+              <circle cx={44 + i * 33} cy={44} r="11" fill="#f1f3f4" />
+              <text x={44 + i * 33} y={48} fontSize="11" textAnchor="middle" fill="#3c4043">{g}</text>
+            </g>
+          ))}
+          {menuLayout.map((r, i) => r.label === null
+            ? <line key={i} x1="32" y1={r.y + 5} x2="180" y2={r.y + 5} stroke="#e3e3e3" />
+            : r.label.startsWith('Instalar')
+              ? (
+                <g key={r.label}>
+                  <rect x="28" y={r.y} width="156" height={ROW_H - 2} rx="6" fill={TEAL} />
+                  <text x="38" y={r.y + 14} fontSize="8" fontWeight="700" fill="#fff">{r.label}</text>
+                </g>
+              )
+              : (
+                <g key={r.label}>
+                  <rect x="36" y={r.y + 7} width="8" height="8" rx="2" fill="none" stroke="#9aa0a6" />
+                  <text x="52" y={r.y + 14} fontSize="8" fill="#3c4043">{r.label}</text>
+                </g>
+              ))}
+        </g>
+      </g>
+    </g>
+  )
+}
+
 function AndroidScenes({ step }: { step: number }) {
   const scene = (i: number, children: ReactNode) => <g className={`tips-scene${step === i ? ' on' : ''}`} aria-hidden="true">{children}</g>
   return (
@@ -128,15 +178,7 @@ function AndroidScenes({ step }: { step: number }) {
         <>
           <AppPage top={54} /><AndroidBar />
           <rect x="8" y="8" width="184" height="364" fill="#000" opacity=".28" />
-          <g>
-            <rect x="52" y="30" width="136" height="150" rx="8" fill="#fff" stroke="#dadce0" />
-            {['Nueva pestaña', 'Nueva pestaña de incógnito', 'Historial', 'Descargas'].map((t, i) => (
-              <text key={t} x="62" y={52 + i * 22} fontSize="9" fill="#3c4043">{t}</text>
-            ))}
-            <rect x="54" y="123" width="132" height="24" rx="5" fill={TEAL} />
-            <text x="62" y="139" fontSize="9" fontWeight="700" fill="#fff">Instalar aplicación</text>
-            <text x="62" y="170" fontSize="9" fill="#3c4043">Compartir…</text>
-          </g>
+          <AndroidMenu />
         </>
       ))}
       {scene(2, (

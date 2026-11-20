@@ -607,4 +607,6 @@ button.secondary.fut-close { background: var(--card); }
 .tips-steps li.on .tips-num { background: var(--primary); color: var(--primary-ink); }
 .tips-hide { justify-self: start; }
 @media (min-width: 640px) { .tips-body { grid-template-columns: auto 1fr; align-items: center; justify-items: stretch; } }
-@media (prefers-reduced-motion: reduce) { .tips-scene { transition: none; } .tips-pulse, .tips-pop { animation: none; } }
+.tips-scene.on .tips-menu-scroll { animation: tips-scroll 1.5s ease-in-out .5s both; }
+@keyframes tips-scroll { from { transform: translateY(0); } to { transform: translateY(var(--scroll)); } }
+@media (prefers-reduced-motion: reduce) { .tips-scene { transition: none; } .tips-pulse, .tips-pop { animation: none; } .tips-scene.on .tips-menu-scroll { animation: none; transform: translateY(var(--scroll)); } }
