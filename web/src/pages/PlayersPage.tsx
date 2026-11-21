@@ -16,7 +16,11 @@ import { MAX_NAME_LENGTH, nameProblem } from '../playerNames'
 export default function PlayersPage() {
   useDocumentTitle('Jugadores')
   const { isAdmin } = useAuth()
-  const vista = useSearchParams()[0].get('vista') === 'sorteos' ? 'sorteos' : 'lista'
+  const [params, setParams] = useSearchParams()
+  const vista = params.get('vista') === 'sorteos' ? 'sorteos' : 'lista'
+  const adding = isAdmin && params.get('nuevo') === '1'
+  const openAdd = () => setParams({ vista: 'lista', nuevo: '1' })
+  const closeAdd = () => setParams({ vista: 'lista' })
   const { data: players, error, loading, reload } = useAsync(() => api.players.list(), [], '/api/players')
   const [name, setName] = useState('')
   const [position, setPosition] = useState<Position>('Delantero')
@@ -25,6 +29,7 @@ export default function PlayersPage() {
   const [message, setMessage] = useState<string | null>(null)
   const [selected, setSelected] = useState<Set<number>>(new Set())
   const [preview, setPreview] = useState<PairingPreview | null>(null)
+  const [randomPlayer, setRandomPlayer] = useState<Player | null>(null)
   const [randomPair, setRandomPair] = useState<[Player, Player] | null>(null)
   const [randomMatch, setRandomMatch] = useState<[[Player, Player], [Player, Player]] | null>(null)
   const [swapping, setSwapping] = useState<Set<number>>(new Set())
@@ -36,6 +41,7 @@ export default function PlayersPage() {
   const chosen = view.filter(p => selected.has(p.id))
   const chosenForwards = chosen.filter(p => p.position === 'Delantero')
   const chosenBacks = chosen.filter(p => p.position === 'Zaguero')
+  const drawRandomPlayer = () => { if (chosen.length > 0) setRandomPlayer(pick(chosen)) }
   const canDraw = chosenForwards.length > 0 && chosenBacks.length > 0
   const canDrawMatch = chosenForwards.length >= 2 && chosenBacks.length >= 2
   /** Baraja una copia de la lista (Fisher-Yates). */
@@ -127,18 +133,18 @@ export default function PlayersPage() {
 
   return (
     <>
-      <PageHeader title="Jugadores" subtitle={`${players?.length ?? 0} jugadores`} />
+      <PageHeader title="Jugadores" subtitle={`${players?.length ?? 0} jugadores`}
+        actions={isAdmin && !adding ? <button type="button" onClick={openAdd}>+ Añadir jugador</button> : undefined} />
       <PlayersTabs current={vista} />
       {loading && !players && <LoadingBlock />}
       {((error && !players) || message) && <p className="error">{(error && !players ? error : null) ?? message}</p>}
 
       {vista === 'lista' && (
         <>
-          {isAdmin && (
-            <details className="card add-player">
-              <summary>+ Añadir jugador</summary>
+          {adding && (
+            <section className="card add-player" aria-label="Añadir jugador">
               <form className="form row" onSubmit={add}>
-                <input placeholder="Nombre" aria-label="Nombre" maxLength={MAX_NAME_LENGTH} value={name} onChange={e => setName(e.target.value)} required />
+                <input placeholder="Nombre" aria-label="Nombre" autoFocus maxLength={MAX_NAME_LENGTH} value={name} onChange={e => setName(e.target.value)} required />
                 <select aria-label="Posición" value={position} onChange={e => setPosition(e.target.value as Position)}>
                   <option value="Delantero">Delantero</option>
                   <option value="Zaguero">Zaguero</option>
@@ -146,8 +152,9 @@ export default function PlayersPage() {
                 <input type="number" min={1} max={99} placeholder="Grupo (opcional)" aria-label="Grupo de jugadores"
                   value={groupInput} onChange={e => setGroupInput(e.target.value)} />
                 <button type="submit">Añadir</button>
+                <button type="button" className="secondary" onClick={closeAdd}>Cerrar</button>
               </form>
-            </details>
+            </section>
           )}
 
           <section className="card" aria-label="Lista de jugadores">
@@ -184,6 +191,23 @@ export default function PlayersPage() {
           </Disclosure>
 
           <div className="draw-grid">
+            <section className="card">
+              <h2>Jugador al azar</h2>
+              <p className="muted">Uno de los jugadores marcados ({chosen.length}).</p>
+              {randomPlayer && (
+                <p className="random-pair">
+                  <strong><PlayerName playerId={randomPlayer.id}>{randomPlayer.name}</PlayerName></strong>{' '}
+                  <span className="muted">({randomPlayer.position})</span>
+                </p>
+              )}
+              <div className="row">
+                <button onClick={drawRandomPlayer} disabled={chosen.length === 0}>
+                  {randomPlayer ? 'Sortear otro jugador' : 'Obtener jugador al azar'}
+                </button>
+              </div>
+              {chosen.length === 0 && <p className="muted">Marca al menos un jugador.</p>}
+            </section>
+
             <section className="card">
               <h2>Pareja al azar</h2>
               <p className="muted">Un delantero y un zaguero ({chosenForwards.length} delanteros, {chosenBacks.length} zagueros).</p>
