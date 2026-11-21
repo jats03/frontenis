@@ -127,7 +127,7 @@ export default function MatchCard({ match, canEdit, setsPerMatch = 1, onChanged,
       {!match.isPlayed && ready && (pending || onOpen) && (
         <div className="match-actions">
           {pending && <span className="badge-pending">Pendiente de aprobación: {pendingSets!.map(s => `${s.home}-${s.away}`).join(', ')}</span>}
-          {onOpen && <button className="secondary" onClick={onOpen}>{pending ? 'Ver / modificar resultado' : 'Jugar / enviar resultado'}</button>}
+          {onOpen && <button className="secondary" onClick={onOpen}>{pending ? 'Ver / modificar resultado' : 'Arbitrar Partido'}</button>}
         </div>
       )}
       {error && <p className="error">{error}</p>}
