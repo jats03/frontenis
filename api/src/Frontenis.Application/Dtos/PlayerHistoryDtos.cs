@@ -13,7 +13,8 @@ public sealed record RelationDto(
 
 public sealed record RecentMatchDto(
     int MatchId, int CompetitionId, string CompetitionName, string Partner, string Rivals,
-    IReadOnlyList<SetScoreDto> Sets, bool Won, bool IsTraining = false);
+    IReadOnlyList<SetScoreDto> Sets, bool Won, bool IsTraining = false,
+    DateTime? PlayedOn = null, BallType Ball = BallTypes.Default);
 
 public sealed record PlayerHistoryDto(
     PlayerHistoryRowDto Summary,

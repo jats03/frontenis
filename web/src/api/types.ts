@@ -84,6 +84,9 @@ export interface Relation {
 export interface RecentMatch {
   matchId: number; competitionId: number; competitionName: string
   partner: string; rivals: string; sets: SetScore[]; won: boolean; isTraining: boolean
+  /** Fecha en que se jugó (null si no se conoce). */
+  playedOn?: string | null
+  ball?: BallType
 }
 export interface PlayerHistory {
   summary: PlayerHistoryRow; partners: Relation[]; rivals: Relation[]

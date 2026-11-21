@@ -709,3 +709,45 @@ button.secondary.fut-close { background: var(--card); }
 
 .fold-head { cursor: pointer; min-height: 44px; }
 .fold-head:hover .fold-chevron { color: var(--text); }
+
+/* Resumen de estadísticas de la portada */
+.my-stats { padding: 0; overflow: hidden; }
+.ms-top { display: flex; align-items: center; justify-content: space-around; gap: 1rem; padding: 1.1rem 1rem; color: var(--primary-ink);
+  background: linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 55%, #000)); }
+.ms-ring { position: relative; width: 112px; height: 112px; flex: none; }
+.ms-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.ms-track { fill: none; stroke: rgba(255, 255, 255, .25); stroke-width: 9; }
+.ms-bar { fill: none; stroke: var(--accent); stroke-width: 9; stroke-linecap: round; animation: ms-fill 1s ease-out; }
+@keyframes ms-fill { from { stroke-dashoffset: 264; } }
+.ms-ring-text { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; line-height: 1.1; }
+.ms-ring-text strong { font-size: 1.7rem; }
+.ms-ring-text span { font-size: .75rem; opacity: .85; }
+.ms-wins { display: grid; justify-items: center; text-align: center; gap: .1rem; }
+.ms-wins svg { width: 28px; height: 28px; color: var(--accent); }
+.ms-wins strong { font-size: 2.6rem; line-height: 1; }
+.ms-wins span { font-size: .82rem; opacity: .9; max-width: 11ch; }
+.ms-row { display: flex; align-items: center; gap: .8rem; padding: .85rem 1rem; border-top: 1px solid var(--border); }
+.ms-row > div { display: grid; min-width: 0; flex: 1; }
+.ms-row strong { font-size: 1.1rem; overflow-wrap: anywhere; }
+.ms-label { font-size: .75rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+.ms-ico { display: grid; place-items: center; width: 46px; height: 46px; flex: none; border-radius: 50%; background: color-mix(in srgb, var(--primary) 14%, var(--card)); color: var(--primary); }
+.ms-ico svg { width: 24px; height: 24px; }
+.ms-result { flex: none; padding: .25rem .75rem; border-radius: 99px; font-weight: 700; font-size: .85rem; }
+.ms-result.won { background: var(--win); color: #146c2e; }
+.ms-result.lost { background: color-mix(in srgb, var(--danger) 14%, var(--card)); color: var(--danger); }
+@media (prefers-color-scheme: dark) { .ms-result.won { color: #7be3a0; } }
+@media (prefers-reduced-motion: reduce) { .ms-bar { animation: none; } }
+
+.ms-last { padding: .85rem 1rem 1rem; border-top: 1px solid var(--border); display: grid; gap: .6rem; }
+.ms-last-head { display: flex; align-items: center; justify-content: space-between; gap: .6rem; }
+.ms-versus { display: grid; grid-template-columns: 1fr auto 1fr; gap: .5rem; align-items: center; text-align: center; }
+.ms-side strong { font-size: .98rem; overflow-wrap: anywhere; }
+.ms-score { display: grid; gap: .1rem; padding: .35rem .8rem; border-radius: 12px; font-size: 1.25rem; font-weight: 800;
+  background: color-mix(in srgb, var(--primary) 12%, var(--card)); color: var(--primary); }
+.ms-meta { display: flex; flex-wrap: wrap; gap: .4rem .9rem; justify-content: center; font-size: .85rem; color: var(--muted); }
+.ms-meta > span { display: inline-flex; align-items: center; gap: .3rem; }
+.ms-meta svg { width: 16px; height: 16px; }
+.ms-ball { padding: .05rem .55rem; border-radius: 99px; border: 1px solid var(--border); }
+
+.ms-more { display: block; padding: .8rem 1rem; text-align: center; font-weight: 700; text-decoration: none; border-top: 1px solid var(--border); color: var(--link); }
+.ms-more:hover { background: color-mix(in srgb, var(--primary) 8%, var(--card)); }

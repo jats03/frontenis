@@ -8,7 +8,8 @@ public sealed record PlayedMatch(
     int PointsPerWin, int PointsPerLoss,
     IReadOnlyList<int> HomePlayerIds, IReadOnlyList<int> AwayPlayerIds,
     IReadOnlyList<SetScore> Sets,
-    bool IsTraining = false, DateTime? SortDate = null)
+    bool IsTraining = false, DateTime? SortDate = null,
+    Frontenis.Domain.Enums.BallType Ball = Frontenis.Domain.Enums.BallTypes.Default)
 {
     public int HomeSets => Sets.Count(s => s.HomeWon);
     public int AwaySets => Sets.Count - HomeSets;
