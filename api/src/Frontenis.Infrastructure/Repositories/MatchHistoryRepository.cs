@@ -93,7 +93,7 @@ public sealed class MatchHistoryRepository : IMatchHistoryRepository
         }
         var rows = await q.ToListAsync(ct);
         var sessions = await _db.TrainingSessions.AsNoTracking()
-            .Select(s => new { s.Id, s.Name, s.PointsPerWin, s.PointsPerLoss }).ToDictionaryAsync(s => s.Id, ct);
+            .Select(s => new { s.Id, s.Name, s.PointsPerWin, s.PointsPerLoss, s.SessionDate }).ToDictionaryAsync(s => s.Id, ct);
 
         return rows.Select(m =>
         {
@@ -102,7 +102,7 @@ public sealed class MatchHistoryRepository : IMatchHistoryRepository
                 m.Id, m.SessionId, s.Name, true, s.PointsPerWin, s.PointsPerLoss,
                 new[] { m.Home1Id, m.Home2Id }.Where(id => !reserves.Contains(id)).ToArray(),
                 new[] { m.Away1Id, m.Away2Id }.Where(id => !reserves.Contains(id)).ToArray(),
-                new[] { new SetScore(m.HomeScore, m.AwayScore) }, true, m.PlayedAtUtc, m.Ball);
+                new[] { new SetScore(m.HomeScore, m.AwayScore) }, true, s.SessionDate, m.Ball); // la fecha del entreno, sin la hora a la que se apuntó el partido
         }).ToList();
     }
 }

@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { api } from '../api/client'
 import type { PlayerHistory, Relation } from '../api/types'
 import { ballLabel } from '../balls'
@@ -78,6 +79,8 @@ export default function MyStats({ playerId, name }: { playerId: number; name: st
             </div>
           </div>
         )}
+
+        <Link className="ms-more" to={`/jugadores/${playerId}`}>Ver más →</Link>
       </div>
     </section>
   )

@@ -748,3 +748,6 @@ button.secondary.fut-close { background: var(--card); }
 .ms-meta > span { display: inline-flex; align-items: center; gap: .3rem; }
 .ms-meta svg { width: 16px; height: 16px; }
 .ms-ball { padding: .05rem .55rem; border-radius: 99px; border: 1px solid var(--border); }
+
+.ms-more { display: block; padding: .8rem 1rem; text-align: center; font-weight: 700; text-decoration: none; border-top: 1px solid var(--border); color: var(--link); }
+.ms-more:hover { background: color-mix(in srgb, var(--primary) 8%, var(--card)); }
