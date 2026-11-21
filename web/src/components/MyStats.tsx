@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { api } from '../api/client'
-import type { PeriodStat, PlayerHistory } from '../api/types'
+import type { PlayerHistory } from '../api/types'
 import { ballLabel } from '../balls'
 import { parseUtc } from '../dates'
 import { useAsync } from '../hooks'
@@ -30,13 +30,8 @@ function Ring({ title, row }: { title: string; row: { won: number; winRate: numb
   )
 }
 
-/** Título de un periodo: «Semana actual», «Semana anterior», «Mes actual» o «Mes anterior». */
-function periodTitle(p: PeriodStat) {
-  return `${p.kind === 'week' ? 'Semana' : 'Mes'} ${p.isCurrent ? 'actual' : 'anterior'}`
-}
-
 /**
- * Resumen de las estadísticas de quien se ha identificado, en la portada: % de victorias y victorias (en total y en la semana y el mes: los actuales o, si no se jugó en ellos, los anteriores) y
+ * Resumen de las estadísticas de quien se ha identificado, en la portada: % de victorias y victorias (en total y en la semana y el mes actuales, a cero si no se jugó) y
  * el último partido. Si aún no ha jugado ninguno, no sale nada.
  */
 export default function MyStats({ playerId, name }: { playerId: number; name: string }) {
@@ -49,7 +44,7 @@ export default function MyStats({ playerId, name }: { playerId: number; name: st
       <h2 id="h-mis-stats" className="section-title">Mis estadísticas</h2>
       <div className="card my-stats">
         <div className="ms-top">
-          {(data.periods ?? []).map(p => <Ring key={p.kind} title={periodTitle(p)} row={p.stats} />)}
+          {(data.periods ?? []).map(p => <Ring key={p.kind} title={p.kind === 'week' ? 'Semana actual' : 'Mes actual'} row={p.stats} />)}
           <Ring title="Total" row={data.summary} />
         </div>
 

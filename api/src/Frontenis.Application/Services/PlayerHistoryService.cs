@@ -73,10 +73,7 @@ public sealed class PlayerHistoryService : IPlayerHistoryService
             periods);
     }
 
-    /// <summary>
-    /// Semana y mes (hora de Madrid, la semana empieza el lunes): cada uno es el actual si el jugador jugó en él y, si no, el
-    /// anterior; si tampoco jugó en ese, no sale.
-    /// </summary>
+    /// <summary>Semana (empieza el lunes) y mes actuales, en hora de Madrid; sin partidos en ellos, todo a cero.</summary>
     private IReadOnlyList<PeriodStatDto> Periods(Domain.Entities.Player player, IReadOnlyList<PlayedMatch> matches)
     {
         TimeZoneInfo zone;
@@ -84,30 +81,20 @@ public sealed class PlayerHistoryService : IPlayerHistoryService
         var today = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, zone).Date;
         var monday = today.AddDays(-(((int)today.DayOfWeek + 6) % 7));
         var firstOfMonth = new DateTime(today.Year, today.Month, 1);
-        var candidates = new (string Kind, bool Current, DateTime From, DateTime To)[]
+        var ranges = new (string Kind, DateTime From, DateTime To)[]
         {
-            ("week", true, monday, monday.AddDays(7)),
-            ("week", false, monday.AddDays(-7), monday),
-            ("month", true, firstOfMonth, firstOfMonth.AddMonths(1)),
-            ("month", false, firstOfMonth.AddMonths(-1), firstOfMonth),
+            ("week", monday, monday.AddDays(7)),
+            ("month", firstOfMonth, firstOfMonth.AddMonths(1)),
         };
 
-        var result = new List<PeriodStatDto>();
-        foreach (var kind in new[] { "week", "month" })
+        return ranges.Select(r =>
         {
-            foreach (var c in candidates.Where(x => x.Kind == kind))
-            {
-                var from = TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(c.From, DateTimeKind.Unspecified), zone);
-                var to = TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(c.To, DateTimeKind.Unspecified), zone);
-                var inRange = matches.Where(m => m.SortDate >= from && m.SortDate < to).ToList();
-                if (inRange.Count == 0) continue;
-                var stats = _calculator.Calculate(player.Id, inRange);
-                if (stats.Played == 0) continue;
-                result.Add(new PeriodStatDto(kind, c.Current, c.From, ToRow(player.Id, player.Name, player.Position, stats)));
-                break; // si el actual tiene partidos no se mira el anterior
-            }
-        }
-        return result;
+            var from = TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(r.From, DateTimeKind.Unspecified), zone);
+            var to = TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(r.To, DateTimeKind.Unspecified), zone);
+            var inRange = matches.Where(m => m.SortDate >= from && m.SortDate < to).ToList();
+            var stats = inRange.Count == 0 ? null : _calculator.Calculate(player.Id, inRange);
+            return new PeriodStatDto(r.Kind, r.From, ToRow(player.Id, player.Name, player.Position, stats is { Played: > 0 } ? stats : null));
+        }).ToList();
     }
 
     private static PlayerHistoryRowDto ToRow(int id, string name, Domain.Enums.PlayerPosition pos, PlayerStats? s) =>
