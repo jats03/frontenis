@@ -21,4 +21,7 @@ public sealed record PlayerHistoryDto(
     IReadOnlyList<RelationDto> Partners,
     IReadOnlyList<RelationDto> Rivals,
     IReadOnlyList<RecentMatchDto> Recent,
-    PlayerHistoryRowDto? Month = null);
+    IReadOnlyList<PeriodStatDto>? Periods = null);
+
+/// <summary>Cifras de un periodo (semana o mes): el actual o, si en él no hubo partidos, el anterior. <c>Kind</c> es «week» o «month».</summary>
+public sealed record PeriodStatDto(string Kind, bool IsCurrent, DateTime From, PlayerHistoryRowDto Stats);

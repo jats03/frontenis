@@ -91,9 +91,10 @@ export interface RecentMatch {
 export interface PlayerHistory {
   summary: PlayerHistoryRow; partners: Relation[]; rivals: Relation[]
   recent: RecentMatch[]
-  /** Lo jugado en el mes actual; sin partidos este mes, todo a cero. */
-  month?: PlayerHistoryRow
+  /** Semana y mes (el actual o, si no se jugó en él, el anterior); lo que no tiene partidos no viene. */
+  periods?: PeriodStat[]
 }
+export interface PeriodStat { kind: 'week' | 'month'; isCurrent: boolean; from: string; stats: PlayerHistoryRow }
 /**
  * Origen de los partidos del histórico; sin ids = todos. `balls` son las bolas que cuentan: la pantalla del histórico
  * envía siempre una sola (por defecto la preolímpica; la API admite varias). Sin `balls` cuentan todas: solo lo usa la

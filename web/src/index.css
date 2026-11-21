@@ -760,3 +760,9 @@ button.secondary.fut-close { background: var(--card); }
 .ms-block .ms-wins strong { font-size: 2rem; }
 .ms-block .ms-wins { grid-auto-flow: column; align-items: center; gap: .35rem; }
 .ms-block .ms-wins svg { width: 22px; height: 22px; }
+.ms-top { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: .4rem; padding-inline: .6rem; }
+.ms-block .ms-ring { width: min(104px, 100%); height: auto; aspect-ratio: 1; }
+.ms-block .ms-ring-text strong { font-size: clamp(1.05rem, 5vw, 1.45rem); }
+.ms-block .ms-wins { display: flex; flex-wrap: wrap; justify-content: center; gap: 0 .3rem; }
+.ms-block .ms-wins span { max-width: none; }
+.ms-block-title { min-height: 2.95em; display: grid; align-items: end; }

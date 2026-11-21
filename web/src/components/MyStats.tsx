@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { api } from '../api/client'
-import type { PlayerHistory } from '../api/types'
+import type { PeriodStat, PlayerHistory } from '../api/types'
 import { ballLabel } from '../balls'
 import { parseUtc } from '../dates'
 import { useAsync } from '../hooks'
@@ -30,10 +30,15 @@ function Ring({ title, row }: { title: string; row: { won: number; winRate: numb
   )
 }
 
-const monthName = () => new Date().toLocaleDateString('es-ES', { month: 'long', timeZone: 'Europe/Madrid' })
+/** Título de un periodo: «Esta semana», «Semana pasada», «Este mes · noviembre» o «Mes pasado · octubre». */
+function periodTitle(p: PeriodStat) {
+  if (p.kind === 'week') return p.isCurrent ? 'Esta semana' : 'Semana pasada'
+  const month = parseUtc(p.from).toLocaleDateString('es-ES', { month: 'long', timeZone: 'Europe/Madrid' })
+  return `${p.isCurrent ? 'Este mes' : 'Mes pasado'} · ${month}`
+}
 
 /**
- * Resumen de las estadísticas de quien se ha identificado, en la portada: % de victorias y victorias (en total y este mes) y
+ * Resumen de las estadísticas de quien se ha identificado, en la portada: % de victorias y victorias (en total y en la semana y el mes: los actuales o, si no se jugó en ellos, los anteriores) y
  * el último partido. Si aún no ha jugado ninguno, no sale nada.
  */
 export default function MyStats({ playerId, name }: { playerId: number; name: string }) {
@@ -47,7 +52,7 @@ export default function MyStats({ playerId, name }: { playerId: number; name: st
       <div className="card my-stats">
         <div className="ms-top">
           <Ring title="Total" row={data.summary} />
-          <Ring title={`Este mes · ${monthName()}`} row={data.month} />
+          {(data.periods ?? []).map(p => <Ring key={p.kind} title={periodTitle(p)} row={p.stats} />)}
         </div>
 
         {last && (
