@@ -103,9 +103,9 @@ function HomeContent() {
         )}
       </section>
 
-      {!isAdmin && device.me && <MyStats playerId={device.me.owner.id} name={device.me.owner.name} />}
-
       <InstallTips />
+
+      {!isAdmin && device.me && <MyStats playerId={device.me.owner.id} name={device.me.owner.name} />}
     </>
   )
 }
