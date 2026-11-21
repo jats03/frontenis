@@ -28,7 +28,7 @@ export default function HomePage() {
     if (device.me === undefined) return <LoadingBlock />
     return (
       <>
-        <PageHeader title="Club Frontenis Ciudad de Jaén" subtitle="Ligas, torneos y entrenamientos" />
+        <PageHeader title="Club Frontenis Ciudad de Jaén" />
         <DeviceLinkPanel device={device} />
         <InstallTips />
       </>
@@ -54,7 +54,7 @@ function HomeContent() {
 
   return (
     <>
-      <PageHeader title="Club Frontenis Ciudad de Jaén" subtitle="Ligas, torneos y entrenamientos" />
+      <PageHeader title="Club Frontenis Ciudad de Jaén" />
 
       {!isAdmin && device.me && <HomeNotices me={device.me} slots={slots.data} />}
 
