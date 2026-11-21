@@ -645,13 +645,16 @@ button.secondary.fut-close { background: var(--card); }
 @keyframes setup-pop { 0% { transform: scale(.96); } 50% { transform: scale(1.04); } 100% { transform: scale(1); } }
 
 .serve-draw { display: grid; justify-items: center; gap: .3rem; padding: .5rem; border-radius: 12px; border: 1px dashed var(--border); }
-.serve-rally { width: min(260px, 80%); height: auto; --loader-ink: var(--muted); color: var(--loader-ink); overflow: visible; }
-.serve-racket { transform-origin: 22px 68px; }
-.serve-racket.red { color: var(--team-red); } .serve-racket.blue { color: var(--team-blue); }
-.serve-racket.win { filter: drop-shadow(0 0 3px currentColor); }
+.coin-stage { position: relative; display: flex; align-items: flex-end; justify-content: center; width: 100%; height: 170px; perspective: 700px; }
+.coin-shadow { position: absolute; bottom: 8px; left: 50%; width: 70px; height: 10px; margin-left: -35px; border-radius: 50%; background: #000; opacity: .18; }
+.coin { position: relative; width: 84px; height: 84px; margin-bottom: 14px; transform-style: preserve-3d; }
+.coin-face { position: absolute; inset: 0; box-sizing: border-box; display: flex; align-items: center; justify-content: center; padding: .4rem; border-radius: 50%;
+  border: 4px solid rgba(255, 255, 255, .55); backface-visibility: hidden; color: #fff; font-size: .72rem; font-weight: 700; line-height: 1.15; text-align: center; overflow-wrap: anywhere; }
+.coin-face.red { background: radial-gradient(circle at 35% 30%, #ff8a80, #d64545 60%, #a32d2d); }
+.coin-face.blue { background: radial-gradient(circle at 35% 30%, #8fb6ff, #2f6fd6 60%, #1d4aa0); transform: rotateY(180deg); }
 .serve-names { display: grid; grid-template-columns: 1fr 1fr; width: 100%; gap: .4rem; text-align: center; font-weight: 700; font-size: .9rem; }
 .serve-names .red { color: var(--team-red); } .serve-names .blue { color: var(--team-blue); }
-.serve-names .win { text-decoration: underline; text-underline-offset: 3px; }
+.serve-names .win { text-decoration: underline; text-underline-offset: 3px; box-shadow: 0 0 0 2px #e8c71a; border-radius: 8px; }
 .serve-status { margin: 0; text-align: center; }
 .serve-dot { display: inline-block; width: .85rem; height: .85rem; margin-right: .35rem; border-radius: 50%; background: #f2a900; border: 1px solid #b97c00; vertical-align: -1px; }
 
