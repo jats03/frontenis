@@ -48,7 +48,7 @@ public sealed class MatchHistoryRepository : IMatchHistoryRepository
 
         var rows = await q.Select(m => new
         {
-            m.Id, m.CompetitionId, m.Phase, m.Ball, m.HomeScore, m.AwayScore,
+            m.Id, m.CompetitionId, m.Phase, m.Ball, m.PlayedAtUtc, m.HomeScore, m.AwayScore,
             m.Set1Home, m.Set1Away, m.Set2Home, m.Set2Away, m.Set3Home, m.Set3Away,
             H1 = m.HomeEntry!.Pair.Player1Id, H2 = m.HomeEntry.Pair.Player2Id,
             A1 = m.AwayEntry!.Pair.Player1Id, A2 = m.AwayEntry.Pair.Player2Id
@@ -67,7 +67,7 @@ public sealed class MatchHistoryRepository : IMatchHistoryRepository
                 new[] { r.A1, r.A2 }.Where(id => !reserves.Contains(id)).ToArray(),
                 SetScore.FromColumns(r.Set1Home, r.Set1Away, r.Set2Home, r.Set2Away, r.Set3Home, r.Set3Away,
                     r.HomeScore, r.AwayScore),
-                false, c.CreatedAtUtc, r.Ball);
+                false, r.PlayedAtUtc ?? c.CreatedAtUtc, r.Ball); // los partidos anteriores a este dato usan la fecha de creación de la competición
         }).ToList();
     }
 

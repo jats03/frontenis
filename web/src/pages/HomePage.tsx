@@ -46,7 +46,7 @@ function HomeContent() {
   // Entrenos de esta semana y la próxima (una sola consulta para los avisos y para «Apuntado a»); solo quien se ha identificado.
   const week = useMemo(() => { const from = mondayOfIso(todayIso()); return { from, to: addDaysIso(from, 13) } }, [])
   const hasMe = !isAdmin && !!device.me
-  const slots = useAsync(() => (hasMe ? api.slots.list(week.from, week.to) : Promise.resolve([])), [hasMe, week.from, week.to])
+  const slots = useAsync(() => (hasMe ? api.slots.list(week.from, week.to) : Promise.resolve([])), [hasMe, week.from, week.to], hasMe ? `/api/slots?from=${week.from}&to=${week.to}` : undefined)
 
   const active = (comps.data ?? []).filter(c => c.status !== 'Finished' && c.status !== 'Draft')
   const drafts = (comps.data ?? []).filter(c => c.status === 'Draft')

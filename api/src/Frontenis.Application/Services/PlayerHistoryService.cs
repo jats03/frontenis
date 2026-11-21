@@ -65,9 +65,36 @@ public sealed class PlayerHistoryService : IPlayerHistoryService
                 sets, home == m.HomeWon, m.IsTraining, m.SortDate, m.Ball);
         }).ToList();
 
+        var periods = Periods(player, matches);
+
         return new PlayerHistoryDto(
             ToRow(player.Id, player.Name, player.Position, stats.Played == 0 ? null : stats),
-            stats.Partners.Select(Rel).ToList(), stats.Rivals.Select(Rel).ToList(), recent);
+            stats.Partners.Select(Rel).ToList(), stats.Rivals.Select(Rel).ToList(), recent,
+            periods);
+    }
+
+    /// <summary>Semana (empieza el lunes) y mes actuales, en hora de Madrid; sin partidos en ellos, todo a cero.</summary>
+    private IReadOnlyList<PeriodStatDto> Periods(Domain.Entities.Player player, IReadOnlyList<PlayedMatch> matches)
+    {
+        TimeZoneInfo zone;
+        try { zone = TimeZoneInfo.FindSystemTimeZoneById("Europe/Madrid"); } catch (TimeZoneNotFoundException) { zone = TimeZoneInfo.Utc; }
+        var today = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, zone).Date;
+        var monday = today.AddDays(-(((int)today.DayOfWeek + 6) % 7));
+        var firstOfMonth = new DateTime(today.Year, today.Month, 1);
+        var ranges = new (string Kind, DateTime From, DateTime To)[]
+        {
+            ("week", monday, monday.AddDays(7)),
+            ("month", firstOfMonth, firstOfMonth.AddMonths(1)),
+        };
+
+        return ranges.Select(r =>
+        {
+            var from = TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(r.From, DateTimeKind.Unspecified), zone);
+            var to = TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(r.To, DateTimeKind.Unspecified), zone);
+            var inRange = matches.Where(m => m.SortDate >= from && m.SortDate < to).ToList();
+            var stats = inRange.Count == 0 ? null : _calculator.Calculate(player.Id, inRange);
+            return new PeriodStatDto(r.Kind, r.From, ToRow(player.Id, player.Name, player.Position, stats is { Played: > 0 } ? stats : null));
+        }).ToList();
     }
 
     private static PlayerHistoryRowDto ToRow(int id, string name, Domain.Enums.PlayerPosition pos, PlayerStats? s) =>

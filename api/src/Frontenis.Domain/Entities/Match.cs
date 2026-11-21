@@ -48,6 +48,9 @@ public sealed class Match
     /// <summary>Bola con la que se jugó. Se elige al registrar el resultado; mientras tanto (y en los partidos anteriores a este dato) es la bola por defecto.</summary>
     public BallType Ball { get; private set; } = BallTypes.Default;
 
+    /// <summary>Momento (UTC) en que se registró el resultado; null mientras no se ha jugado y en los partidos anteriores a este dato.</summary>
+    public DateTime? PlayedAtUtc { get; private set; }
+
     public int? NextMatchId { get; private set; }
     public Match? NextMatch { get; private set; }
     public BracketSlot? NextSlot { get; private set; }
@@ -95,6 +98,7 @@ public sealed class Match
         Set3Home = sets.Count > 2 ? sets[2].Home : null; Set3Away = sets.Count > 2 ? sets[2].Away : null;
         HomeScore = sets.Sum(s => s.Home);
         AwayScore = sets.Sum(s => s.Away);
+        PlayedAtUtc = DateTime.UtcNow;
     }
 
     /// <exception cref="DomainException">Tipo de bola desconocido.</exception>
@@ -131,6 +135,7 @@ public sealed class Match
         HomeScore = null;
         AwayScore = null;
         Set1Home = Set1Away = Set2Home = Set2Away = Set3Home = Set3Away = null;
-        Ball = BallTypes.Default;
+                Ball = BallTypes.Default;
+        PlayedAtUtc = null;
     }
 }
