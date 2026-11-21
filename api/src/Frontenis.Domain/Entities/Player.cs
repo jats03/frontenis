@@ -67,6 +67,15 @@ public sealed class Player
     /// <summary>Crea el jugador comodín que ocupa el hueco de un jugador ausente.</summary>
     public static Player CreateReserve() => new(ReserveName, PlayerPosition.Delantero) { IsReserve = true };
 
+    /// <summary>Nombre con el que se muestra al jugador de prueba (comodín de los partidos de entrenamiento).</summary>
+    public const string TestName = "Jugador de prueba";
+
+    /// <summary>
+    /// Crea el comodín «Jugador de prueba» de los partidos de entrenamiento. Es un comodín como el reserva (no es un jugador real,
+    /// no puntúa ni aparece en las estadísticas de nadie) y se distingue por su nombre.
+    /// </summary>
+    public static Player CreateTest() => new(TestName, PlayerPosition.Delantero) { IsReserve = true };
+
     /// <summary>Modifica nombre, posición y número de grupo (1-99, opcional).</summary>
     public void Update(string name, PlayerPosition position, int? groupNumber = null)
     {

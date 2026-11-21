@@ -35,11 +35,20 @@ public sealed class PlayerRepository : IPlayerRepository
 
     public async Task<Player> GetOrCreateReserveAsync(CancellationToken ct = default)
     {
-        var reserve = await _db.Players.FirstOrDefaultAsync(p => p.IsReserve, ct);
+        var reserve = await _db.Players.FirstOrDefaultAsync(p => p.IsReserve && p.Name == Player.ReserveName, ct);
         if (reserve is not null) return reserve;
         reserve = Player.CreateReserve();
         await _db.Players.AddAsync(reserve, ct);
         return reserve;
+    }
+
+    public async Task<Player> GetOrCreateTestAsync(CancellationToken ct = default)
+    {
+        var test = await _db.Players.FirstOrDefaultAsync(p => p.IsReserve && p.Name == Player.TestName, ct);
+        if (test is not null) return test;
+        test = Player.CreateTest();
+        await _db.Players.AddAsync(test, ct);
+        return test;
     }
 
     public async Task AddAsync(Player player, CancellationToken ct = default) => await _db.Players.AddAsync(player, ct);

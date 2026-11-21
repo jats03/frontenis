@@ -17,12 +17,14 @@ public sealed class MatchHistoryRepository : IMatchHistoryRepository
     public async Task<IReadOnlyList<PlayedMatch>> ListPlayedAsync(HistoryFilter filter, int? playerId, CancellationToken ct = default)
     {
         var result = new List<PlayedMatch>();
-        if (filter.IncludesCompetitions) result.AddRange(await CompetitionMatchesAsync(filter, playerId, ct));
-        if (filter.IncludesTrainings) result.AddRange(await TrainingMatchesAsync(filter, playerId, ct));
+        // Los comodines («Jugador reserva» y «Jugador de prueba») juegan pero no cuentan en estadísticas ni historial de nadie.
+        var reserves = await _db.Players.AsNoTracking().Where(p => p.IsReserve).Select(p => p.Id).ToListAsync(ct);
+        if (filter.IncludesCompetitions) result.AddRange(await CompetitionMatchesAsync(filter, playerId, reserves, ct));
+        if (filter.IncludesTrainings) result.AddRange(await TrainingMatchesAsync(filter, playerId, reserves, ct));
         return result;
     }
 
-    private async Task<List<PlayedMatch>> CompetitionMatchesAsync(HistoryFilter filter, int? playerId, CancellationToken ct)
+    private async Task<List<PlayedMatch>> CompetitionMatchesAsync(HistoryFilter filter, int? playerId, List<int> reserves, CancellationToken ct)
     {
         var q = _db.Matches.AsNoTracking().Where(m =>
             m.HomeScore != null && m.AwayScore != null && m.HomeEntryId != null && m.AwayEntryId != null);
@@ -56,9 +58,6 @@ public sealed class MatchHistoryRepository : IMatchHistoryRepository
             .Select(c => new { c.Id, c.Name, c.PointsPerWin, c.PointsPerLoss, c.CreatedAtUtc })
             .ToDictionaryAsync(c => c.Id, ct);
 
-        // El «Jugador reserva» juega pero no cuenta en estadísticas ni historial de nadie.
-        var reserves = await _db.Players.AsNoTracking().Where(p => p.IsReserve).Select(p => p.Id).ToListAsync(ct);
-
         return rows.Select(r =>
         {
             var c = comps[r.CompetitionId];
@@ -73,7 +72,7 @@ public sealed class MatchHistoryRepository : IMatchHistoryRepository
     }
 
     /// <summary>Los partidos de entrenamiento cuentan como un único set a X tantos y siempre puntúan.</summary>
-    private async Task<List<PlayedMatch>> TrainingMatchesAsync(HistoryFilter filter, int? playerId, CancellationToken ct)
+    private async Task<List<PlayedMatch>> TrainingMatchesAsync(HistoryFilter filter, int? playerId, List<int> reserves, CancellationToken ct)
     {
         // Solo los partidos jugados con la bola del filtro (los anteriores a este dato figuran con la preolímpica).
         var q = _db.TrainingMatches.AsNoTracking().AsQueryable();
@@ -101,7 +100,8 @@ public sealed class MatchHistoryRepository : IMatchHistoryRepository
             var s = sessions[m.SessionId];
             return new PlayedMatch(
                 m.Id, m.SessionId, s.Name, true, s.PointsPerWin, s.PointsPerLoss,
-                new[] { m.Home1Id, m.Home2Id }, new[] { m.Away1Id, m.Away2Id },
+                new[] { m.Home1Id, m.Home2Id }.Where(id => !reserves.Contains(id)).ToArray(),
+                new[] { m.Away1Id, m.Away2Id }.Where(id => !reserves.Contains(id)).ToArray(),
                 new[] { new SetScore(m.HomeScore, m.AwayScore) }, true, m.PlayedAtUtc);
         }).ToList();
     }
