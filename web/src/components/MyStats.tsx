@@ -56,7 +56,7 @@ export default function MyStats({ playerId, name }: { playerId: number; name: st
           <div>
             <span className="ms-label">Más afinidad</span>
             <strong>{partner ? partner.name : 'Aún sin datos'}</strong>
-            <span className="muted">{partner ? `${partner.winRate}% de victorias juntos · ${partner.played} partidos` : 'Hacen falta varios partidos con la misma pareja'}</span>
+            <span className="muted">{partner ? `${partner.winRate}% de victorias juntos` : 'Hacen falta varios partidos con la misma pareja'}</span>
           </div>
         </div>
 
