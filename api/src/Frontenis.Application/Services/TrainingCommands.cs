@@ -55,10 +55,8 @@ public sealed class TrainingCommands : ITrainingCommands
         var session = await _trainings.GetOrThrowAsync(id, ct);
         // Pasado el día del entreno ya no se registran partidos (el administrador sí, para correcciones).
         if (!byAdmin && session.IsClosedFor(_clock.Now)) throw new DomainException(TrainingSession.ClosedMessage);
-        var ids = new[] { r.Home1Id, r.Home2Id, r.Away1Id, r.Away2Id };
-        var found = await _players.GetByIdsAsync(ids.Distinct().ToList(), ct);
-        if (found.Count != ids.Distinct().Count()) throw new NotFoundException("Algún jugador no existe.");
-        session.AddMatch(r.Home1Id, r.Home2Id, r.Away1Id, r.Away2Id, r.HomeScore, r.AwayScore, r.Ball);
+        var p = await ResolvePlayersAsync(new[] { r.Home1Id, r.Home2Id, r.Away1Id, r.Away2Id }, ct);
+        session.AddMatch(p[0], p[1], p[2], p[3], r.HomeScore, r.AwayScore, r.Ball);
         await _uow.SaveChangesAsync(ct);
         return await _detail.BuildAsync(session, ct);
     }
@@ -66,12 +64,25 @@ public sealed class TrainingCommands : ITrainingCommands
     public async Task<TrainingDetailDto> UpdateMatchAsync(int id, int matchId, UpdateTrainingMatchRequest r, CancellationToken ct = default)
     {
         var session = await _trainings.GetOrThrowAsync(id, ct);
-        var ids = new[] { r.Home1Id, r.Home2Id, r.Away1Id, r.Away2Id };
-        var found = await _players.GetByIdsAsync(ids.Where(i => i > 0).Distinct().ToList(), ct);
-        if (found.Count != ids.Where(i => i > 0).Distinct().Count()) throw new NotFoundException("Algún jugador no existe.");
-        session.UpdateMatch(matchId, r.Home1Id, r.Home2Id, r.Away1Id, r.Away2Id, r.HomeScore, r.AwayScore, r.Ball);
+        var p = await ResolvePlayersAsync(new[] { r.Home1Id, r.Home2Id, r.Away1Id, r.Away2Id }, ct);
+        session.UpdateMatch(matchId, p[0], p[1], p[2], p[3], r.HomeScore, r.AwayScore, r.Ball);
         await _uow.SaveChangesAsync(ct);
         return await _detail.BuildAsync(session, ct);
+    }
+
+    /// <summary>
+    /// Comprueba que los jugadores existen. El id 0 es el comodín «Jugador de prueba» (como mucho uno por partido): se crea la
+    /// primera vez que se usa y se sustituye por su id real.
+    /// </summary>
+    private async Task<int[]> ResolvePlayersAsync(int[] ids, CancellationToken ct)
+    {
+        var real = ids.Where(i => i != 0).Distinct().ToList();
+        var found = await _players.GetByIdsAsync(real.Where(i => i > 0).ToList(), ct);
+        if (real.Any(i => i < 0) || found.Count != real.Count) throw new NotFoundException("Algún jugador no existe.");
+        if (!ids.Contains(0)) return ids;
+        var test = await _players.GetOrCreateTestAsync(ct);
+        if (test.Id == 0) await _uow.SaveChangesAsync(ct); // hace falta su id para guardar el partido
+        return ids.Select(i => i == 0 ? test.Id : i).ToArray();
     }
 
     public async Task<TrainingDetailDto> RemoveMatchAsync(int id, int matchId, CancellationToken ct = default)

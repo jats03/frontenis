@@ -47,8 +47,9 @@ public sealed class PlayerCommands : IPlayerCommands
     /// <summary>Lanza un error si otro jugador (o el jugador reserva) ya se llama así, sin contar espacios, mayúsculas ni tildes.</summary>
     private async Task EnsureNameIsFreeAsync(string name, int? exceptId, CancellationToken ct)
     {
-        if (PlayerNameRules.Same(name, Player.ReserveName))
-            throw new DomainException($"El nombre «{Player.ReserveName}» está reservado.");
+        foreach (var reserved in new[] { Player.ReserveName, Player.TestName })
+            if (PlayerNameRules.Same(name, reserved))
+                throw new DomainException($"El nombre «{reserved}» está reservado.");
         var clash = (await _players.ListAsync(ct)).FirstOrDefault(p => p.Id != exceptId && PlayerNameRules.Same(p.Name, name));
         if (clash is not null)
             throw new DomainException(clash.Name == name

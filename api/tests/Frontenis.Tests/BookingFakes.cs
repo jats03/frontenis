@@ -59,7 +59,8 @@ internal sealed class FakeTemplates : ISlotTemplateRepository
 internal sealed class FakePlayers : IPlayerRepository
 {
     public List<Player> Items { get; } = new();
-    public Task<IReadOnlyList<Player>> ListAsync(CancellationToken ct = default) => Task.FromResult<IReadOnlyList<Player>>(Items.ToList());
+    // Como el repositorio real: la lista no incluye los comodines (reserva y prueba).
+    public Task<IReadOnlyList<Player>> ListAsync(CancellationToken ct = default) => Task.FromResult<IReadOnlyList<Player>>(Items.Where(p => !p.IsReserve).ToList());
     public Task<IReadOnlyList<Player>> GetByIdsAsync(IReadOnlyCollection<int> ids, CancellationToken ct = default) =>
         Task.FromResult<IReadOnlyList<Player>>(Items.Where(p => ids.Contains(p.Id)).ToList());
     public Task<Player?> GetByIdAsync(int id, CancellationToken ct = default) => Task.FromResult(Items.FirstOrDefault(p => p.Id == id));
@@ -68,9 +69,15 @@ internal sealed class FakePlayers : IPlayerRepository
     public Task<bool> IsInUseAsync(int playerId, CancellationToken ct = default) => Task.FromResult(false);
     public Task<Player> GetOrCreateReserveAsync(CancellationToken ct = default)
     {
-        var reserve = Items.FirstOrDefault(p => p.IsReserve);
+        var reserve = Items.FirstOrDefault(p => p.IsReserve && p.Name == Player.ReserveName);
         if (reserve is null) { reserve = Player.CreateReserve(); Items.Add(reserve); }
         return Task.FromResult(reserve);
+    }
+    public Task<Player> GetOrCreateTestAsync(CancellationToken ct = default)
+    {
+        var test = Items.FirstOrDefault(p => p.IsReserve && p.Name == Player.TestName);
+        if (test is null) { test = Player.CreateTest().WithId(Items.Select(p => p.Id).DefaultIfEmpty(0).Max() + 1); Items.Add(test); }
+        return Task.FromResult(test);
     }
 }
 

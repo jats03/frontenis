@@ -18,7 +18,19 @@ public sealed class TrainingDetailBuilder : ITrainingDetailBuilder
     public async Task<TrainingDetailDto> BuildAsync(TrainingSession session, CancellationToken ct = default)
     {
         var names = (await _players.ListAsync(ct)).ToDictionary(p => p.Id, p => p.Name);
+        // Los comodines (el «Jugador de prueba») no salen en la lista de jugadores: se buscan solo si hace falta.
+        var inMatches = session.Matches.SelectMany(m => new[] { m.Home1Id, m.Home2Id, m.Away1Id, m.Away2Id }).Distinct().ToList();
+        var missing = inMatches.Where(id => !names.ContainsKey(id)).ToList();
+        var wildcards = new HashSet<int>();
+        if (missing.Count > 0)
+            foreach (var p in await _players.GetByIdsAsync(missing, ct))
+            {
+                names[p.Id] = p.Name;
+                if (p.IsReserve) wildcards.Add(p.Id);
+            }
         string Name(int id) => names.GetValueOrDefault(id, "—");
+        // En las respuestas, el comodín va con el id 0 (el mismo que se envía para elegirlo).
+        int PublicId(int id) => wildcards.Contains(id) ? 0 : id;
         var games = session.ToGames();
 
         TrainingRowDto Row(TrainingRow r) => new(
@@ -33,9 +45,9 @@ public sealed class TrainingDetailBuilder : ITrainingDetailBuilder
             session.ToSummary(),
             session.Matches.OrderBy(m => m.Order).ThenBy(m => m.Id).Select(m => new TrainingMatchDto(
                 m.Id, m.Order, $"{Name(m.Home1Id)} / {Name(m.Home2Id)}", $"{Name(m.Away1Id)} / {Name(m.Away2Id)}",
-                new[] { m.Home1Id, m.Home2Id }, new[] { m.Away1Id, m.Away2Id },
+                new[] { PublicId(m.Home1Id), PublicId(m.Home2Id) }, new[] { PublicId(m.Away1Id), PublicId(m.Away2Id) },
                 m.HomeScore, m.AwayScore, m.HomeWon, PlayedAt(m.PlayedAtUtc), m.Ball)).ToList(),
-            TrainingStandings.ByPair(games, session.PointsPerWin, session.PointsPerLoss).Select(Row).ToList(),
-            TrainingStandings.ByPlayer(games, session.PointsPerWin, session.PointsPerLoss).Select(Row).ToList());
+            TrainingStandings.ByPair(games, session.PointsPerWin, session.PointsPerLoss, wildcards).Select(Row).ToList(),
+            TrainingStandings.ByPlayer(games, session.PointsPerWin, session.PointsPerLoss, wildcards).Select(Row).ToList());
     }
 }

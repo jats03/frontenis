@@ -19,6 +19,9 @@ import BallPicker from '../components/BallPicker'
 import PlayerSearch from '../components/PlayerSearch'
 import { ballLabel, DEFAULT_BALL, type BallType } from '../balls'
 
+/** Comodín que ocupa un hueco cuando falta gente: la API lo entiende con el id 0; juega pero no puntúa ni cuenta en nada. */
+const TEST_PLAYER: Player = { id: 0, name: 'Jugador de prueba', position: 'Delantero' }
+
 type Slots = [string, string, string, string]
 const EMPTY: Slots = ['', '', '', '']
 
@@ -91,6 +94,8 @@ export default function TrainingDetailPage() {
   const [suggestError, setSuggestError] = useState<string | null>(null)
 
   const list: Player[] = useMemo(() => players.data ?? [], [players.data])
+  // Lo que se puede elegir en un hueco: los jugadores y, además, el «Jugador de prueba».
+  const choices: Player[] = useMemo(() => [...list, TEST_PLAYER], [list])
   const lastBall = data?.matches.at(-1)?.ball ?? DEFAULT_BALL
   const ball = ballChoice ?? lastBall
   const hasDraft = !isDraftEmpty({ slots, homeScore, awayScore })
@@ -99,9 +104,9 @@ export default function TrainingDetailPage() {
   // Si un jugador guardado en el borrador ya no existe (se borró), se quita de la selección.
   useEffect(() => {
     if (list.length === 0) return
-    const ids = new Set(list.map(p => String(p.id)))
+    const ids = new Set(choices.map(p => String(p.id)))
     setSlots(prev => (prev.every(v => v === '' || ids.has(v)) ? prev : prev.map(v => (ids.has(v) ? v : '')) as Slots))
-  }, [list])
+  }, [list, choices])
 
   /** Abre el formulario con los jugadores de un partido ya jugado (marcador vacío y su misma bola), para repetirlo. */
   function openWith(m: TrainingMatch) {
@@ -120,11 +125,11 @@ export default function TrainingDetailPage() {
   }
 
   function clearDraft() { setSlots(EMPTY); setHomeScore(''); setAwayScore(''); setFormError(null) }
-  const nameOf = useMemo(() => new Map(list.map(p => [p.id, p.name])), [list])
+  const nameOf = useMemo(() => new Map(choices.map(p => [p.id, p.name])), [choices])
 
   // Presentes por defecto: quienes ya han jugado en la sesión (hasta que se toque la selección).
   const present = useMemo(
-    () => presentChosen ?? new Set(data?.matches.flatMap(m => [...m.homePlayerIds, ...m.awayPlayerIds]) ?? []),
+    () => presentChosen ?? new Set(data?.matches.flatMap(m => [...m.homePlayerIds, ...m.awayPlayerIds]).filter(id => id !== 0) ?? []), // el 0 es el jugador de prueba
     [presentChosen, data])
 
   async function addMatch() {
@@ -234,7 +239,7 @@ export default function TrainingDetailPage() {
     <label>{label}
       <select value={editing?.slots[i] ?? ''} onChange={e => setEditing(prev => (prev ? { ...prev, slots: prev.slots.map((v, k) => (k === i ? e.target.value : v)) as Slots } : prev))}>
         <option value="">—</option>
-        {list.filter(p => !editing?.slots.some((v, k) => k !== i && v === String(p.id))).map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+        {choices.filter(p => !editing?.slots.some((v, k) => k !== i && v === String(p.id))).map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
       </select>
     </label>
   )
@@ -244,7 +249,7 @@ export default function TrainingDetailPage() {
     document.getElementById(k >= 0 ? `slot-${k}` : 'score-home')?.focus()
   }, 0)
   const slotSelect = (i: number, label: string) => (
-    <PlayerSearch id={`slot-${i}`} label={label} players={list} value={slots[i]}
+    <PlayerSearch id={`slot-${i}`} label={label} players={choices} value={slots[i]}
       excludeIds={new Set(slots.filter((v, k) => k !== i && v !== ''))}
       onChange={v => setSlots(prev => prev.map((x, k) => (k === i ? v : x)) as Slots)} onChosen={() => focusNext(i)} />
   )
@@ -283,7 +288,7 @@ export default function TrainingDetailPage() {
           {canRegister && !closedForMe && formOpen && (
             <section className="card form" id="nuevo-partido" aria-label="Registrar partido">
               <h2>Registrar partido</h2>
-              <p className="muted">Pueden registrar partidos el administrador y los jugadores identificados; solo el administrador puede borrarlos. Lo que rellenes se guarda en este móvil hasta que guardes el partido o pulses «Limpiar».</p>
+              <p className="muted">Pueden registrar partidos el administrador y los jugadores identificados; solo el administrador puede borrarlos. Lo que rellenes se guarda en este móvil hasta que guardes el partido o pulses «Limpiar». Si falta alguien, elige «Jugador de prueba»: juega el partido pero no puntúa ni cuenta en la clasificación ni en el histórico.</p>
               <div className="cols">
                 {slotSelect(0, 'Pareja A · jugador 1')}{slotSelect(1, 'Pareja A · jugador 2')}
               </div>
