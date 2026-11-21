@@ -13,7 +13,7 @@ import SubTabs from '../components/SubTabs'
 import MatchSetupCard from '../components/MatchSetupCard'
 import ServeDraw from '../components/ServeDraw'
 import {
-  clearSetup, colorName, colorOf, loadSetup, matchProgress, MAX_GOAL, MIN_GOAL, saveSetup, serverOf,
+  clearSetup, colorName, colorOf, emptySetup, loadSetup, matchProgress, MAX_GOAL, MIN_GOAL, saveSetup, serverOf,
   type MatchSetup, type Side,
 } from '../matchSetup'
 import { useDocumentTitle } from '../hooks'
@@ -198,10 +198,12 @@ export default function MatchPlayPage() {
     updateSetup({ ...setupRef.current, finished })
   }
   async function zero() {
-    const ok = await confirmAction('¿Limpiar el marcador?', 'Se pondrán a cero todos los sets de este partido.', 'Sí, limpiar', 'Cancelar')
+    const ok = await confirmAction('¿Limpiar todo (marcador, colores y saque)?', '', 'Sí, limpiar todo', 'Cancelar')
     if (!ok) return
+    // Vuelve todo a como al empezar: marcador a cero, sin colores ni saque, tanteos por defecto y sets sin terminar.
     clearDraft(matchId); ptsRef.current = ZERO(); setPts(ptsRef.current); setError(null); setTab(0)
-    updateSetup({ ...setupRef.current, finished: [false, false, false] })
+    updateSetup(emptySetup())
+    setOpen(o => ({ ...o, setup: true })) // lo primero que hay que volver a elegir son los colores
   }
 
   async function send() {
@@ -230,6 +232,10 @@ export default function MatchPlayPage() {
   const setupSummary = setup.homeColor ? `${home}${colorText('h')} · ${away}${colorText('a')} · ${serveText}` : `Sin colores · ${serveText}`
   const scoreSummary = Array.from({ length: visible }, (_, i) => `${board[i].h}-${board[i].a}`).join(' · ')
   const winnerName = progress.winner ? nameOf(progress.winner) : ''
+  // Hay algo que limpiar: puntos, sets terminados, colores, saque o tanteos distintos de los de por defecto.
+  const defaults = emptySetup()
+  const hasAnything = board.some(p => p.h !== 0 || p.a !== 0) || setup.finished.some(Boolean) || setup.homeColor !== null ||
+    setup.serveStart !== null || setup.serveTie !== null || setup.goals.some((g, i) => g !== defaults.goals[i])
   const timerKey = `${TIMER_KEY}.match.${matchId}`
 
   return (
@@ -300,7 +306,7 @@ export default function MatchPlayPage() {
         })()}
         {error && <p className="error">{error}</p>}
         <div className="row center">
-          <button className="secondary" disabled={busy || (board.every(p => p.h === 0 && p.a === 0) && !setup.finished.some(Boolean))} onClick={() => void zero()}>Limpiar</button>
+          <button className="secondary" disabled={busy || !hasAnything} onClick={() => void zero()}>Limpiar</button>
         </div>
         <p className="muted center">El marcador se guarda en este dispositivo mientras juegas.</p>
       </FoldSection>
