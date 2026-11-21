@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { loadTimer, saveTimer, TIMER_CHANGED, TIMER_KEY, type TimerStatus } from './timerStore'
+import { DEFAULT_TIMER_MINUTES, loadTimer, saveTimer, TIMER_CHANGED, TIMER_KEY, type TimerStatus } from './timerStore'
 
 export function formatTime(ms: number) {
   const total = Math.max(0, Math.ceil(ms / 1000))
@@ -44,7 +44,7 @@ function restore(key: string, defaultMinutes: number): View {
  * de la pantalla. Varias pantallas pueden usar el mismo (el panel grande y la barra fija): se avisan entre sí con
  * TIMER_CHANGED. Solo una debe pasar `sound` para que el aviso sonoro no suene dos veces.
  */
-export function useStopwatch(storageKey: string = TIMER_KEY, defaultMinutes = 10, sound = true) {
+export function useStopwatch(storageKey: string = TIMER_KEY, defaultMinutes = DEFAULT_TIMER_MINUTES, sound = true) {
   const [initial] = useState(() => restore(storageKey, defaultMinutes))
   const [minutes, setMinutes] = useState(initial.minutes)
   const [status, setStatus] = useState<TimerStatus>(initial.status)

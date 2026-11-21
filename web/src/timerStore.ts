@@ -10,6 +10,8 @@ export type TimerStatus = 'idle' | 'running' | 'paused' | 'finished'
 export interface TimerSave { minutes: number; status: TimerStatus; endAt: number; remaining: number }
 
 export const TIMER_KEY = 'frontenis.timer'
+/** Minutos con los que empieza cualquier cronómetro que aún no tiene un tiempo guardado. */
+export const DEFAULT_TIMER_MINUTES = 15
 const SEEN_KEY = 'frontenis.lastSeen'
 /** Sin abrir la app durante este tiempo, un cronómetro en marcha se detiene. */
 export const AWAY_MS = 15 * 60_000
