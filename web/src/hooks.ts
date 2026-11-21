@@ -20,6 +20,8 @@ export function useDocumentTitle(title: string) {
  * Con `cacheKey` (la ruta de la API) arranca con la última copia local, si existe, y la refresca por detrás.
  * Si la carga se hace sin datos que mostrar (aviso «Cargando…» visible), el resultado no se aplica antes de
  * `MIN_LOADER_MS`, para que las raquetas no parpadeen en cargas muy rápidas.
+ * Solo se aplica la respuesta de la última carga lanzada: una respuesta lenta de una pantalla anterior
+ * (otro `id`) o que llega con el componente ya desmontado se descarta.
  */
 export function useAsync<T>(fn: () => Promise<T>, deps: unknown[], cacheKey?: string) {
   const [data, setData] = useState<T | null>(() => (cacheKey ? responseCache.peek<T>(cacheKey)?.data ?? null : null))
@@ -27,6 +29,12 @@ export function useAsync<T>(fn: () => Promise<T>, deps: unknown[], cacheKey?: st
   const [loading, setLoading] = useState(true)
   const hasData = useRef(data !== null)
   useEffect(() => { hasData.current = data !== null }, [data])
+  const lastRun = useRef(0)
+  const mounted = useRef(false)
+  useEffect(() => {
+    mounted.current = true
+    return () => { mounted.current = false }
+  }, [])
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const run = useCallback(fn, deps)
@@ -34,15 +42,22 @@ export function useAsync<T>(fn: () => Promise<T>, deps: unknown[], cacheKey?: st
   const reload = useCallback(async () => {
     const showsLoader = !hasData.current
     const startedAt = Date.now()
+    const runId = ++lastRun.current
+    // Una respuesta es obsoleta si ya se lanzó otra carga después o si el componente se desmontó.
+    const stale = () => runId !== lastRun.current || !mounted.current
     setLoading(true)
     let outcome: { value: T } | { message: string }
     try { outcome = { value: await run() } }
     catch (e) { outcome = { message: e instanceof Error ? e.message : 'Error desconocido' } }
     if (showsLoader) await holdLoader(startedAt)
+    if (stale()) {
+      if (import.meta.env.DEV) console.debug('useAsync: respuesta obsoleta descartada', { cacheKey })
+      return
+    }
     if ('value' in outcome) { setData(outcome.value); setError(null) }
     else setError(outcome.message)
     setLoading(false)
-  }, [run])
+  }, [run, cacheKey])
 
   useEffect(() => { void reload() }, [reload])
   return { data, setData, error, loading, reload }
