@@ -706,3 +706,6 @@ button.secondary.fut-close { background: var(--card); }
 .result-sets strong { font-variant-numeric: tabular-nums; font-size: 1.1rem; }
 .match-setup { display: grid; gap: .6rem; }
 @media (prefers-reduced-motion: reduce) { .timer-head.done .timer-head-time { animation: none; } }
+
+.fold-head { cursor: pointer; min-height: 44px; }
+.fold-head:hover .fold-chevron { color: var(--text); }
