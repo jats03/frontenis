@@ -62,7 +62,7 @@ public sealed class PlayerHistoryService : IPlayerHistoryService
                 m.MatchId, m.CompetitionId, m.CompetitionName,
                 string.Join(" / ", mine.Where(x => x != playerId).Select(Name).Concat(Reserve(mine.Count, m.IsTraining))),
                 string.Join(" / ", theirs.Select(Name).Concat(Reserve(theirs.Count, m.IsTraining))),
-                sets, home == m.HomeWon, m.IsTraining);
+                sets, home == m.HomeWon, m.IsTraining, m.SortDate, m.Ball);
         }).ToList();
 
         return new PlayerHistoryDto(

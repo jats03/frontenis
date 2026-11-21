@@ -48,7 +48,7 @@ public sealed class MatchHistoryRepository : IMatchHistoryRepository
 
         var rows = await q.Select(m => new
         {
-            m.Id, m.CompetitionId, m.Phase, m.HomeScore, m.AwayScore,
+            m.Id, m.CompetitionId, m.Phase, m.Ball, m.HomeScore, m.AwayScore,
             m.Set1Home, m.Set1Away, m.Set2Home, m.Set2Away, m.Set3Home, m.Set3Away,
             H1 = m.HomeEntry!.Pair.Player1Id, H2 = m.HomeEntry.Pair.Player2Id,
             A1 = m.AwayEntry!.Pair.Player1Id, A2 = m.AwayEntry.Pair.Player2Id
@@ -67,7 +67,7 @@ public sealed class MatchHistoryRepository : IMatchHistoryRepository
                 new[] { r.A1, r.A2 }.Where(id => !reserves.Contains(id)).ToArray(),
                 SetScore.FromColumns(r.Set1Home, r.Set1Away, r.Set2Home, r.Set2Away, r.Set3Home, r.Set3Away,
                     r.HomeScore, r.AwayScore),
-                false, c.CreatedAtUtc);
+                false, c.CreatedAtUtc, r.Ball);
         }).ToList();
     }
 
@@ -102,7 +102,7 @@ public sealed class MatchHistoryRepository : IMatchHistoryRepository
                 m.Id, m.SessionId, s.Name, true, s.PointsPerWin, s.PointsPerLoss,
                 new[] { m.Home1Id, m.Home2Id }.Where(id => !reserves.Contains(id)).ToArray(),
                 new[] { m.Away1Id, m.Away2Id }.Where(id => !reserves.Contains(id)).ToArray(),
-                new[] { new SetScore(m.HomeScore, m.AwayScore) }, true, m.PlayedAtUtc);
+                new[] { new SetScore(m.HomeScore, m.AwayScore) }, true, m.PlayedAtUtc, m.Ball);
         }).ToList();
     }
 }

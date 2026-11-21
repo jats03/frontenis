@@ -4,6 +4,7 @@ import { useAuth } from '../auth/AuthContext'
 import DeviceLinkPanel from '../components/DeviceLinkPanel'
 import HomeNotices from '../components/HomeNotices'
 import MyTrainings from '../components/MyTrainings'
+import MyStats from '../components/MyStats'
 import InstallTips from '../components/InstallTips'
 import EmptyState from '../components/EmptyState'
 import LoadingBlock from '../components/LoadingBlock'
@@ -101,6 +102,8 @@ function HomeContent() {
           </div>
         )}
       </section>
+
+      {!isAdmin && device.me && <MyStats playerId={device.me.owner.id} name={device.me.owner.name} />}
 
       <InstallTips />
     </>
