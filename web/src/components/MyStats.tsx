@@ -30,11 +30,9 @@ function Ring({ title, row }: { title: string; row: { won: number; winRate: numb
   )
 }
 
-/** Título de un periodo: «Esta semana», «Semana pasada», «Este mes · noviembre» o «Mes pasado · octubre». */
+/** Título de un periodo: «Semana actual», «Semana anterior», «Mes actual» o «Mes anterior». */
 function periodTitle(p: PeriodStat) {
-  if (p.kind === 'week') return p.isCurrent ? 'Esta semana' : 'Semana pasada'
-  const month = parseUtc(p.from).toLocaleDateString('es-ES', { month: 'long', timeZone: 'Europe/Madrid' })
-  return `${p.isCurrent ? 'Este mes' : 'Mes pasado'} · ${month}`
+  return `${p.kind === 'week' ? 'Semana' : 'Mes'} ${p.isCurrent ? 'actual' : 'anterior'}`
 }
 
 /**
@@ -51,8 +49,8 @@ export default function MyStats({ playerId, name }: { playerId: number; name: st
       <h2 id="h-mis-stats" className="section-title">Mis estadísticas</h2>
       <div className="card my-stats">
         <div className="ms-top">
-          <Ring title="Total" row={data.summary} />
           {(data.periods ?? []).map(p => <Ring key={p.kind} title={periodTitle(p)} row={p.stats} />)}
+          <Ring title="Total" row={data.summary} />
         </div>
 
         {last && (

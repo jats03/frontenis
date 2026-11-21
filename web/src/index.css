@@ -753,14 +753,14 @@ button.secondary.fut-close { background: var(--card); }
 .ms-more:hover { background: color-mix(in srgb, var(--primary) 8%, var(--card)); }
 
 .ms-top { align-items: flex-start; }
-.ms-block { display: grid; justify-items: center; gap: .5rem; flex: 1; min-width: 0; }
+.ms-block { display: grid; justify-items: center; gap: .5rem; flex: 1 1 0; min-width: 108px; max-width: 150px; }
 .ms-block-title { font-size: .8rem; text-transform: uppercase; letter-spacing: .04em; opacity: .9; text-align: center; }
 .ms-block .ms-ring { width: 104px; height: 104px; }
 .ms-block .ms-ring-text strong { font-size: 1.45rem; }
 .ms-block .ms-wins strong { font-size: 2rem; }
 .ms-block .ms-wins { grid-auto-flow: column; align-items: center; gap: .35rem; }
 .ms-block .ms-wins svg { width: 22px; height: 22px; }
-.ms-top { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: .4rem; padding-inline: .6rem; }
+.ms-top { display: flex; flex-wrap: wrap; justify-content: center; gap: 1.1rem .4rem; padding-inline: .6rem; }
 .ms-block .ms-ring { width: min(104px, 100%); height: auto; aspect-ratio: 1; }
 .ms-block .ms-ring-text strong { font-size: clamp(1.05rem, 5vw, 1.45rem); }
 .ms-block .ms-wins { display: flex; flex-wrap: wrap; justify-content: center; gap: 0 .3rem; }
