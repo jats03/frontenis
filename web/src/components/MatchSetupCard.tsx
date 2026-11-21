@@ -64,8 +64,7 @@ export default function MatchSetupCard({ home, away, setup, onChange }: Props) {
   }
 
   return (
-    <section className="card match-setup" aria-label="Colores y saque">
-      <h2>Colores y saque</h2>
+    <div className="match-setup">
       {row('h', home)}
       {row('a', away)}
       <div className="row center">
@@ -76,6 +75,6 @@ export default function MatchSetupCard({ home, away, setup, onChange }: Props) {
       )}
       <ServeDraw home={home} away={away} homeColor={setup.homeColor} value={setup.serveStart}
         onResult={side => onChange({ ...setup, serveStart: side })} />
-    </section>
+    </div>
   )
 }
