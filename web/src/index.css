@@ -624,3 +624,57 @@ button.secondary.fut-close { background: var(--card); }
 .my-chip em { font-style: normal; color: var(--muted); font-size: .8rem; }
 .content a.my-chip { color: var(--text); }
 .my-chip:focus-visible { outline: 3px solid var(--link); outline-offset: 1px; }
+
+/* Enviar resultado: colores de las parejas, saque, tanteo y barra fija del cronómetro */
+:root { --team-red: #d64545; --team-blue: #2f6fd6; }
+@media (prefers-color-scheme: dark) { :root { --team-red: #ff7b7b; --team-blue: #7aa7ff; } }
+.match-setup h2 { margin: 0; }
+.setup-team { display: grid; grid-template-columns: 1fr auto; gap: .6rem; align-items: center; padding: .55rem .7rem; border-radius: 10px; border: 1px solid var(--border);
+  transition: background .15s, border-color .15s; }
+.setup-team.red { background: color-mix(in srgb, var(--team-red) 16%, var(--card)); border-color: var(--team-red); }
+.setup-team.blue { background: color-mix(in srgb, var(--team-blue) 16%, var(--card)); border-color: var(--team-blue); }
+.setup-team.red .setup-name { color: var(--team-red); } .setup-team.blue .setup-name { color: var(--team-blue); }
+.setup-name { font-weight: 700; overflow-wrap: anywhere; }
+.setup-colors { display: flex; gap: .4rem; }
+.setup-color { min-height: 38px; padding: .2rem .8rem; border-radius: 99px; }
+.setup-color.red.on { background: var(--team-red); border-color: var(--team-red); color: #fff; }
+.setup-color.blue.on { background: var(--team-blue); border-color: var(--team-blue); color: #fff; }
+.setup-team.spin { animation: setup-flip .22s ease-out; }
+@keyframes setup-flip { 0% { transform: rotateX(80deg); opacity: .3; } 100% { transform: rotateX(0); opacity: 1; } }
+.setup-team.pop { animation: setup-pop .5s ease-out; }
+@keyframes setup-pop { 0% { transform: scale(.96); } 50% { transform: scale(1.04); } 100% { transform: scale(1); } }
+
+.serve-draw { display: grid; justify-items: center; gap: .3rem; padding: .5rem; border-radius: 12px; border: 1px dashed var(--border); }
+.serve-rally { width: min(260px, 80%); height: auto; --loader-ink: var(--muted); color: var(--loader-ink); overflow: visible; }
+.serve-racket { transform-origin: 22px 68px; }
+.serve-racket.red { color: var(--team-red); } .serve-racket.blue { color: var(--team-blue); }
+.serve-racket.win { filter: drop-shadow(0 0 3px currentColor); }
+.serve-names { display: grid; grid-template-columns: 1fr 1fr; width: 100%; gap: .4rem; text-align: center; font-weight: 700; font-size: .9rem; }
+.serve-names .red { color: var(--team-red); } .serve-names .blue { color: var(--team-blue); }
+.serve-names .win { text-decoration: underline; text-underline-offset: 3px; }
+.serve-status { margin: 0; text-align: center; }
+.serve-dot { display: inline-block; width: .85rem; height: .85rem; margin-right: .35rem; border-radius: 50%; background: #f2a900; border: 1px solid #b97c00; vertical-align: -1px; }
+
+.board-side.red { background: color-mix(in srgb, var(--team-red) 14%, var(--card)); border-color: var(--team-red); }
+.board-side.blue { background: color-mix(in srgb, var(--team-blue) 14%, var(--card)); border-color: var(--team-blue); }
+.board-side.red .board-team { color: var(--team-red); } .board-side.blue .board-team { color: var(--team-blue); }
+.board-side { position: relative; }
+.board-side.won { box-shadow: 0 0 0 3px var(--primary); }
+.board-win { position: absolute; top: -.7rem; right: .6rem; font-size: .75rem; font-weight: 700; padding: .05rem .6rem; border-radius: 99px; background: var(--primary); color: var(--primary-ink); }
+.board-arrow:disabled { opacity: .35; }
+.board-set-head { display: flex; align-items: center; justify-content: space-between; gap: .6rem; flex-wrap: wrap; margin-bottom: .4rem; }
+.board-set-head .set-label { font-weight: 700; color: var(--text); font-size: .95rem; }
+.board-goal { display: inline-flex; align-items: center; gap: .35rem; color: var(--muted); font-size: .9rem; }
+.board-goal b { min-width: 1.6rem; text-align: center; color: var(--text); font-size: 1.05rem; }
+.board-goal button { min-height: 36px; width: 36px; padding: 0; justify-content: center; border-radius: 99px; font-size: 1.1rem; }
+
+/* Barra fija del cronómetro: ocupa alto cero y se pega bajo la cabecera cuando el cronómetro grande ya no se ve. */
+.timer-mini-wrap { position: sticky; top: 56px; z-index: 4; height: 0; }
+.timer-mini { position: absolute; left: 0; right: 0; top: 0; display: none; align-items: center; justify-content: space-between; gap: .8rem; padding: .35rem .9rem;
+  background: var(--primary); color: var(--primary-ink); border-radius: 0 0 12px 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, .2); }
+.timer-mini.on { display: flex; }
+.timer-mini-time { font-size: 1.6rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+.timer-mini.low .timer-mini-time { color: #ffd2cc; }
+.timer-mini button { min-height: 40px; background: rgba(255, 255, 255, .18); color: inherit; border-color: rgba(255, 255, 255, .6); }
+@media (max-width: 899px) and (max-height: 480px) { .timer-mini-wrap { top: 0; } }
+@media (prefers-reduced-motion: reduce) { .setup-team.spin, .setup-team.pop { animation: none; } }

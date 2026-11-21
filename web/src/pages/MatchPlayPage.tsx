@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { confirmAction, notify } from '../alerts'
 import { api } from '../api/client'
@@ -6,6 +6,10 @@ import type { CompetitionDetail, MatchDto, PendingResult, SetScore } from '../ap
 import { useAuth } from '../auth/AuthContext'
 import LoadingBlock from '../components/LoadingBlock'
 import StopwatchPanel from '../components/StopwatchPanel'
+import StopwatchMini from '../components/StopwatchMini'
+import MatchSetupCard from '../components/MatchSetupCard'
+import ServeDraw from '../components/ServeDraw'
+import { clearSetup, colorOf, loadSetup, MAX_GOAL, MIN_GOAL, saveSetup, serverOf, setWinner, type MatchSetup, type Side } from '../matchSetup'
 import { useDocumentTitle } from '../hooks'
 import { TIMER_KEY } from '../timerStore'
 import { useDevice } from '../useDevice'
@@ -54,6 +58,12 @@ export default function MatchPlayPage() {
   const [pts, setPts] = useState<Pts[] | null>(null)
   const [busy, setBusy] = useState(false)
   const [ballChoice, setBallChoice] = useState<BallType | null>(null)
+  // Color de cada pareja, saque y tanteo de cada set: se guardan en este dispositivo mientras se juega.
+  const [setup, setSetup] = useState<MatchSetup>(() => loadSetup(matchId))
+  const updateSetup = (next: MatchSetup) => { setSetup(next); saveSetup(matchId, next) }
+  // El cronómetro grande y su barra fija: la barra solo se ve cuando el grande ya no está en pantalla.
+  const timerBox = useRef<HTMLDivElement>(null)
+  const [timerOut, setTimerOut] = useState(false)
 
   const load = useCallback(async () => {
     try {
@@ -79,10 +89,17 @@ export default function MatchPlayPage() {
   function change(i: number, side: 'h' | 'a', delta: number) {
     setPts(prev => {
       if (!prev) return prev
+      // Cerrado el set (alguien llegó al tanteo) no se suben más puntos; sí se pueden bajar para corregir.
+      if (delta > 0 && setWinner(prev[i].h, prev[i].a, setup.goals[i]) !== null) return prev
       const next = prev.map((p, k) => (k === i ? { ...p, [side]: Math.min(MAX_POINTS, Math.max(0, p[side] + delta)) } : p))
       saveDraft(matchId, next)
       return next
     })
+  }
+  function changeGoal(i: number, delta: number) {
+    const goals = [...setup.goals] as MatchSetup['goals']
+    goals[i] = Math.min(MAX_GOAL, Math.max(MIN_GOAL, goals[i] + delta))
+    updateSetup({ ...setup, goals })
   }
   async function zero() {
     const ok = await confirmAction('¿Limpiar el marcador?', 'Se pondrán a cero todos los sets de este partido.', 'Sí, limpiar', 'Cancelar')
@@ -91,6 +108,15 @@ export default function MatchPlayPage() {
   }
 
   const match: MatchDto | undefined = detail?.matches.find(m => m.id === matchId)
+  const timerShown = !!match && !match.isPlayed && !!me && !isAdmin
+  useEffect(() => {
+    const el = timerBox.current
+    if (!el || typeof IntersectionObserver === 'undefined') return
+    const io = new IntersectionObserver(([e]) => setTimerOut(!e.isIntersecting), { threshold: 0 })
+    io.observe(el)
+    return () => io.disconnect()
+  }, [timerShown])
+
   const back = <p><Link to={`/competiciones/${competitionId}`}>← Volver a la competición</Link></p>
 
   if (error && !detail) return <p className="error">{error}</p>
@@ -139,14 +165,16 @@ export default function MatchPlayPage() {
     setBusy(true)
     try {
       await api.matches.submitResult(matchId, sets, ball)
-      clearDraft(matchId)
+      clearDraft(matchId); clearSetup(matchId)
       notify('Resultado enviado, pendiente de aprobación')
       await load()
     } catch (e) { setError(e instanceof Error ? e.message : 'Error') }
     finally { setBusy(false) }
   }
 
-  const sideTitle = (name: string) => <span className="board-team">{name}</span>
+  const sideTitle = (name: string, hasServe: boolean) => (
+    <span className="board-team">{hasServe && <span className="serve-dot" role="img" aria-label="Saca" />}{name}</span>
+  )
 
   return (
     <>
@@ -157,27 +185,52 @@ export default function MatchPlayPage() {
           administrador. Puedes corregirlo y volver a enviarlo.</p>
       )}
 
-      <StopwatchPanel storageKey={`${TIMER_KEY}.match.${matchId}`} compact />
+      <div ref={timerBox}><StopwatchPanel storageKey={`${TIMER_KEY}.match.${matchId}`} compact /></div>
+      <StopwatchMini storageKey={`${TIMER_KEY}.match.${matchId}`} visible={timerOut} />
+
+      <MatchSetupCard home={home} away={away} setup={setup} onChange={updateSetup} />
 
       <section className="card board">
         <h2>Marcador</h2>
-        {Array.from({ length: visible }, (_, i) => (
-          <div className="board-set" key={i}>
-            {visible > 1 && <div className="set-label">{i === 2 ? 'Desempate' : `Set ${i + 1}`}</div>}
-            <div className="board-sides">
-              {(['h', 'a'] as const).map(side => (
-                <div className="board-side" key={side}>
-                  {sideTitle(side === 'h' ? home : away)}
-                  <button type="button" className="secondary board-arrow" aria-label={`Subir un punto a ${side === 'h' ? home : away}, set ${i + 1}`}
-                    onClick={() => change(i, side, 1)}>▲</button>
-                  <strong className="board-pts" aria-live="polite">{board[i][side]}</strong>
-                  <button type="button" className="secondary board-arrow" aria-label={`Bajar un punto a ${side === 'h' ? home : away}, set ${i + 1}`}
-                    onClick={() => change(i, side, -1)}>▼</button>
-                </div>
-              ))}
+        {Array.from({ length: visible }, (_, i) => {
+          const winner = setWinner(board[i].h, board[i].a, setup.goals[i])
+          const server = serverOf(setup, i)
+          const label = visible === 1 ? 'Partido' : i === 2 ? 'Desempate' : `Set ${i + 1}`
+          return (
+            <div className="board-set" key={i}>
+              <div className="board-set-head">
+                <span className="set-label">{label}</span>
+                <span className="board-goal">
+                  a
+                  <button type="button" className="secondary" aria-label={`Menos tantos en ${label}`} onClick={() => changeGoal(i, -1)}>−</button>
+                  <b aria-live="polite">{setup.goals[i]}</b>
+                  <button type="button" className="secondary" aria-label={`Más tantos en ${label}`} onClick={() => changeGoal(i, 1)}>+</button>
+                  tantos
+                </span>
+              </div>
+              {i === 2 && (
+                <ServeDraw home={home} away={away} homeColor={setup.homeColor} value={setup.serveTie} label="Sortear saque del desempate"
+                  onResult={side => updateSetup({ ...setup, serveTie: side })} />
+              )}
+              <div className="board-sides">
+                {(['h', 'a'] as const).map((side: Side) => {
+                  const col = colorOf(setup, side)
+                  return (
+                    <div className={`board-side ${col ?? ''}${winner === side ? ' won' : ''}`} key={side}>
+                      {winner === side && <span className="board-win">Gana el set</span>}
+                      {sideTitle(side === 'h' ? home : away, server === side)}
+                      <button type="button" className="secondary board-arrow" disabled={winner !== null}
+                        aria-label={`Subir un punto a ${side === 'h' ? home : away}, ${label}`} onClick={() => change(i, side, 1)}>▲</button>
+                      <strong className="board-pts" aria-live="polite">{board[i][side]}</strong>
+                      <button type="button" className="secondary board-arrow" aria-label={`Bajar un punto a ${side === 'h' ? home : away}, ${label}`}
+                        onClick={() => change(i, side, -1)}>▼</button>
+                    </div>
+                  )
+                })}
+              </div>
             </div>
-          </div>
-        ))}
+          )
+        })}
         <BallPicker value={ball} onChange={setBallChoice} />
         {error && <p className="error">{error}</p>}
         <div className="row center">
