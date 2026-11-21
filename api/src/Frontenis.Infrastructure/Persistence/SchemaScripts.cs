@@ -21,6 +21,8 @@ internal static class SchemaScripts
         "ALTER TABLE \"TrainingMatches\" ADD COLUMN IF NOT EXISTS \"Ball\" smallint NOT NULL DEFAULT 2;",
         // Lo mismo para los partidos de competición y los resultados enviados por los jugadores (pendientes y rechazados).
         "ALTER TABLE \"Matches\" ADD COLUMN IF NOT EXISTS \"Ball\" smallint NOT NULL DEFAULT 2;",
+        // Momento en que se registró el resultado de cada partido de competición (los antiguos quedan sin dato).
+        "ALTER TABLE \"Matches\" ADD COLUMN IF NOT EXISTS \"PlayedAtUtc\" timestamp with time zone NULL;",
         "ALTER TABLE \"MatchSubmissions\" ADD COLUMN IF NOT EXISTS \"Ball\" smallint NOT NULL DEFAULT 2;",
         "ALTER TABLE \"RejectedSubmissions\" ADD COLUMN IF NOT EXISTS \"Ball\" smallint NOT NULL DEFAULT 2;",
 

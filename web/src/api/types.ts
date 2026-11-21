@@ -91,6 +91,8 @@ export interface RecentMatch {
 export interface PlayerHistory {
   summary: PlayerHistoryRow; partners: Relation[]; rivals: Relation[]
   recent: RecentMatch[]
+  /** Lo jugado en el mes actual; sin partidos este mes, todo a cero. */
+  month?: PlayerHistoryRow
 }
 /**
  * Origen de los partidos del histórico; sin ids = todos. `balls` son las bolas que cuentan: la pantalla del histórico

@@ -20,4 +20,5 @@ public sealed record PlayerHistoryDto(
     PlayerHistoryRowDto Summary,
     IReadOnlyList<RelationDto> Partners,
     IReadOnlyList<RelationDto> Rivals,
-    IReadOnlyList<RecentMatchDto> Recent);
+    IReadOnlyList<RecentMatchDto> Recent,
+    PlayerHistoryRowDto? Month = null);

@@ -65,9 +65,24 @@ public sealed class PlayerHistoryService : IPlayerHistoryService
                 sets, home == m.HomeWon, m.IsTraining, m.SortDate, m.Ball);
         }).ToList();
 
+        // Lo jugado en el mes actual (hora de Madrid), para el resumen de la portada.
+        var (monthFrom, monthTo) = CurrentMonthUtc();
+        var monthMatches = matches.Where(m => m.SortDate >= monthFrom && m.SortDate < monthTo).ToList();
+        var monthStats = monthMatches.Count == 0 ? null : _calculator.Calculate(playerId, monthMatches);
+
         return new PlayerHistoryDto(
             ToRow(player.Id, player.Name, player.Position, stats.Played == 0 ? null : stats),
-            stats.Partners.Select(Rel).ToList(), stats.Rivals.Select(Rel).ToList(), recent);
+            stats.Partners.Select(Rel).ToList(), stats.Rivals.Select(Rel).ToList(), recent,
+            ToRow(player.Id, player.Name, player.Position, monthStats is { Played: > 0 } ? monthStats : null));
+    }
+
+    private static (DateTime From, DateTime To) CurrentMonthUtc()
+    {
+        TimeZoneInfo zone;
+        try { zone = TimeZoneInfo.FindSystemTimeZoneById("Europe/Madrid"); } catch (TimeZoneNotFoundException) { zone = TimeZoneInfo.Utc; }
+        var local = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, zone);
+        var start = new DateTime(local.Year, local.Month, 1, 0, 0, 0, DateTimeKind.Unspecified);
+        return (TimeZoneInfo.ConvertTimeToUtc(start, zone), TimeZoneInfo.ConvertTimeToUtc(start.AddMonths(1), zone));
     }
 
     private static PlayerHistoryRowDto ToRow(int id, string name, Domain.Enums.PlayerPosition pos, PlayerStats? s) =>
