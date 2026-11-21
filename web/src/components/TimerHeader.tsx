@@ -5,7 +5,7 @@ import { formatTime, useStopwatch } from '../useStopwatch'
  * aunque la sección esté plegada. Es el que da el aviso sonoro al acabar el tiempo (siempre está montado).
  */
 export default function TimerHeader({ storageKey }: { storageKey: string }) {
-  const { status, remaining, start, pause } = useStopwatch(storageKey, 10, true)
+  const { status, remaining, start, pause } = useStopwatch(storageKey, undefined, true)
   const low = status !== 'idle' && remaining <= 10_000
   return (
     <div className={`timer-head${low ? ' low' : ''}${status === 'finished' ? ' done' : ''}`}>

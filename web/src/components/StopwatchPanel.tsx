@@ -1,4 +1,4 @@
-import { TIMER_KEY } from '../timerStore'
+import { DEFAULT_TIMER_MINUTES, TIMER_KEY } from '../timerStore'
 import { formatTime, useStopwatch } from '../useStopwatch'
 
 interface Props {
@@ -14,7 +14,7 @@ interface Props {
 }
 
 /** Cronómetro con cuenta atrás que sigue contando aunque se salga de la pantalla o de la app. */
-export default function StopwatchPanel({ storageKey = TIMER_KEY, defaultMinutes = 10, compact = false, hideDisplay = false, sound = true }: Props) {
+export default function StopwatchPanel({ storageKey = TIMER_KEY, defaultMinutes = DEFAULT_TIMER_MINUTES, compact = false, hideDisplay = false, sound = true }: Props) {
   const { minutes, status, remaining, total, start, pause, reset, changeMinutes } = useStopwatch(storageKey, defaultMinutes, sound)
   const low = status !== 'idle' && remaining <= 10_000
   const locked = status === 'running' || status === 'paused'
