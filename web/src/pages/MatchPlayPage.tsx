@@ -185,9 +185,8 @@ export default function MatchPlayPage() {
     const { h, a } = ptsRef.current?.[i] ?? board[i]
     if (h === a) { setError(`${setLabel(i)}: no puede acabar en empate. Sube un punto a una de las parejas.`); return }
     setError(null)
-    const leader: Side = h > a ? 'h' : 'a'
-    const ok = await confirmAction('¿Dar el set por terminado?',
-      `${setLabel(i)}: ${h}-${a}.\nGana ${nameOf(leader)} por ir por delante al acabar el tiempo.`, 'Sí, terminar el set', 'Seguir jugando')
+    // Solo el título: el marcador ya se ve en pantalla y no hace falta explicarlo.
+    const ok = await confirmAction('¿Dar el set por terminado?', '', 'Sí, terminar el set', 'Seguir jugando')
     if (!ok) return
     const finished = [...setupRef.current.finished] as MatchSetup['finished']; finished[i] = true
     const nextSetup = { ...setupRef.current, finished }
