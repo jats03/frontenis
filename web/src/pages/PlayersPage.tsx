@@ -29,6 +29,7 @@ export default function PlayersPage() {
   const [message, setMessage] = useState<string | null>(null)
   const [selected, setSelected] = useState<Set<number>>(new Set())
   const [preview, setPreview] = useState<PairingPreview | null>(null)
+  const [randomPlayer, setRandomPlayer] = useState<Player | null>(null)
   const [randomPair, setRandomPair] = useState<[Player, Player] | null>(null)
   const [randomMatch, setRandomMatch] = useState<[[Player, Player], [Player, Player]] | null>(null)
   const [swapping, setSwapping] = useState<Set<number>>(new Set())
@@ -40,6 +41,7 @@ export default function PlayersPage() {
   const chosen = view.filter(p => selected.has(p.id))
   const chosenForwards = chosen.filter(p => p.position === 'Delantero')
   const chosenBacks = chosen.filter(p => p.position === 'Zaguero')
+  const drawRandomPlayer = () => { if (chosen.length > 0) setRandomPlayer(pick(chosen)) }
   const canDraw = chosenForwards.length > 0 && chosenBacks.length > 0
   const canDrawMatch = chosenForwards.length >= 2 && chosenBacks.length >= 2
   /** Baraja una copia de la lista (Fisher-Yates). */
@@ -189,6 +191,23 @@ export default function PlayersPage() {
           </Disclosure>
 
           <div className="draw-grid">
+            <section className="card">
+              <h2>Jugador al azar</h2>
+              <p className="muted">Uno de los jugadores marcados ({chosen.length}).</p>
+              {randomPlayer && (
+                <p className="random-pair">
+                  <strong><PlayerName playerId={randomPlayer.id}>{randomPlayer.name}</PlayerName></strong>{' '}
+                  <span className="muted">({randomPlayer.position})</span>
+                </p>
+              )}
+              <div className="row">
+                <button onClick={drawRandomPlayer} disabled={chosen.length === 0}>
+                  {randomPlayer ? 'Sortear otro jugador' : 'Obtener jugador al azar'}
+                </button>
+              </div>
+              {chosen.length === 0 && <p className="muted">Marca al menos un jugador.</p>}
+            </section>
+
             <section className="card">
               <h2>Pareja al azar</h2>
               <p className="muted">Un delantero y un zaguero ({chosenForwards.length} delanteros, {chosenBacks.length} zagueros).</p>
