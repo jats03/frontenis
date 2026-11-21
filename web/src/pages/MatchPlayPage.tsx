@@ -151,13 +151,6 @@ export default function MatchPlayPage() {
   const nameOf = (side: Side) => (side === 'h' ? home : away)
   const setLabel = (i: number) => (visible === 1 ? 'Partido' : i === 2 ? 'Desempate' : `Set ${i + 1}`)
 
-  /** Tras un cambio, si el set que se juega acaba de decidirse se pasa solo a la pestaña del siguiente. */
-  function advanceIfDecided(nextPts: Pts[], nextSetup: MatchSetup) {
-    const before = matchProgress(ptsRef.current ?? board, setupRef.current, setsPerMatch).results[active].winner
-    const after = matchProgress(nextPts, nextSetup, setsPerMatch)
-    if (before === null && after.results[active].winner !== null && active < after.visible - 1) setTab(active + 1)
-  }
-
   function change(i: number, side: Side, delta: number) {
     const cur = ptsRef.current ?? board
     const curSetup = setupRef.current
@@ -170,7 +163,6 @@ export default function MatchPlayPage() {
       const finished = [...curSetup.finished] as MatchSetup['finished']; finished[i] = false
       nextSetup = { ...curSetup, finished }
     }
-    advanceIfDecided(next, nextSetup)
     updatePts(next)
     if (nextSetup !== curSetup) updateSetup(nextSetup)
   }
@@ -178,7 +170,6 @@ export default function MatchPlayPage() {
     const goals = [...setupRef.current.goals] as MatchSetup['goals']
     goals[i] = Math.min(MAX_GOAL, Math.max(MIN_GOAL, goals[i] + delta))
     const nextSetup = { ...setupRef.current, goals }
-    advanceIfDecided(ptsRef.current ?? board, nextSetup)
     updateSetup(nextSetup)
   }
   async function finishSet(i: number) {
@@ -190,7 +181,6 @@ export default function MatchPlayPage() {
     if (!ok) return
     const finished = [...setupRef.current.finished] as MatchSetup['finished']; finished[i] = true
     const nextSetup = { ...setupRef.current, finished }
-    advanceIfDecided(ptsRef.current ?? board, nextSetup)
     updateSetup(nextSetup)
   }
   function reopenSet(i: number) {
@@ -326,7 +316,7 @@ export default function MatchPlayPage() {
               )
             })}
           </ul>
-          <p className="center"><strong>Ganan {winnerName}</strong> ({home} {progress.wins.h} – {progress.wins.a} {away})</p>
+          <p className="center"><strong>Ganan {winnerName}</strong></p>
           <BallPicker value={ball} onChange={setBallChoice} />
           {error && <p className="error">{error}</p>}
           <div className="row center">
