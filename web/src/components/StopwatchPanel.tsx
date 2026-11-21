@@ -7,21 +7,27 @@ interface Props {
   defaultMinutes?: number
   /** Versión compacta (sin texto de ayuda), para ponerla junto a un marcador. */
   compact?: boolean
+  /** Sin el número grande (cuando la hora ya se ve en otro sitio, como la cabecera de una sección plegable). */
+  hideDisplay?: boolean
+  /** Si este panel da el aviso sonoro al acabar el tiempo (solo debe darlo uno de los que muestran el mismo cronómetro). */
+  sound?: boolean
 }
 
 /** Cronómetro con cuenta atrás que sigue contando aunque se salga de la pantalla o de la app. */
-export default function StopwatchPanel({ storageKey = TIMER_KEY, defaultMinutes = 10, compact = false }: Props) {
-  const { minutes, status, remaining, total, start, pause, reset, changeMinutes } = useStopwatch(storageKey, defaultMinutes, true)
+export default function StopwatchPanel({ storageKey = TIMER_KEY, defaultMinutes = 10, compact = false, hideDisplay = false, sound = true }: Props) {
+  const { minutes, status, remaining, total, start, pause, reset, changeMinutes } = useStopwatch(storageKey, defaultMinutes, sound)
   const low = status !== 'idle' && remaining <= 10_000
   const locked = status === 'running' || status === 'paused'
 
   return (
     <section className={`card timer ${compact ? 'timer-compact' : ''}`}>
-      <div className={`timer-display ${low ? 'low' : ''} ${status === 'finished' ? 'done' : ''}`}
-        role="timer" aria-live="off">
-        {formatTime(remaining)}
-      </div>
-      {status === 'finished' && <p className="center"><strong>¡Tiempo!</strong></p>}
+      {!hideDisplay && (
+        <div className={`timer-display ${low ? 'low' : ''} ${status === 'finished' ? 'done' : ''}`}
+          role="timer" aria-live="off">
+          {formatTime(remaining)}
+        </div>
+      )}
+      {!hideDisplay && status === 'finished' && <p className="center"><strong>¡Tiempo!</strong></p>}
 
       <div className="row center">
         <label>

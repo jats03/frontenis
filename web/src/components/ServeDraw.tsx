@@ -14,7 +14,8 @@ interface Props {
 }
 
 const prefersReducedMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
-const TOSS_MS = 1700
+/** El lanzamiento dura 3,5 segundos. */
+const TOSS_MS = 3500
 
 /**
  * Sorteo del saque con una moneda roja y azul: se lanza, sube, da vueltas y cae con un pequeño bote; el color que queda a
@@ -50,7 +51,7 @@ export default function ServeDraw({ home, away, homeColor, value, onResult, labe
     const winnerColor: SideColor = redWins ? 'red' : 'blue'
     const from = rotation.current
     const base = Math.round(from / 360) * 360
-    const target = base + (5 + Math.floor(Math.random() * 3)) * 360 + (redWins ? 0 : 180)
+    const target = base + (8 + Math.floor(Math.random() * 3)) * 360 + (redWins ? 0 : 180)
     if (!prefersReducedMotion()) {
       const c = coin.current
       const a = c.animate([
