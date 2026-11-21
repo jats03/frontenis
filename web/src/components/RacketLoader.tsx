@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { loaderHidden, loaderShown } from '../alerts'
 
 /** Una raqueta de frontenis con el mango abajo, dibujada con su centro en x = 22 (pivote en la empuñadura). */
-function Racket({ className }: { className: string }) {
+export function Racket({ className }: { className: string }) {
   return (
     <g className={`racket ${className}`}>
       {/* mango y garganta */}
