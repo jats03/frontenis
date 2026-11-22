@@ -766,3 +766,5 @@ button.secondary.fut-close { background: var(--card); }
 .ms-block .ms-wins { display: flex; flex-wrap: wrap; justify-content: center; gap: 0 .3rem; }
 .ms-block .ms-wins span { max-width: none; }
 .ms-block-title { min-height: 2.95em; display: grid; align-items: end; }
+
+.ball-All { --ball: var(--primary); }
