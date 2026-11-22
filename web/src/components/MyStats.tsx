@@ -1,10 +1,11 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { api } from '../api/client'
 import type { PlayerHistory } from '../api/types'
-import { ballLabel } from '../balls'
+import { BALLS, ballLabel, type BallType } from '../balls'
 import { parseUtc } from '../dates'
 import { useAsync } from '../hooks'
-import { CalendarIcon, TrophyIcon } from './Icons'
+import { CalendarIcon } from './Icons'
 
 /** Fecha del partido (la API manda un instante UTC): en hora de Madrid, para que un partido de noche no salga el día anterior. */
 const shortDate = (iso: string) =>
@@ -25,27 +26,55 @@ function Ring({ title, row }: { title: string; row: { won: number; winRate: numb
         </svg>
         <div className="ms-ring-text"><strong>{pct}%</strong><span>victorias</span></div>
       </div>
-      <div className="ms-wins"><TrophyIcon /><strong>{won}</strong><span>{won === 1 ? 'victoria' : 'victorias'}</span></div>
+      <div className="ms-wins"><strong>{won}</strong><span>{won === 1 ? 'victoria' : 'victorias'}</span></div>
     </div>
   )
 }
 
+const BALL_KEY = 'frontenis.statsBall'
+const readBall = (): BallType | null => {
+  try { const v = localStorage.getItem(BALL_KEY); return BALLS.some(b => b.key === v) ? (v as BallType) : null } catch { return null }
+}
+
 /**
- * Resumen de las estadísticas de quien se ha identificado, en la portada: % de victorias y victorias (en total y en la semana y el mes actuales, a cero si no se jugó) y
- * el último partido. Si aún no ha jugado ninguno, no sale nada.
+ * Resumen de las estadísticas de quien se ha identificado, en la portada: % de victorias y victorias (en total y en la
+ * semana y el mes actuales, a cero si no se jugó) y el último partido. Un selector permite contar solo una bola
+ * (por defecto, todas; la elección se recuerda). Si aún no ha jugado ninguno, no sale nada.
  */
 export default function MyStats({ playerId, name }: { playerId: number; name: string }) {
+  const [ball, setBall] = useState<BallType | null>(readBall)
+  const choose = (b: BallType | null) => {
+    setBall(b)
+    try { if (b) localStorage.setItem(BALL_KEY, b); else localStorage.removeItem(BALL_KEY) } catch { /* sin almacenamiento */ }
+  }
   // Con la última copia guardada sale al instante y se refresca por detrás (la ruta es la clave de la copia).
-  const { data } = useAsync<PlayerHistory>(() => api.players.playerHistory(playerId, { competitionIds: [], trainingIds: [] }), [playerId], `/api/players/${playerId}/history`)
+  const base = `/api/players/${playerId}/history`
+  const { data } = useAsync<PlayerHistory>(() => api.players.playerHistory(playerId, { competitionIds: [], trainingIds: [] }), [playerId], base)
+  const byBall = useAsync<PlayerHistory | null>(
+    () => (ball ? api.players.playerHistory(playerId, { competitionIds: [], trainingIds: [], balls: [ball] }) : Promise.resolve(null)),
+    [playerId, ball], ball ? `${base}?balls=${ball}` : undefined)
   if (!data || data.summary.played === 0) return null
+  // Las cifras de los anillos son las de la bola elegida; el último partido es siempre el último de todos.
+  const shown = ball && byBall.data ? byBall.data : data
+  const updating = !!ball && (byBall.loading || !byBall.data)
   const last = data.recent[0]
   return (
     <section aria-labelledby="h-mis-stats">
       <h2 id="h-mis-stats" className="section-title">Mis estadísticas</h2>
       <div className="card my-stats">
-        <div className="ms-top">
-          {(data.periods ?? []).map(p => <Ring key={p.kind} title={p.kind === 'week' ? 'Semana actual' : 'Mes actual'} row={p.stats} />)}
-          <Ring title="Total" row={data.summary} />
+        <div className="ms-hero">
+        <div className="ms-balls" role="radiogroup" aria-label="Bola">
+          {[null, ...BALLS.map(b => b.key)].map(b => (
+            <button key={b ?? 'all'} type="button" role="radio" aria-checked={ball === b}
+              className={`ms-chip${ball === b ? ' on' : ''}`} onClick={() => choose(b)}>
+              {b ? ballLabel(b) : 'Todas'}
+            </button>
+          ))}
+        </div>
+        <div className={`ms-top${updating ? ' updating' : ''}`}>
+          {(shown.periods ?? []).map(p => <Ring key={p.kind} title={p.kind === 'week' ? 'Semana actual' : 'Mes actual'} row={p.stats} />)}
+          <Ring title="Total" row={shown.summary} />
+        </div>
         </div>
 
         {last && (
