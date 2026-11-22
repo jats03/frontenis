@@ -79,10 +79,7 @@ function HomeContent() {
       </section>
 
       <section aria-labelledby="h-curso">
-        <div className="section-head">
-          <h2 id="h-curso" className="section-title">Competiciones en curso</h2>
-          <Link to="/competiciones">Ver todas</Link>
-        </div>
+        <h2 id="h-curso" className="section-title">Competiciones en curso</h2>
         {active.length === 0 ? (
           <EmptyState title="No hay competiciones en curso"
             action={isAdmin ? <Link className="button" to="/competiciones/nueva">Nueva competición</Link> : undefined}>
