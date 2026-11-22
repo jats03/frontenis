@@ -768,3 +768,11 @@ button.secondary.fut-close { background: var(--card); }
 .ms-block-title { min-height: 2.95em; display: grid; align-items: end; }
 
 .ball-All { --ball: var(--primary); }
+.ms-hero { color: var(--primary-ink); background: linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 55%, #000)); padding: .9rem 0 1.1rem; }
+.ms-hero .ms-top { background: none; padding-block: 0; }
+.ms-balls { display: flex; flex-wrap: wrap; justify-content: center; gap: .4rem; padding: 0 .8rem .9rem; }
+.ms-chip { min-height: 34px; padding: .15rem .85rem; border-radius: 99px; font-size: .85rem; background: transparent; color: #fff; border: 1.5px solid rgba(255, 255, 255, .5); }
+.ms-chip.on { background: #fff; color: var(--primary); border-color: #fff; font-weight: 700; }
+.ms-top.updating { opacity: .55; transition: opacity .15s; }
+.ms-block .ms-wins strong { font-size: 1.2rem; }
+.ms-block .ms-wins { gap: 0 .3rem; }
