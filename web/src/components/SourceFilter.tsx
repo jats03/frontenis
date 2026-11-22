@@ -10,10 +10,17 @@ import SubTabs from './SubTabs'
 const parse = (v: string | null): number[] =>
   (v ?? '').split(',').map(Number).filter(n => Number.isInteger(n) && n > 0)
 
-/** Bolas de la URL (?b=Slow): una sola; ?b=all suma todas (lista vacía); si no hay ninguna válida, la preolímpica (con un enlace antiguo de varias, la primera). */
+const BALL_KEY = 'frontenis.historyBall'
+const savedBall = (): string | null => { try { return localStorage.getItem(BALL_KEY) } catch { return null } }
+
+/**
+ * Bolas de la URL (?b=Slow): una sola; ?b=all suma todas (lista vacía). Sin ?b= se usa la última elegida (guardada en el móvil)
+ * y, si no hay ninguna, la preolímpica; con un enlace antiguo de varias, la primera.
+ */
 const parseBalls = (v: string | null): BallType[] => {
-  if (v === 'all') return []
-  const wanted = (v ?? '').split(',')
+  const raw = v ?? savedBall()
+  if (raw === 'all') return []
+  const wanted = (raw ?? '').split(',')
   return [BALLS.find(b => wanted.includes(b.key))?.key ?? DEFAULT_BALL]
 }
 
@@ -25,9 +32,10 @@ export function useHistoryFilter(): [HistoryFilter, (f: HistoryFilter) => void, 
     const next = new URLSearchParams()
     if (f.competitionIds.length) next.set('c', f.competitionIds.join(','))
     if (f.trainingIds.length) next.set('t', f.trainingIds.join(','))
-    const ball = f.balls?.[0]
-    if (f.balls && f.balls.length === 0) next.set('b', 'all')
-    else if (ball && ball !== DEFAULT_BALL) next.set('b', ball) // la bola por defecto no hace falta ponerla en la URL
+    // La bola va siempre en la URL (si no, mandaría la guardada) y se guarda como la última elegida.
+    const choice = f.balls && f.balls.length === 0 ? 'all' : f.balls?.[0] ?? DEFAULT_BALL
+    next.set('b', choice)
+    try { localStorage.setItem(BALL_KEY, choice) } catch { /* sin almacenamiento */ }
     setParams(next, { replace: true })
   }
   return [filter, set, params.toString() ? `?${params.toString()}` : '']
