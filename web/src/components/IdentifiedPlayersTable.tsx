@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { confirmAction, notify } from '../alerts'
 import { api } from '../api/client'
 import { formatDateTimeMadrid } from '../dates'
@@ -14,6 +14,18 @@ export default function IdentifiedPlayersTable() {
   useDocumentTitle('Jugadores identificados')
   const links = useAsync(() => api.deviceLinks.list(), [])
   const [error, setError] = useState<string | null>(null)
+  // Por defecto, quien ha accedido más recientemente arriba; pulsando la cabecera se invierte. Quien nunca ha accedido, al final.
+  const [newestFirst, setNewestFirst] = useState(true)
+  const sorted = useMemo(() => {
+    const time = (iso: string | null) => (iso ? new Date(iso).getTime() : null)
+    return [...(links.data ?? [])].sort((a, b) => {
+      const ta = time(a.lastSeenUtc), tb = time(b.lastSeenUtc)
+      if (ta === null && tb === null) return a.id - b.id
+      if (ta === null) return 1
+      if (tb === null) return -1
+      return (newestFirst ? tb - ta : ta - tb) || a.id - b.id
+    })
+  }, [links.data, newestFirst])
 
   /** Libera el dispositivo (por ejemplo, si el jugador cambia de móvil) para que pueda volver a identificarse. */
   async function release(playerId: number, name: string) {
@@ -35,15 +47,21 @@ export default function IdentifiedPlayersTable() {
           <div className="table-wrap">
             <table className="audit-table">
               <thead>
-                <tr><th>Id</th><th>Jugador</th><th>Id jugador</th><th>Hash del dispositivo</th><th>Vinculado</th><th>Último acceso</th><th></th></tr>
+                <tr><th>Id</th><th>Jugador</th><th>Id jugador</th><th>Vinculado</th>
+                  <th aria-sort={newestFirst ? 'descending' : 'ascending'}>
+                    <button type="button" className="sort-btn" onClick={() => setNewestFirst(v => !v)}
+                      aria-label={`Último acceso, ordenado del ${newestFirst ? 'más reciente al más antiguo' : 'más antiguo al más reciente'}. Pulsa para invertir`}>
+                      Último acceso <span aria-hidden="true">{newestFirst ? '▼' : '▲'}</span>
+                    </button>
+                  </th>
+                  <th></th></tr>
               </thead>
               <tbody>
-                {links.data.map(l => (
+                {sorted.map(l => (
                   <tr key={l.id}>
                     <td>{l.id}</td>
                     <td><PlayerName playerId={l.playerId}>{l.playerName}</PlayerName></td>
                     <td>{l.playerId}</td>
-                    <td className="device-hash"><code>{l.deviceHash}</code></td>
                     <td className="nowrap">{when(l.linkedAtUtc)}</td>
                     <td className="nowrap">{l.lastSeenUtc ? when(l.lastSeenUtc) : '—'}</td>
                     <td><button type="button" className="secondary" onClick={() => void release(l.playerId, l.playerName)}>Liberar</button></td>

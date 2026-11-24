@@ -531,7 +531,6 @@ button.secondary.fut-close { background: var(--card); }
 .pname-faces { display: inline-flex; flex: none; }
 .pname-faces svg { flex: none; }
 .pname-faces svg + svg { margin-left: -.5rem; box-shadow: -2px 0 0 var(--card); border-radius: 50%; }
-.device-hash { font-size: .75rem; font-family: ui-monospace, Menlo, Consolas, monospace; overflow-wrap: anywhere; min-width: 12rem; }
 .notices { display: grid; gap: .5rem; margin-bottom: .8rem; }
 .notice { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem .8rem; padding: .6rem .8rem; border-radius: 10px; border: 1px solid #f59e0b; background: #fffbeb; color: #78350f; }
 .notice-icon { flex: none; color: #d97706; }
@@ -776,3 +775,5 @@ button.secondary.fut-close { background: var(--card); }
 .ms-top.updating { opacity: .55; transition: opacity .15s; }
 .ms-block .ms-wins strong { font-size: 1.2rem; }
 .ms-block .ms-wins { gap: 0 .3rem; }
+.sort-btn { all: unset; cursor: pointer; font: inherit; font-weight: inherit; color: inherit; display: inline-flex; align-items: center; gap: .3rem; min-height: 32px; }
+.sort-btn:focus-visible { outline: 3px solid var(--link); outline-offset: 2px; border-radius: 4px; }
