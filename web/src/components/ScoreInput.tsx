@@ -13,9 +13,9 @@ export default function ScoreInput({ label, value, onChange, id }: Props) {
     <label className="score-input">
       {label}
       <span className="score-stepper">
-        <button type="button" className="secondary" aria-label={`Bajar ${label.toLowerCase()}`} onClick={e => { e.preventDefault(); step(-1) }}>▼</button>
-        <input id={id} inputMode="numeric" value={value} onChange={e => onChange(e.target.value)} />
         <button type="button" className="secondary" aria-label={`Subir ${label.toLowerCase()}`} onClick={e => { e.preventDefault(); step(1) }}>▲</button>
+        <input id={id} inputMode="numeric" value={value} onChange={e => onChange(e.target.value)} />
+        <button type="button" className="secondary" aria-label={`Bajar ${label.toLowerCase()}`} onClick={e => { e.preventDefault(); step(-1) }}>▼</button>
       </span>
     </label>
   )
