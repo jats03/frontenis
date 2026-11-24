@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import Disclosure from '../components/Disclosure'
+import FoldSection from '../components/FoldSection'
 import ActionMenu from '../components/ActionMenu'
 import PageHeader from '../components/PageHeader'
 import { formatClock, formatShortDate, todayIso } from '../dates'
@@ -16,6 +17,7 @@ import LoadingBlock from '../components/LoadingBlock'
 import PlayerName from '../components/PlayerName'
 import { isDraftEmpty, loadDraft, saveDraft } from '../matchDraft'
 import BallPicker from '../components/BallPicker'
+import ScoreInput from '../components/ScoreInput'
 import PlayerSearch from '../components/PlayerSearch'
 import { ballLabel, DEFAULT_BALL, type BallType } from '../balls'
 
@@ -80,6 +82,7 @@ export default function TrainingDetailPage() {
   const [draft0] = useState(() => loadDraft(id))
   const [formOpen, setFormOpen] = useState(() => !isDraftEmpty(draft0))
   const [slots, setSlots] = useState<Slots>(draft0.slots as Slots)
+  const [nextOpen, setNextOpen] = useState(false) // «Siguiente partido» entra siempre plegado
   const [homeScore, setHomeScore] = useState(draft0.homeScore)
   const [awayScore, setAwayScore] = useState(draft0.awayScore)
   const [formError, setFormError] = useState<string | null>(null)
@@ -296,8 +299,8 @@ export default function TrainingDetailPage() {
                 {slotSelect(2, 'Pareja B · jugador 1')}{slotSelect(3, 'Pareja B · jugador 2')}
               </div>
               <div className="cols">
-                <label>Marcador pareja A<input id="score-home" inputMode="numeric" value={homeScore} onChange={e => setHomeScore(e.target.value)} /></label>
-                <label>Marcador pareja B<input inputMode="numeric" value={awayScore} onChange={e => setAwayScore(e.target.value)} /></label>
+                <ScoreInput id="score-home" label="Marcador pareja A" value={homeScore} onChange={setHomeScore} />
+                <ScoreInput label="Marcador pareja B" value={awayScore} onChange={setAwayScore} />
               </div>
               <BallPicker value={ball} onChange={setBallChoice} />
               {formError && <p className="error">{formError}</p>}
@@ -345,8 +348,8 @@ export default function TrainingDetailPage() {
                           {editSelect(2, 'Pareja B · jugador 1')}{editSelect(3, 'Pareja B · jugador 2')}
                         </div>
                         <div className="cols">
-                          <label>Marcador pareja A<input inputMode="numeric" value={editing.home} onChange={e => setEditing(prev => (prev ? { ...prev, home: e.target.value } : prev))} /></label>
-                          <label>Marcador pareja B<input inputMode="numeric" value={editing.away} onChange={e => setEditing(prev => (prev ? { ...prev, away: e.target.value } : prev))} /></label>
+                          <ScoreInput label="Marcador pareja A" value={editing.home} onChange={v => setEditing(prev => (prev ? { ...prev, home: v } : prev))} />
+                          <ScoreInput label="Marcador pareja B" value={editing.away} onChange={v => setEditing(prev => (prev ? { ...prev, away: v } : prev))} />
                         </div>
                         <BallPicker value={editing.ball} onChange={ball => setEditing(prev => (prev ? { ...prev, ball } : prev))} />
                         <p className="muted">La hora y el orden del partido no cambian. Se pedirá confirmación antes de guardar.</p>
@@ -374,8 +377,7 @@ export default function TrainingDetailPage() {
         </section>
       </div>
 
-      {!closedForMe && <section className="card">
-        <h2>Siguiente partido</h2>
+      {!closedForMe && <FoldSection title="Siguiente partido" open={nextOpen} onToggle={() => setNextOpen(o => !o)}>
         <details className="how">
           <summary>¿Cómo se elige?</summary>
           <p className="muted">
@@ -413,7 +415,7 @@ export default function TrainingDetailPage() {
         {suggestions && suggestions.length > 0 && nameOf.size > 0 && (
           <p className="muted">Sugerencias para: {[...present].map(pid => nameOf.get(pid)).filter(Boolean).join(', ')}.</p>
         )}
-      </section>}
+      </FoldSection>}
     </>
   )
 }
