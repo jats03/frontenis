@@ -291,7 +291,6 @@ export default function TrainingDetailPage() {
           {canRegister && !closedForMe && formOpen && (
             <section className="card form" id="nuevo-partido" aria-label="Registrar partido">
               <h2>Registrar partido</h2>
-              <p className="muted">Pueden registrar partidos el administrador y los jugadores identificados; solo el administrador puede borrarlos. Lo que rellenes se guarda en este móvil hasta que guardes el partido o pulses «Limpiar». Si falta alguien, elige «Jugador de prueba»: juega el partido pero no puntúa ni cuenta en la clasificación ni en el histórico.</p>
               <div className="cols">
                 {slotSelect(0, 'Pareja A · jugador 1')}{slotSelect(1, 'Pareja A · jugador 2')}
               </div>
