@@ -16,6 +16,7 @@ import LoadingBlock from '../components/LoadingBlock'
 import PlayerName from '../components/PlayerName'
 import { isDraftEmpty, loadDraft, saveDraft } from '../matchDraft'
 import BallPicker from '../components/BallPicker'
+import ScoreInput from '../components/ScoreInput'
 import PlayerSearch from '../components/PlayerSearch'
 import { ballLabel, DEFAULT_BALL, type BallType } from '../balls'
 
@@ -296,8 +297,8 @@ export default function TrainingDetailPage() {
                 {slotSelect(2, 'Pareja B · jugador 1')}{slotSelect(3, 'Pareja B · jugador 2')}
               </div>
               <div className="cols">
-                <label>Marcador pareja A<input id="score-home" inputMode="numeric" value={homeScore} onChange={e => setHomeScore(e.target.value)} /></label>
-                <label>Marcador pareja B<input inputMode="numeric" value={awayScore} onChange={e => setAwayScore(e.target.value)} /></label>
+                <ScoreInput id="score-home" label="Marcador pareja A" value={homeScore} onChange={setHomeScore} />
+                <ScoreInput label="Marcador pareja B" value={awayScore} onChange={setAwayScore} />
               </div>
               <BallPicker value={ball} onChange={setBallChoice} />
               {formError && <p className="error">{formError}</p>}
@@ -345,8 +346,8 @@ export default function TrainingDetailPage() {
                           {editSelect(2, 'Pareja B · jugador 1')}{editSelect(3, 'Pareja B · jugador 2')}
                         </div>
                         <div className="cols">
-                          <label>Marcador pareja A<input inputMode="numeric" value={editing.home} onChange={e => setEditing(prev => (prev ? { ...prev, home: e.target.value } : prev))} /></label>
-                          <label>Marcador pareja B<input inputMode="numeric" value={editing.away} onChange={e => setEditing(prev => (prev ? { ...prev, away: e.target.value } : prev))} /></label>
+                          <ScoreInput label="Marcador pareja A" value={editing.home} onChange={v => setEditing(prev => (prev ? { ...prev, home: v } : prev))} />
+                          <ScoreInput label="Marcador pareja B" value={editing.away} onChange={v => setEditing(prev => (prev ? { ...prev, away: v } : prev))} />
                         </div>
                         <BallPicker value={editing.ball} onChange={ball => setEditing(prev => (prev ? { ...prev, ball } : prev))} />
                         <p className="muted">La hora y el orden del partido no cambian. Se pedirá confirmación antes de guardar.</p>
