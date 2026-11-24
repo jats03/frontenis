@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import Disclosure from '../components/Disclosure'
+import FoldSection from '../components/FoldSection'
 import ActionMenu from '../components/ActionMenu'
 import PageHeader from '../components/PageHeader'
 import { formatClock, formatShortDate, todayIso } from '../dates'
@@ -80,6 +81,7 @@ export default function TrainingDetailPage() {
   const [draft0] = useState(() => loadDraft(id))
   const [formOpen, setFormOpen] = useState(() => !isDraftEmpty(draft0))
   const [slots, setSlots] = useState<Slots>(draft0.slots as Slots)
+  const [nextOpen, setNextOpen] = useState(false) // «Siguiente partido» entra siempre plegado
   const [homeScore, setHomeScore] = useState(draft0.homeScore)
   const [awayScore, setAwayScore] = useState(draft0.awayScore)
   const [formError, setFormError] = useState<string | null>(null)
@@ -374,8 +376,7 @@ export default function TrainingDetailPage() {
         </section>
       </div>
 
-      {!closedForMe && <section className="card">
-        <h2>Siguiente partido</h2>
+      {!closedForMe && <FoldSection title="Siguiente partido" open={nextOpen} onToggle={() => setNextOpen(o => !o)}>
         <details className="how">
           <summary>¿Cómo se elige?</summary>
           <p className="muted">
@@ -413,7 +414,7 @@ export default function TrainingDetailPage() {
         {suggestions && suggestions.length > 0 && nameOf.size > 0 && (
           <p className="muted">Sugerencias para: {[...present].map(pid => nameOf.get(pid)).filter(Boolean).join(', ')}.</p>
         )}
-      </section>}
+      </FoldSection>}
     </>
   )
 }
