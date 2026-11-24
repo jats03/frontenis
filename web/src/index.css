@@ -780,4 +780,4 @@ button.secondary.fut-close { background: var(--card); }
 .score-input { grid-template-columns: minmax(0, 1fr); }
 .score-stepper { display: flex; align-items: stretch; gap: .3rem; margin-top: .25rem; min-width: 0; }
 .score-stepper input { flex: 1 1 0; width: 0; min-width: 0; margin: 0; padding-inline: .2rem; text-align: center; font-size: 1.15rem; font-weight: 700; }
-.score-stepper button { flex: none; width: 40px; min-height: 44px; padding: 0; font-size: .85rem; }
+.score-stepper button { flex: none; width: 40px; min-height: 44px; padding: 0; font-size: .85rem; line-height: 1; justify-content: center; align-items: center; }
