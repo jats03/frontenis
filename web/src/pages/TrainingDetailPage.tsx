@@ -291,13 +291,13 @@ export default function TrainingDetailPage() {
                 <div className="cols">
                   {slotSelect(0, 'Jugador 1')}{slotSelect(1, 'Jugador 2')}
                 </div>
-                <ScoreInput id="score-home" label="Marcador" value={homeScore} onChange={setHomeScore} />
+                <ScoreInput id="score-home" label="Puntos" value={homeScore} onChange={setHomeScore} />
               </PairBox>
               <PairBox side="B">
                 <div className="cols">
                   {slotSelect(2, 'Jugador 1')}{slotSelect(3, 'Jugador 2')}
                 </div>
-                <ScoreInput label="Marcador" value={awayScore} onChange={setAwayScore} />
+                <ScoreInput label="Puntos" value={awayScore} onChange={setAwayScore} />
               </PairBox>
               <BallPicker value={ball} onChange={setBallChoice} />
               {formError && <p className="error">{formError}</p>}
@@ -342,13 +342,13 @@ export default function TrainingDetailPage() {
                           <div className="cols">
                             {editSelect(0, 'Jugador 1')}{editSelect(1, 'Jugador 2')}
                           </div>
-                          <ScoreInput label="Marcador" value={editing.home} onChange={v => setEditing(prev => (prev ? { ...prev, home: v } : prev))} />
+                          <ScoreInput label="Puntos" value={editing.home} onChange={v => setEditing(prev => (prev ? { ...prev, home: v } : prev))} />
                         </PairBox>
                         <PairBox side="B">
                           <div className="cols">
                             {editSelect(2, 'Jugador 1')}{editSelect(3, 'Jugador 2')}
                           </div>
-                          <ScoreInput label="Marcador" value={editing.away} onChange={v => setEditing(prev => (prev ? { ...prev, away: v } : prev))} />
+                          <ScoreInput label="Puntos" value={editing.away} onChange={v => setEditing(prev => (prev ? { ...prev, away: v } : prev))} />
                         </PairBox>
                         <BallPicker value={editing.ball} onChange={ball => setEditing(prev => (prev ? { ...prev, ball } : prev))} />
                         <p className="muted">La hora y el orden del partido no cambian. Se pedirá confirmación antes de guardar.</p>
