@@ -779,6 +779,11 @@ button.secondary.fut-close { background: var(--card); }
 .sort-btn:focus-visible { outline: 3px solid var(--link); outline-offset: 2px; border-radius: 4px; }
 
 .score-input { grid-template-columns: minmax(0, 1fr); }
-.score-stepper { display: flex; align-items: stretch; gap: .3rem; margin-top: .25rem; min-width: 0; }
-.score-stepper input { flex: 1 1 0; width: 0; min-width: 0; margin: 0; padding-inline: .2rem; text-align: center; font-size: 1.15rem; font-weight: 700; }
-.score-stepper button { flex: none; width: 40px; min-height: 44px; padding: 0; font-size: .85rem; line-height: 1; justify-content: center; align-items: center; }
+.score-input input { text-align: center; font-size: 1.15rem; font-weight: 700; }
+
+/* Registro de un partido de entreno: cada pareja en su bloque de color, con sus jugadores y su marcador dentro. */
+.pair-box { --pair: var(--primary); --pair-bg: #e6f4f2; border: 1px solid var(--pair); border-left-width: 6px; border-radius: 10px; background: var(--pair-bg); padding: .6rem .8rem .8rem; margin: .7rem 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 4.6rem; gap: .5rem; align-items: start; }
+.pair-box.pair-B { --pair: #c2410c; --pair-bg: #fff1e8; }
+.pair-title { grid-column: 1 / -1; margin: 0; font-size: .95rem; letter-spacing: .02em; text-transform: uppercase; color: var(--pair); }
+.pair-box .cols { display: contents; }
+@media (prefers-color-scheme: dark) { .pair-box { --pair: #5eead4; --pair-bg: #12302c; } .pair-box.pair-B { --pair: #fb923c; --pair-bg: #33200f; } }
