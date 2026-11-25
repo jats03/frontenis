@@ -47,24 +47,23 @@ export default function IdentifiedPlayersTable() {
           <div className="table-wrap">
             <table className="audit-table">
               <thead>
-                <tr><th>Id</th><th>Jugador</th><th>Id jugador</th><th>Vinculado</th>
+                <tr><th>Id jugador</th><th>Jugador</th>
                   <th aria-sort={newestFirst ? 'descending' : 'ascending'}>
                     <button type="button" className="sort-btn" onClick={() => setNewestFirst(v => !v)}
                       aria-label={`Último acceso, ordenado del ${newestFirst ? 'más reciente al más antiguo' : 'más antiguo al más reciente'}. Pulsa para invertir`}>
                       Último acceso <span aria-hidden="true">{newestFirst ? '▼' : '▲'}</span>
                     </button>
                   </th>
-                  <th>Acceso</th>
+                  <th>Vinculado</th><th>App</th>
                   <th></th></tr>
               </thead>
               <tbody>
                 {sorted.map(l => (
                   <tr key={l.id}>
-                    <td>{l.id}</td>
-                    <td><PlayerName playerId={l.playerId}>{l.playerName}</PlayerName></td>
                     <td>{l.playerId}</td>
-                    <td className="nowrap">{when(l.linkedAtUtc)}</td>
+                    <td><PlayerName playerId={l.playerId}>{l.playerName}</PlayerName></td>
                     <td className="nowrap">{l.lastSeenUtc ? when(l.lastSeenUtc) : '—'}</td>
+                    <td className="nowrap">{when(l.linkedAtUtc)}</td>
                     <td>{l.lastSeenAsApp === null ? '—' : l.lastSeenAsApp ? 'App' : 'Web'}</td>
                     <td><button type="button" className="secondary" onClick={() => void release(l.playerId, l.playerName)}>Liberar</button></td>
                   </tr>
