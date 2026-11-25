@@ -33,14 +33,16 @@ public sealed class DeviceLinkService : IDeviceLinkService
         _uow = uow;
     }
 
-    public async Task<DeviceMeDto?> GetMeAsync(string? deviceToken, CancellationToken ct = default)
+    public async Task<DeviceMeDto?> GetMeAsync(string? deviceToken, bool? asApp = null, CancellationToken ct = default)
     {
         var access = await _access.FindAsync(deviceToken, ct);
         if (access is null) return null;
         // La persona acaba de abrir la app: se anota su último acceso, pero solo si el anotado tiene más de una hora.
         var now = _time.GetUtcNow().UtcDateTime;
-        if (access.LinkId > 0 && (access.LastSeenUtc is null || now - access.LastSeenUtc.Value >= LastSeenEvery))
-            await _links.TouchAsync(access.LinkId, now, now - LastSeenEvery, ct);
+        var stale = access.LastSeenUtc is null || now - access.LastSeenUtc.Value >= LastSeenEvery;
+        var modeChanged = asApp is not null && asApp != access.LastSeenAsApp;
+        if (access.LinkId > 0 && (stale || modeChanged))
+            await _links.TouchAsync(access.LinkId, now, now - LastSeenEvery, asApp, ct);
         var ids = new[] { access.OwnerPlayerId }.Concat(access.DelegateIds).ToList();
         var found = (await _players.GetByIdsAsync(ids, ct)).ToDictionary(p => p.Id);
         PlayerRefDto Ref(int id) => new(id, found.TryGetValue(id, out var p) ? p.Name : "—");
@@ -85,7 +87,7 @@ public sealed class DeviceLinkService : IDeviceLinkService
             await _links.AddAsync(DeviceLink.Create(hash, playerId), ct);
             await _uow.SaveChangesAsync(ct);
         }
-        return (await GetMeAsync(deviceToken, ct))!;
+        return (await GetMeAsync(deviceToken, ct: ct))!;
     }
 
     public async Task UnlinkAsync(string? deviceToken, CancellationToken ct = default)

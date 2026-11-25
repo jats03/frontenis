@@ -118,4 +118,61 @@ public class DeviceLastSeenTests
         Assert.Equal(seen, list.Single(l => l.PlayerId == 1).LastSeenUtc);
         Assert.Null(list.Single(l => l.PlayerId == 2).LastSeenUtc);
     }
+
+    [Fact]
+    public async Task Opening_as_an_installed_app_records_it_and_the_same_mode_within_the_hour_writes_nothing_more()
+    {
+        var w = new BookingWorld();
+        var time = new ManualTime();
+        await w.Links().LinkAsync(Phone, 1);
+        var service = Service(w, time);
+
+        await service.GetMeAsync(Phone, asApp: true);
+        await service.GetMeAsync(Phone, asApp: true);
+
+        Assert.True(w.Devices.Items.Single().LastSeenAsApp);
+        Assert.Equal(1, w.Devices.Touches);
+    }
+
+    [Fact]
+    public async Task Changing_between_app_and_browser_is_recorded_at_once_without_waiting_for_the_hour()
+    {
+        var w = new BookingWorld();
+        var time = new ManualTime();
+        await w.Links().LinkAsync(Phone, 1);
+        var service = Service(w, time);
+
+        await service.GetMeAsync(Phone, asApp: true);
+        await service.GetMeAsync(Phone, asApp: false);
+
+        Assert.False(w.Devices.Items.Single().LastSeenAsApp);
+        Assert.Equal(2, w.Devices.Touches);
+    }
+
+    [Fact]
+    public async Task Not_knowing_the_mode_keeps_the_one_already_recorded()
+    {
+        var w = new BookingWorld();
+        var time = new ManualTime();
+        await w.Links().LinkAsync(Phone, 1);
+        var service = Service(w, time);
+        await service.GetMeAsync(Phone, asApp: true);
+
+        time.Now = time.Now.AddHours(2);
+        await service.GetMeAsync(Phone);                // sin dato del modo: se anota el acceso pero no se pierde el modo
+
+        Assert.True(w.Devices.Items.Single().LastSeenAsApp);
+    }
+
+    [Fact]
+    public async Task The_admin_list_shows_how_each_device_last_opened_the_app()
+    {
+        var w = new BookingWorld();
+        await w.Links().LinkAsync(Phone, 1);
+        await Service(w, new ManualTime()).GetMeAsync(Phone, asApp: true);
+
+        var dto = (await new DeviceLinkAdminCommands(w.Devices, w.Players, w.Uow).ListAsync()).Single();
+
+        Assert.True(dto.LastSeenAsApp);
+    }
 }

@@ -38,8 +38,7 @@ export default function IdentifiedPlayersTable() {
 
   return (
     <>
-      <PageHeader title="Jugadores identificados"
-        subtitle="Dispositivos vinculados a un jugador, con la última vez que abrieron la app (se anota como mucho una vez por hora). Del dispositivo solo se guarda el hash de su identificador, nunca el identificador en claro. Si un jugador cambia de móvil, libera su dispositivo para que pueda volver a identificarse." />
+      <PageHeader title="Jugadores identificados" />
       {(error ?? links.error) && <p className="error">{error ?? links.error}</p>}
       {!links.data && !links.error && <LoadingBlock />}
       {links.data && (
@@ -47,23 +46,24 @@ export default function IdentifiedPlayersTable() {
           <div className="table-wrap">
             <table className="audit-table">
               <thead>
-                <tr><th>Id</th><th>Jugador</th><th>Id jugador</th><th>Vinculado</th>
+                <tr><th>Id jugador</th><th>Jugador</th>
                   <th aria-sort={newestFirst ? 'descending' : 'ascending'}>
                     <button type="button" className="sort-btn" onClick={() => setNewestFirst(v => !v)}
                       aria-label={`Último acceso, ordenado del ${newestFirst ? 'más reciente al más antiguo' : 'más antiguo al más reciente'}. Pulsa para invertir`}>
                       Último acceso <span aria-hidden="true">{newestFirst ? '▼' : '▲'}</span>
                     </button>
                   </th>
+                  <th>Vinculado</th><th>App</th>
                   <th></th></tr>
               </thead>
               <tbody>
                 {sorted.map(l => (
                   <tr key={l.id}>
-                    <td>{l.id}</td>
-                    <td><PlayerName playerId={l.playerId}>{l.playerName}</PlayerName></td>
                     <td>{l.playerId}</td>
-                    <td className="nowrap">{when(l.linkedAtUtc)}</td>
+                    <td><PlayerName playerId={l.playerId}>{l.playerName}</PlayerName></td>
                     <td className="nowrap">{l.lastSeenUtc ? when(l.lastSeenUtc) : '—'}</td>
+                    <td className="nowrap">{when(l.linkedAtUtc)}</td>
+                    <td>{l.lastSeenAsApp === null ? '—' : l.lastSeenAsApp ? 'App' : 'Web'}</td>
                     <td><button type="button" className="secondary" onClick={() => void release(l.playerId, l.playerName)}>Liberar</button></td>
                   </tr>
                 ))}

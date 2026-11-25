@@ -5,8 +5,11 @@ namespace Frontenis.Application.Interfaces.Services;
 /// <summary>Lo que hace un jugador (sin cuenta) para identificar su dispositivo.</summary>
 public interface IDeviceLinkService
 {
-    /// <summary>Jugador titular y apadrinados de este dispositivo, o <c>null</c> si aún no está vinculado.</summary>
-    Task<DeviceMeDto?> GetMeAsync(string? deviceToken, CancellationToken ct = default);
+    /// <summary>
+    /// Jugador titular y apadrinados de este dispositivo, o <c>null</c> si aún no está vinculado. <paramref name="asApp"/> dice si
+    /// la app se ha abierto como app instalada (<c>true</c>) o desde el navegador (<c>false</c>); <c>null</c> si no se sabe.
+    /// </summary>
+    Task<DeviceMeDto?> GetMeAsync(string? deviceToken, bool? asApp = null, CancellationToken ct = default);
     /// <summary>Jugadores que todavía no tienen dispositivo y por tanto pueden elegirse al vincular.</summary>
     Task<IReadOnlyList<PlayerRefDto>> ListAvailablePlayersAsync(CancellationToken ct = default);
     /// <summary>Todos los jugadores, con una marca de los que ya tienen dispositivo vinculado (por si perdieron el identificador de su móvil).</summary>
