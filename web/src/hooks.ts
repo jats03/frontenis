@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { responseCache } from './api/client'
 
 /** Tiempo mínimo que se mantiene en pantalla un aviso de carga ya visible, para que no parpadee. */
-export const MIN_LOADER_MS = 1000
+export const MIN_LOADER_MS = 500
 
 /** Espera lo que falte hasta cumplir el tiempo mínimo del aviso de carga mostrado desde <paramref name="startedAt"/>. */
 export function holdLoader(startedAt: number): Promise<void> {
