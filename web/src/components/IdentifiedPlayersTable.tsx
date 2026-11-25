@@ -38,8 +38,7 @@ export default function IdentifiedPlayersTable() {
 
   return (
     <>
-      <PageHeader title="Jugadores identificados"
-        subtitle="Dispositivos vinculados a un jugador, con la última vez que abrieron la app (se anota como mucho una vez por hora) y si fue como app instalada («App») o desde el navegador («Web»). Del dispositivo solo se guarda el hash de su identificador, nunca el identificador en claro. Si un jugador cambia de móvil, libera su dispositivo para que pueda volver a identificarse." />
+      <PageHeader title="Jugadores identificados" />
       {(error ?? links.error) && <p className="error">{error ?? links.error}</p>}
       {!links.data && !links.error && <LoadingBlock />}
       {links.data && (
