@@ -18,6 +18,7 @@ import PlayerName from '../components/PlayerName'
 import { isDraftEmpty, loadDraft, saveDraft } from '../matchDraft'
 import BallPicker from '../components/BallPicker'
 import ScoreInput from '../components/ScoreInput'
+import PairBox from '../components/PairBox'
 import PlayerSearch from '../components/PlayerSearch'
 import { ballLabel, DEFAULT_BALL, type BallType } from '../balls'
 
@@ -291,16 +292,18 @@ export default function TrainingDetailPage() {
           {canRegister && !closedForMe && formOpen && (
             <section className="card form" id="nuevo-partido" aria-label="Registrar partido">
               <h2>Registrar partido</h2>
-              <div className="cols">
-                {slotSelect(0, 'Pareja A · jugador 1')}{slotSelect(1, 'Pareja A · jugador 2')}
-              </div>
-              <div className="cols">
-                {slotSelect(2, 'Pareja B · jugador 1')}{slotSelect(3, 'Pareja B · jugador 2')}
-              </div>
-              <div className="cols">
-                <ScoreInput id="score-home" label="Marcador pareja A" value={homeScore} onChange={setHomeScore} />
-                <ScoreInput label="Marcador pareja B" value={awayScore} onChange={setAwayScore} />
-              </div>
+              <PairBox side="A">
+                <div className="cols">
+                  {slotSelect(0, 'Jugador 1')}{slotSelect(1, 'Jugador 2')}
+                </div>
+                <ScoreInput id="score-home" label="Marcador" value={homeScore} onChange={setHomeScore} />
+              </PairBox>
+              <PairBox side="B">
+                <div className="cols">
+                  {slotSelect(2, 'Jugador 1')}{slotSelect(3, 'Jugador 2')}
+                </div>
+                <ScoreInput label="Marcador" value={awayScore} onChange={setAwayScore} />
+              </PairBox>
               <BallPicker value={ball} onChange={setBallChoice} />
               {formError && <p className="error">{formError}</p>}
               <div className="row">
@@ -340,16 +343,18 @@ export default function TrainingDetailPage() {
                     )}
                     {isAdmin && editing?.matchId === m.id && (
                       <div className="tm-edit" role="group" aria-label="Editar el partido">
-                        <div className="cols">
-                          {editSelect(0, 'Pareja A · jugador 1')}{editSelect(1, 'Pareja A · jugador 2')}
-                        </div>
-                        <div className="cols">
-                          {editSelect(2, 'Pareja B · jugador 1')}{editSelect(3, 'Pareja B · jugador 2')}
-                        </div>
-                        <div className="cols">
-                          <ScoreInput label="Marcador pareja A" value={editing.home} onChange={v => setEditing(prev => (prev ? { ...prev, home: v } : prev))} />
-                          <ScoreInput label="Marcador pareja B" value={editing.away} onChange={v => setEditing(prev => (prev ? { ...prev, away: v } : prev))} />
-                        </div>
+                        <PairBox side="A">
+                          <div className="cols">
+                            {editSelect(0, 'Jugador 1')}{editSelect(1, 'Jugador 2')}
+                          </div>
+                          <ScoreInput label="Marcador" value={editing.home} onChange={v => setEditing(prev => (prev ? { ...prev, home: v } : prev))} />
+                        </PairBox>
+                        <PairBox side="B">
+                          <div className="cols">
+                            {editSelect(2, 'Jugador 1')}{editSelect(3, 'Jugador 2')}
+                          </div>
+                          <ScoreInput label="Marcador" value={editing.away} onChange={v => setEditing(prev => (prev ? { ...prev, away: v } : prev))} />
+                        </PairBox>
                         <BallPicker value={editing.ball} onChange={ball => setEditing(prev => (prev ? { ...prev, ball } : prev))} />
                         <p className="muted">La hora y el orden del partido no cambian. Se pedirá confirmación antes de guardar.</p>
                         {editError && <p className="error">{editError}</p>}
