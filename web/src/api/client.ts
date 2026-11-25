@@ -4,7 +4,7 @@ import type {
   HistoryFilter, NewTrainingMatch, TrainingMatchEdit, TrainingDetail, TrainingSuggestion, TrainingSummary,
   AuditPage, AuditQuery, ClothingSize, PlayerRef, PendingResult, RejectedResult, DeviceLink, DeviceMe, DevicePlayer, PlayerDelegateRow, SaveSlot, SaveSlotTemplate, Slot, SlotTemplate,
 } from './types'
-import { deviceHeaders, deviceToken, hasDeviceToken } from '../device'
+import { deviceHeaders, deviceToken, hasDeviceToken, isStandalone } from '../device'
 import type { BallType } from '../balls'
 
 export const BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:5080'
@@ -233,7 +233,9 @@ export const api = {
 
   device: {
     /** `undefined` (204) si este dispositivo aún no está vinculado a ningún jugador. */
-    me: () => request<DeviceMe | undefined>('GET', '/api/device/me', undefined, deviceHeaders()),
+    // Al abrir la app se dice cómo está abierta (instalada o en el navegador) para el registro de actividad.
+    me: () => request<DeviceMe | undefined>('GET', '/api/device/me', undefined,
+      { ...deviceHeaders(), 'X-Display-Mode': isStandalone() ? 'standalone' : 'browser' }),
     players: () => request<DevicePlayer[]>('GET', '/api/device/players'),
     /** `replace`: el jugador ya tenía otro dispositivo y se confirma que eres tú (el otro deja de estar identificado). */
     link: (playerId: number, replace = false) => request<DeviceMe>('POST', '/api/device/link', { playerId, replace }, deviceHeaders()),

@@ -26,5 +26,9 @@ export function deviceToken(): string {
   }
 }
 
+/** La app está abierta como app instalada (no desde una pestaña del navegador). */
+export const isStandalone = (): boolean =>
+  window.matchMedia?.('(display-mode: standalone)').matches || (navigator as Navigator & { standalone?: boolean }).standalone === true
+
 /** Cabecera con el identificador del dispositivo (la API solo guarda su hash). */
 export const deviceHeaders = (): Record<string, string> => ({ 'X-Device-Token': deviceToken() })

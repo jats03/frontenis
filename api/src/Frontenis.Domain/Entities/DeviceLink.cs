@@ -19,6 +19,11 @@ public sealed class DeviceLink
     /// escribir en la BD en cada petición; <c>null</c> si aún no se ha registrado ninguno (vínculos anteriores a esta columna).
     /// </summary>
     public DateTime? LastSeenUtc { get; private set; }
+    /// <summary>
+    /// Cómo abrió la app la última vez que se anotó: <c>true</c> como app instalada, <c>false</c> desde el navegador y
+    /// <c>null</c> si no se sabe (accesos anteriores a esta columna).
+    /// </summary>
+    public bool? LastSeenAsApp { get; private set; }
 
     /// <summary>Vincula un dispositivo (por su hash) con un jugador.</summary>
     /// <exception cref="DomainException">Hash vacío o jugador no válido.</exception>

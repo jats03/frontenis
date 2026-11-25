@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import SubTabs from './SubTabs'
+import { isStandalone } from '../device'
 
 type Platform = 'android' | 'iphone'
 
@@ -9,9 +10,6 @@ const STEP_MS = 2600
 const readDismissed = () => { try { return localStorage.getItem(DISMISS_KEY) === '1' } catch { return false } }
 const writeDismissed = () => { try { localStorage.setItem(DISMISS_KEY, '1') } catch { /* sin almacenamiento */ } }
 
-/** La app ya está abierta como app instalada (no desde el navegador). */
-const isInstalled = () =>
-  window.matchMedia?.('(display-mode: standalone)').matches || (navigator as Navigator & { standalone?: boolean }).standalone === true
 
 const isIphone = () => /iphone|ipad|ipod/i.test(navigator.userAgent)
 const prefersReducedMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
@@ -249,7 +247,7 @@ function IphoneScenes({ step }: { step: number }) {
  * (Safari). Recorre los cuatro pasos en bucle, con pausa y saltos a cualquier paso, y los pasos escritos debajo.
  */
 export default function InstallTips() {
-  const [hidden, setHidden] = useState(() => readDismissed() || isInstalled())
+  const [hidden, setHidden] = useState(() => readDismissed() || isStandalone())
   const [platform, setPlatform] = useState<Platform>(() => (isIphone() ? 'iphone' : 'android'))
   const [step, setStep] = useState(0)
   const [playing, setPlaying] = useState(() => !prefersReducedMotion())

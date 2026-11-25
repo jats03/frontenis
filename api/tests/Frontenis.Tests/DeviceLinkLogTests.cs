@@ -16,7 +16,7 @@ public class DeviceLinkLogTests
 {
     private sealed class FakeDevices : IDeviceLinkService
     {
-        public Task<DeviceMeDto?> GetMeAsync(string? deviceToken, CancellationToken ct = default) => throw new NotSupportedException();
+        public Task<DeviceMeDto?> GetMeAsync(string? deviceToken, bool? asApp = null, CancellationToken ct = default) => throw new NotSupportedException();
         public Task<IReadOnlyList<PlayerRefDto>> ListAvailablePlayersAsync(CancellationToken ct = default) => throw new NotSupportedException();
         public Task<IReadOnlyList<DevicePlayerDto>> ListSelectablePlayersAsync(CancellationToken ct = default) => throw new NotSupportedException();
         public Task<DeviceMeDto> LinkAsync(string? deviceToken, int playerId, bool replace = false, CancellationToken ct = default) =>

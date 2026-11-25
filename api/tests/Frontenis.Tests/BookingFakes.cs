@@ -92,12 +92,14 @@ internal sealed class FakeDeviceLinks : IDeviceLinkRepository
     public Task AddAsync(DeviceLink link, CancellationToken ct = default) { link.WithId(_next++); Items.Add(link); return Task.CompletedTask; }
     public void Remove(DeviceLink link) => Items.Remove(link);
     public int Touches { get; private set; }
-    public Task TouchAsync(int linkId, DateTime seenUtc, DateTime olderThanUtc, CancellationToken ct = default)
+    public Task TouchAsync(int linkId, DateTime seenUtc, DateTime olderThanUtc, bool? asApp = null, CancellationToken ct = default)
     {
         var link = Items.FirstOrDefault(l => l.Id == linkId);
-        if (link is not null && (link.LastSeenUtc is null || link.LastSeenUtc < olderThanUtc))
+        var modeChanged = asApp is not null && link?.LastSeenAsApp != asApp;
+        if (link is not null && (link.LastSeenUtc is null || link.LastSeenUtc < olderThanUtc || modeChanged))
         {
             typeof(DeviceLink).GetProperty(nameof(DeviceLink.LastSeenUtc))!.SetValue(link, seenUtc);
+            if (asApp is not null) typeof(DeviceLink).GetProperty(nameof(DeviceLink.LastSeenAsApp))!.SetValue(link, asApp);
             Touches++;
         }
         return Task.CompletedTask;

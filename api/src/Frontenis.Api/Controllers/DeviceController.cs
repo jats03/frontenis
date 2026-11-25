@@ -16,6 +16,8 @@ namespace Frontenis.Api.Controllers;
 public sealed class DeviceController : ControllerBase
 {
     public const string TokenHeader = "X-Device-Token";
+    /// <summary>Cómo tiene abierta la app la web: «standalone» (instalada) o «browser».</summary>
+    public const string DisplayModeHeader = "X-Display-Mode";
 
     private readonly IDeviceLinkService _devices;
     private readonly IActorResolver _actors;
@@ -29,9 +31,12 @@ public sealed class DeviceController : ControllerBase
 
     /// <summary>Jugador titular y apadrinados de este dispositivo; 204 si aún no está vinculado.</summary>
     [HttpGet("me")]
-    public async Task<ActionResult<DeviceMeDto>> Me([FromHeader(Name = TokenHeader)] string? token, CancellationToken ct)
+    public async Task<ActionResult<DeviceMeDto>> Me([FromHeader(Name = TokenHeader)] string? token,
+        [FromHeader(Name = DisplayModeHeader)] string? displayMode, CancellationToken ct)
     {
-        var me = await _devices.GetMeAsync(token, ct);
+        // La web dice cómo está abierta: «standalone» = app instalada; cualquier otro valor = navegador; sin cabecera = no se sabe.
+        bool? asApp = string.IsNullOrWhiteSpace(displayMode) ? null : string.Equals(displayMode.Trim(), "standalone", StringComparison.OrdinalIgnoreCase);
+        var me = await _devices.GetMeAsync(token, asApp, ct);
         if (me is null) return NoContent();
         // Ya se ha consultado la BD para esto: se recuerda quién es el dispositivo para el registro de actividad
         // (las lecturas siguientes salen con su nombre sin consultar nada más).
