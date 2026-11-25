@@ -90,7 +90,6 @@ export default function ReservasGestionPage() {
       {error && <p className="error" role="alert">{error}</p>}
 
       <h2 className="section-title">Plantilla semanal</h2>
-      <p className="muted">Lo que suele haber cada semana. Cambiarla no modifica las franjas ya generadas.</p>
       {templates.loading && !templates.data && <LoadingBlock />}
       {templates.error && <p className="error">{templates.error}</p>}
       <ul className="plain">

@@ -280,11 +280,6 @@ export default function TrainingDetailPage() {
           <Link className="button small" to={`/entrenamientos/${latest.id}`}>Ir al último entrenamiento</Link>
         </div>
       )}
-      {!isAdmin && !closedForMe && me === null && (
-        <p className="muted" role="note">
-          Para registrar partidos tienes que identificarte como jugador: <Link to="/reservas">elige «Soy yo» en Reservas</Link>.
-        </p>
-      )}
       {!formOpen && formError && <p className="error" role="alert">{formError}</p>}
 
       <div className="training-layout">

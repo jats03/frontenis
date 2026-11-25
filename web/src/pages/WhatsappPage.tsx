@@ -67,7 +67,6 @@ export default function WhatsappPage() {
   return (
     <>
       <h1>Plantillas de WhatsApp</h1>
-      <p className="muted">Elige el mes y la semana, ajusta días y horarios, y copia el texto para pegarlo en WhatsApp.</p>
 
       <section className="card form">
         <div className="cols">
