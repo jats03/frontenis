@@ -31,7 +31,6 @@ export default function DelegatesPanel({ players, onError }: { players: Player[]
   return (
     <>
       <h2 className="section-title">Apadrinados</h2>
-      <p className="muted">Un jugador vinculado puede apuntarse a sí mismo y, además, a los jugadores que le asignes aquí.</p>
       {delegates.error && <p className="error">{delegates.error}</p>}
       <ul className="plain">
         {delegates.data?.map(d => (
